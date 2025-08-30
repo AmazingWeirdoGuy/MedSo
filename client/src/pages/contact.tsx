@@ -66,7 +66,7 @@ export default function Contact() {
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
-      <main className="py-16">
+      <main className="py-16 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 ease-out">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           
           {/* Page Header */}
@@ -83,7 +83,7 @@ export default function Contact() {
             
             {/* Contact Form */}
             <div data-testid="contact-form-section">
-              <Card className="shadow-lg">
+              <Card className="shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 ease-in-out">
                 <CardHeader>
                   <CardTitle className="text-2xl font-bold text-gray-900">Send us a Message</CardTitle>
                 </CardHeader>
@@ -201,7 +201,7 @@ export default function Contact() {
                       <Button 
                         type="submit"
                         disabled={contactMutation.isPending}
-                        className="w-full bg-primary text-white hover:bg-primary/90 py-3"
+                        className="w-full bg-primary text-white hover:bg-primary/90 hover:shadow-lg hover:scale-105 py-3 transition-all duration-200 ease-in-out active:scale-95"
                         data-testid="button-submit"
                       >
                         {contactMutation.isPending ? "Sending..." : "Send Message"}
@@ -217,7 +217,7 @@ export default function Contact() {
               <div className="space-y-8">
                 
                 {/* Contact Details */}
-                <Card className="shadow-lg">
+                <Card className="shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 ease-in-out">
                   <CardHeader>
                     <CardTitle className="text-2xl font-bold text-gray-900">Get in Touch</CardTitle>
                   </CardHeader>
@@ -263,7 +263,7 @@ export default function Contact() {
                 </Card>
 
                 {/* Join Us Card */}
-                <Card className="shadow-lg bg-gradient-to-br from-primary to-teal-500 text-white">
+                <Card className="shadow-lg bg-gradient-to-br from-primary to-teal-500 text-white hover:shadow-xl hover:scale-105 hover:-translate-y-2 transition-all duration-300 ease-in-out">
                   <CardContent className="p-8">
                     <h3 className="text-2xl font-bold mb-4">Interested in Joining?</h3>
                     <p className="mb-6 text-blue-50">

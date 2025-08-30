@@ -40,11 +40,11 @@ export default function About() {
 
 
   const ProfileCard = ({ person, showPosition = false }: { person: any, showPosition?: boolean }) => (
-    <div className="flex items-center space-x-3 p-3 hover:bg-gray-50 rounded-lg transition-colors">
+    <div className="flex items-center space-x-3 p-3 hover:bg-gray-50 rounded-lg transition-all duration-200 ease-in-out hover:shadow-md hover:scale-[1.02]">
       <img 
         src={person.image} 
         alt={person.name}
-        className="w-12 h-12 rounded-full object-cover"
+        className="w-12 h-12 rounded-full object-cover transition-transform duration-200 ease-in-out hover:scale-110"
       />
       <div className="flex-1">
         <h4 className="font-medium text-gray-900">{person.name}</h4>
@@ -69,31 +69,27 @@ export default function About() {
     children: React.ReactNode,
     testId: string 
   }) => (
-    <div className="border-b border-gray-200 last:border-b-0">
+    <div className="border-b border-gray-200 last:border-b-0 overflow-hidden">
       <button
         onClick={onToggle}
-        className="w-full px-4 py-4 flex items-center justify-between text-left hover:bg-gray-50 transition-colors"
+        className="w-full px-4 py-4 flex items-center justify-between text-left hover:bg-gray-50 transition-all duration-200 ease-in-out"
         data-testid={testId}
       >
         <span className="font-medium text-gray-900 uppercase tracking-wide text-sm">{title}</span>
-        {isOpen ? (
-          <ChevronDown className="w-4 h-4 text-gray-500" />
-        ) : (
-          <ChevronRight className="w-4 h-4 text-gray-500" />
-        )}
+        <ChevronRight className={`w-4 h-4 text-gray-500 transition-transform duration-300 ease-in-out ${isOpen ? 'rotate-90' : 'rotate-0'}`} />
       </button>
-      {isOpen && (
+      <div className={`transition-all duration-300 ease-in-out ${isOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}`}>
         <div className="px-4 pb-4">
           {children}
         </div>
-      )}
+      </div>
     </div>
   );
 
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
-      <main className="py-16">
+      <main className="py-16 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 ease-out">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           
           {/* Centered Title */}

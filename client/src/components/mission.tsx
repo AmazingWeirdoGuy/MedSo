@@ -15,8 +15,8 @@ export default function Mission() {
 
         <div className="grid md:grid-cols-3 gap-8">
           {/* Healthcare Education */}
-          <div className="bg-blue-50 rounded-2xl p-8 text-center hover:shadow-lg transition-shadow" data-testid="card-education">
-            <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
+          <div className="bg-blue-50 rounded-2xl p-8 text-center hover:shadow-xl hover:scale-105 hover:-translate-y-2 transition-all duration-300 ease-in-out animate-in fade-in-0 slide-in-from-bottom-4 duration-500 delay-100" data-testid="card-education">
+            <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6 hover:scale-110 transition-transform duration-200 ease-in-out">
               <GraduationCap className="text-blue-600 w-8 h-8" />
             </div>
             <h3 className="text-xl font-bold text-blue-900 mb-4" data-testid="title-education">Healthcare Education</h3>
@@ -26,8 +26,8 @@ export default function Mission() {
           </div>
 
           {/* Healthcare Equity */}
-          <div className="bg-green-50 rounded-2xl p-8 text-center hover:shadow-lg transition-shadow" data-testid="card-equity">
-            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+          <div className="bg-green-50 rounded-2xl p-8 text-center hover:shadow-xl hover:scale-105 hover:-translate-y-2 transition-all duration-300 ease-in-out animate-in fade-in-0 slide-in-from-bottom-4 duration-500 delay-200" data-testid="card-equity">
+            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6 hover:scale-110 transition-transform duration-200 ease-in-out">
               <Scale className="text-green-600 w-8 h-8" />
             </div>
             <h3 className="text-xl font-bold text-green-900 mb-4" data-testid="title-equity">Healthcare Equity</h3>
@@ -37,8 +37,8 @@ export default function Mission() {
           </div>
 
           {/* Global Impact */}
-          <div className="bg-teal-50 rounded-2xl p-8 text-center hover:shadow-lg transition-shadow" data-testid="card-impact">
-            <div className="w-16 h-16 bg-teal-100 rounded-full flex items-center justify-center mx-auto mb-6">
+          <div className="bg-teal-50 rounded-2xl p-8 text-center hover:shadow-xl hover:scale-105 hover:-translate-y-2 transition-all duration-300 ease-in-out animate-in fade-in-0 slide-in-from-bottom-4 duration-500 delay-300" data-testid="card-impact">
+            <div className="w-16 h-16 bg-teal-100 rounded-full flex items-center justify-center mx-auto mb-6 hover:scale-110 transition-transform duration-200 ease-in-out">
               <Globe className="text-teal-600 w-8 h-8" />
             </div>
             <h3 className="text-xl font-bold text-teal-900 mb-4" data-testid="title-impact">Global Impact</h3>

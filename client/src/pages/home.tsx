@@ -9,10 +9,12 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      <Hero />
-      <Mission />
-      <Programs />
-      <News />
+      <div className="animate-in fade-in-0 slide-in-from-bottom-4 duration-700 ease-out">
+        <Hero />
+        <Mission />
+        <Programs />
+        <News />
+      </div>
       <Footer />
     </div>
   );

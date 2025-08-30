@@ -10,7 +10,7 @@ export default function News() {
     <div className="min-h-screen bg-gray-50">
       <Header />
       
-      <main className="py-16">
+      <main className="py-16 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 ease-out">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           
           {/* Page Header */}
@@ -27,8 +27,8 @@ export default function News() {
           {newsArticles.length === 0 ? (
             <div className="text-center py-16" data-testid="news-empty-state">
               <div className="max-w-md mx-auto">
-                <div className="bg-white rounded-2xl p-8 shadow-lg">
-                  <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <div className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl hover:-translate-y-2 transition-all duration-300 ease-in-out">
+                  <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4 hover:scale-110 transition-transform duration-200 ease-in-out">
                     <Calendar className="w-8 h-8 text-gray-400" />
                   </div>
                   <h3 className="text-xl font-semibold text-gray-900 mb-2">No News Yet</h3>

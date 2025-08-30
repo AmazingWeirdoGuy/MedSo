@@ -67,7 +67,7 @@ export default function Programs() {
                 </p>
                 <Link href="/about">
                   <Button 
-                    className="bg-primary text-white hover:bg-primary/90 w-full mt-auto"
+                    className="bg-primary text-white hover:bg-primary/90 hover:shadow-lg hover:scale-105 w-full mt-auto transition-all duration-200 ease-in-out active:scale-95"
                     data-testid={`button-learn-${program.id}`}
                   >
                     Learn More
