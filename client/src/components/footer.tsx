@@ -13,7 +13,7 @@ export default function Footer() {
             <ul className="space-y-3">
               <li><Link href="/" className="hover:text-white transition-colors" data-testid="footer-link-home">Home</Link></li>
               <li><Link href="/about" className="hover:text-white transition-colors" data-testid="footer-link-about">About us</Link></li>
-              <li><a href="#" className="hover:text-white transition-colors" data-testid="footer-link-news">News</a></li>
+              <li><Link href="/news" className="hover:text-white transition-colors" data-testid="footer-link-news">News</Link></li>
               <li><a href="#" className="hover:text-white transition-colors" data-testid="footer-link-contact">Contact</a></li>
             </ul>
           </div>
