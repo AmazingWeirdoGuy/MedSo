@@ -10,7 +10,6 @@ export default function Contact() {
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
-      
       <main className="py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           
@@ -194,9 +193,7 @@ export default function Contact() {
                       variant="secondary"
                       className="bg-white text-primary hover:bg-gray-100"
                       data-testid="button-join"
-                    >
-                      Learn How to Join
-                    </Button>
+                    >Learn More</Button>
                   </CardContent>
                 </Card>
 
@@ -206,7 +203,6 @@ export default function Contact() {
           </div>
         </div>
       </main>
-
       <Footer />
     </div>
   );
