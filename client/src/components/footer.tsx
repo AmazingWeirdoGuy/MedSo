@@ -51,7 +51,7 @@ export default function Footer() {
         </div>
 
         <div className="border-t border-gray-700 mt-12 pt-8 text-center">
-          <p className="text-sm" data-testid="footer-copyright">&copy; 2024 ISB Medical Society. All rights reserved.</p>
+          <p className="text-sm" data-testid="footer-copyright">© 2025 ISB Medical Society. All rights reserved.</p>
         </div>
       </div>
     </footer>
