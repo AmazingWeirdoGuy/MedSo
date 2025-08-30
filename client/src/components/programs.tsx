@@ -1,34 +1,36 @@
 import { Button } from "@/components/ui/button";
+import firstOnTheSceneImage from "@assets/firstonthescene_1756537744391.png";
+import medicalMinuteImage from "@assets/medicalminute_1756537744391.png";
+// Note: Using placeholder due to uppercase .JPG extension issue with Vite
+// Please rename the file to lowercase .jpg for proper import
+const fundraisingImage = "https://images.unsplash.com/photo-1559757175-0eb30cd8c063?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=250";
+import donationImage from "@assets/donation_1756537744391.jpg";
 
 export default function Programs() {
   const programs = [
     {
-      id: "clinical-skills",
-      title: "Clinical Skills Workshop",
+      id: "first-on-the-scene",
       subtitle: "First on the scene",
       description: "Hands-on training in basic medical procedures and patient care techniques.",
-      image: "https://images.unsplash.com/photo-1559757148-5c350d0d3c56?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=250"
+      image: firstOnTheSceneImage
     },
     {
-      id: "disease-awareness",
-      title: "Disease Awareness Campaigns",
+      id: "medical-minute",
+      subtitle: "Medical minute",
+      description: "Student-made short videos exploring current medical topics, with the aim to improve public health.",
+      image: medicalMinuteImage
+    },
+    {
+      id: "fundraising-events",
       subtitle: "Fundraising events",
       description: "Initiatives to raise funds for hospitals.",
-      image: "https://images.unsplash.com/photo-1559757175-0eb30cd8c063?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=250"
+      image: fundraisingImage
     },
     {
-      id: "hospital-volunteering",
-      title: "Hospital Volunteering",
+      id: "donation-charity",
       subtitle: "Donation & charity",
       description: "Donations to charitable organizations or hospitals.",
-      image: "https://images.unsplash.com/photo-1576091160550-2173dba999ef?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=250"
-    },
-    {
-      id: "medical-research",
-      title: "Medical Research Projects",
-      subtitle: "Social media page",
-      description: "Student-made short videos exploring current medical topics, with the aim to improve public health.",
-      image: "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=250"
+      image: donationImage
     }
   ];
 
@@ -52,19 +54,16 @@ export default function Programs() {
               <div className="h-48 overflow-hidden">
                 <img 
                   src={program.image}
-                  alt={program.title}
+                  alt={program.subtitle}
                   className="w-full h-full object-cover hover:scale-110 transition-transform duration-300"
                   data-testid={`img-activity-${program.id}`}
                 />
               </div>
               <div className="p-6">
-                <h3 className="text-xl font-bold text-foreground mb-2" data-testid={`title-program-${program.id}`}>
-                  {program.title}
-                </h3>
-                <h4 className="text-lg font-semibold text-primary mb-3" data-testid={`subtitle-program-${program.id}`}>
+                <h4 className="text-lg font-semibold text-primary mb-3" data-testid={`subtitle-activity-${program.id}`}>
                   {program.subtitle}
                 </h4>
-                <p className="text-muted-foreground text-sm mb-4" data-testid={`text-program-${program.id}`}>
+                <p className="text-muted-foreground text-sm mb-4" data-testid={`text-activity-${program.id}`}>
                   {program.description}
                 </p>
                 <Button 
