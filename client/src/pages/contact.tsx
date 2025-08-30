@@ -169,7 +169,7 @@ export default function Contact() {
                       <div>
                         <h3 className="font-semibold text-gray-900">Meeting Times</h3>
                         <p className="text-gray-600">Wednesdays & Fridays</p>
-                        <p className="text-sm text-gray-500">3:30 PM - 4:30 PM (After school)</p>
+                        <p className="text-sm text-gray-500">10:55-11:25 Room 3-207</p>
                       </div>
                     </div>
 
