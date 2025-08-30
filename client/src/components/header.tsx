@@ -24,7 +24,7 @@ export default function Header() {
             <Link href="/" className="text-primary font-medium" data-testid="nav-home">HOME</Link>
             <Link href="/about" className="text-muted-foreground hover:text-primary transition-colors" data-testid="nav-about">ABOUT US</Link>
             <Link href="/news" className="text-muted-foreground hover:text-primary transition-colors" data-testid="nav-news">NEWS</Link>
-            <a href="#" className="text-muted-foreground hover:text-primary transition-colors" data-testid="nav-contact">CONTACT</a>
+            <Link href="/contact" className="text-muted-foreground hover:text-primary transition-colors" data-testid="nav-contact">CONTACT</Link>
           </nav>
 
           {/* Mobile menu button */}
