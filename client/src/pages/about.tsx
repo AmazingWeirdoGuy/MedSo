@@ -105,25 +105,20 @@ export default function About() {
             {/* Left Side - Organization Description */}
             <div data-testid="about-content">
               <h2 className="text-3xl font-bold text-gray-900 mb-6" data-testid="org-title">
-                ISB Medical Society
+                About us
               </h2>
               
-              <div className="space-y-4 text-gray-700 leading-relaxed">
+              <div className="space-y-6 text-gray-700 leading-relaxed">
                 <p data-testid="about-description">
-                  We are a group of passionate students who want to educate the public on diseases and advocate for healthcare equity everywhere. Our mission is to bridge the gap between medical knowledge and public understanding, ensuring that quality healthcare education is accessible to everyone regardless of their background.
+                  ISB MedSociety is more than just a student club — it's a community built by and for those who are passionate about the medical sciences. Founded on the belief that knowledge in medicine should not be confined to classrooms, our club provides a space where students can explore the world of healthcare, develop leadership skills, and make a meaningful impact.
                 </p>
                 
-                <p>
-                  Our founders include students with diverse interests in medicine, public health, and healthcare advocacy. We have members who have participated in various medical competitions, volunteered at local hospitals, and conducted health awareness campaigns in our community.
-                </p>
-                
-                <p>
-                  Acknowledging the growing importance of healthcare literacy in our modern world, the significance of medical knowledge is now greater than ever. The ISB Medical Society was created with the goal of providing healthcare equity in the form of giving equal access to medical education and health resources to students and community members in Thailand, and in other countries around the world.
-                </p>
-                
-                <p>
-                  Our organization works by conducting educational workshops, organizing health awareness campaigns, partnering with local healthcare facilities, and creating resources that make medical information accessible to people of all ages and backgrounds.
-                </p>
+                <div>
+                  <h3 className="text-xl font-semibold text-gray-900 mb-3">Why we exist</h3>
+                  <p>
+                    We believe the next generation of healthcare professionals must not only be knowledgeable but also empathetic, socially aware, and motivated to improve lives. ISB MedSociety nurtures this vision by creating opportunities to learn, to lead, and to give back.
+                  </p>
+                </div>
               </div>
             </div>
 
