@@ -39,7 +39,7 @@ export default function Footer() {
 
           {/* Medical Society for Students (Logo) */}
           <div data-testid="footer-logo">
-            <h3 className="text-white font-bold text-lg mb-4">MEDICAL SOCIETY FOR STUDENTS (MSS)</h3>
+            <h3 className="text-white font-bold text-lg mb-4">ISB MEDICAL SOCIETY</h3>
             <img 
               src={logoImage}
               alt="ISB MedSociety Logo" 
