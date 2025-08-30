@@ -1,4 +1,5 @@
 import { Mail, Facebook, Instagram, Twitter } from "lucide-react";
+import { Link } from "wouter";
 import logoImage from "@assets/logo_1756537062633.jpg";
 
 export default function Footer() {
@@ -10,8 +11,8 @@ export default function Footer() {
           <div data-testid="footer-quicklinks">
             <h3 className="text-white font-bold text-lg mb-4">QUICK LINKS</h3>
             <ul className="space-y-3">
-              <li><a href="#" className="hover:text-white transition-colors" data-testid="footer-link-home">Home</a></li>
-              <li><a href="#" className="hover:text-white transition-colors" data-testid="footer-link-about">About us</a></li>
+              <li><Link href="/" className="hover:text-white transition-colors" data-testid="footer-link-home">Home</Link></li>
+              <li><Link href="/about" className="hover:text-white transition-colors" data-testid="footer-link-about">About us</Link></li>
               <li><a href="#" className="hover:text-white transition-colors" data-testid="footer-link-news">News</a></li>
               <li><a href="#" className="hover:text-white transition-colors" data-testid="footer-link-contact">Contact</a></li>
             </ul>

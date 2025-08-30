@@ -1,5 +1,6 @@
 import { Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Link } from "wouter";
 import logoImage from "@assets/logo_1756537062633.jpg";
 
 export default function Header() {
@@ -20,8 +21,8 @@ export default function Header() {
           
           {/* Navigation */}
           <nav className="hidden md:flex space-x-8" data-testid="navigation">
-            <a href="#" className="text-primary font-medium" data-testid="nav-home">HOME</a>
-            <a href="#" className="text-muted-foreground hover:text-primary transition-colors" data-testid="nav-about">ABOUT US</a>
+            <Link href="/" className="text-primary font-medium" data-testid="nav-home">HOME</Link>
+            <Link href="/about" className="text-muted-foreground hover:text-primary transition-colors" data-testid="nav-about">ABOUT US</Link>
             <a href="#" className="text-muted-foreground hover:text-primary transition-colors" data-testid="nav-news">NEWS</a>
             <a href="#" className="text-muted-foreground hover:text-primary transition-colors" data-testid="nav-contact">CONTACT</a>
           </nav>
