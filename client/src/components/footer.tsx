@@ -1,4 +1,5 @@
-import { Stethoscope, Mail, Facebook, Instagram, Twitter } from "lucide-react";
+import { Mail, Facebook, Instagram, Twitter } from "lucide-react";
+import logoImage from "@assets/logo_1756537062633.jpg";
 
 export default function Footer() {
   return (
@@ -11,11 +12,8 @@ export default function Footer() {
             <ul className="space-y-3">
               <li><a href="#" className="hover:text-white transition-colors" data-testid="footer-link-home">Home</a></li>
               <li><a href="#" className="hover:text-white transition-colors" data-testid="footer-link-about">About us</a></li>
-              <li><a href="#" className="hover:text-white transition-colors" data-testid="footer-link-courses">Courses</a></li>
-              <li><a href="#" className="hover:text-white transition-colors" data-testid="footer-link-activities">Activities</a></li>
               <li><a href="#" className="hover:text-white transition-colors" data-testid="footer-link-news">News</a></li>
-              <li><a href="#" className="hover:text-white transition-colors" data-testid="footer-link-donate">Donate</a></li>
-              <li><a href="#" className="hover:text-white transition-colors" data-testid="footer-link-feedback">Student Feedback</a></li>
+              <li><a href="#" className="hover:text-white transition-colors" data-testid="footer-link-contact">Contact</a></li>
             </ul>
           </div>
 
@@ -62,9 +60,12 @@ export default function Footer() {
           {/* Medical Society for Students (Logo) */}
           <div data-testid="footer-logo">
             <h3 className="text-white font-bold text-lg mb-4">MEDICAL SOCIETY FOR STUDENTS (MSS)</h3>
-            <div className="w-20 h-20 bg-primary rounded-lg flex items-center justify-center">
-              <Stethoscope className="text-white w-8 h-8" />
-            </div>
+            <img 
+              src={logoImage}
+              alt="ISB MedSociety Logo" 
+              className="w-20 h-20 rounded-full object-cover"
+              data-testid="footer-logo-image"
+            />
           </div>
         </div>
 
