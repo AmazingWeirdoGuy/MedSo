@@ -1,148 +1,208 @@
 import { useState } from "react";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
-import { Button } from "@/components/ui/button";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, ChevronRight } from "lucide-react";
 
 export default function About() {
-  const [activeTab, setActiveTab] = useState("officers");
+  const [openSections, setOpenSections] = useState<{ [key: string]: boolean }>({
+    officers: true, // Default to officers being open
+    members: false,
+    advisors: false,
+    volunteers: false
+  });
+
+  const toggleSection = (section: string) => {
+    setOpenSections(prev => ({
+      ...prev,
+      [section]: !prev[section]
+    }));
+  };
 
   const officers = [
-    { name: "John Smith", position: "President", year: "Grade 12" },
-    { name: "Sarah Johnson", position: "Vice President", year: "Grade 11" },
-    { name: "Michael Chen", position: "Secretary", year: "Grade 12" },
-    { name: "Emma Davis", position: "Treasurer", year: "Grade 11" },
-    { name: "David Wilson", position: "Events Coordinator", year: "Grade 10" }
+    { name: "John Smith", position: "President", year: "Grade 12", image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face" },
+    { name: "Sarah Johnson", position: "Vice President", year: "Grade 11", image: "https://images.unsplash.com/photo-1494790108755-2616b056b3c1?w=150&h=150&fit=crop&crop=face" },
+    { name: "Michael Chen", position: "Secretary", year: "Grade 12", image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face" },
+    { name: "Emma Davis", position: "Treasurer", year: "Grade 11", image: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face" }
   ];
 
   const members = [
-    { name: "Alex Rodriguez", year: "Grade 12" },
-    { name: "Sophia Kim", year: "Grade 11" },
-    { name: "Ryan Thompson", year: "Grade 11" },
-    { name: "Isabella Chang", year: "Grade 10" },
-    { name: "Lucas Anderson", year: "Grade 10" },
-    { name: "Maya Patel", year: "Grade 9" },
-    { name: "Ethan Lee", year: "Grade 9" },
-    { name: "Olivia Martinez", year: "Grade 9" }
+    { name: "Alex Rodriguez", year: "Grade 12", image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop&crop=face" },
+    { name: "Sophia Kim", year: "Grade 11", image: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&h=150&fit=crop&crop=face" },
+    { name: "Ryan Thompson", year: "Grade 11", image: "https://images.unsplash.com/photo-1507591064344-4c6ce005b128?w=150&h=150&fit=crop&crop=face" },
+    { name: "Isabella Chang", year: "Grade 10", image: "https://images.unsplash.com/photo-1489424731084-a5d8b219a5bb?w=150&h=150&fit=crop&crop=face" }
   ];
 
+  const advisors = [
+    { name: "Dr. Emily Watson", position: "Faculty Advisor", department: "Biology Department", image: "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=150&h=150&fit=crop&crop=face" },
+    { name: "Mr. James Parker", position: "Health & Wellness Coordinator", department: "Student Services", image: "https://images.unsplash.com/photo-1566492031773-4f4e44671d66?w=150&h=150&fit=crop&crop=face" }
+  ];
+
+  const volunteers = [
+    { name: "Maya Patel", year: "Grade 9", image: "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150&h=150&fit=crop&crop=face" },
+    { name: "Ethan Lee", year: "Grade 9", image: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=150&h=150&fit=crop&crop=face" },
+    { name: "Olivia Martinez", year: "Grade 8", image: "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=150&h=150&fit=crop&crop=face" }
+  ];
+
+  const ProfileCard = ({ person, showPosition = false }: { person: any, showPosition?: boolean }) => (
+    <div className="flex items-center space-x-3 p-3 hover:bg-gray-50 rounded-lg transition-colors">
+      <img 
+        src={person.image} 
+        alt={person.name}
+        className="w-12 h-12 rounded-full object-cover"
+      />
+      <div className="flex-1">
+        <h4 className="font-medium text-gray-900">{person.name}</h4>
+        {showPosition && person.position && (
+          <p className="text-sm text-blue-600 font-medium">{person.position}</p>
+        )}
+        <p className="text-sm text-gray-500">{person.year || person.department}</p>
+      </div>
+    </div>
+  );
+
+  const AccordionSection = ({ 
+    title, 
+    isOpen, 
+    onToggle, 
+    children, 
+    testId 
+  }: { 
+    title: string, 
+    isOpen: boolean, 
+    onToggle: () => void, 
+    children: React.ReactNode,
+    testId: string 
+  }) => (
+    <div className="border-b border-gray-200 last:border-b-0">
+      <button
+        onClick={onToggle}
+        className="w-full px-4 py-4 flex items-center justify-between text-left hover:bg-gray-50 transition-colors"
+        data-testid={testId}
+      >
+        <span className="font-medium text-gray-900 uppercase tracking-wide text-sm">{title}</span>
+        {isOpen ? (
+          <ChevronDown className="w-4 h-4 text-gray-500" />
+        ) : (
+          <ChevronRight className="w-4 h-4 text-gray-500" />
+        )}
+      </button>
+      {isOpen && (
+        <div className="px-4 pb-4">
+          {children}
+        </div>
+      )}
+    </div>
+  );
+
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gray-50">
       <Header />
       
-      <main className="py-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid lg:grid-cols-2 gap-12 items-start">
+      <main className="py-16">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          
+          {/* Centered Title */}
+          <h1 className="text-4xl font-bold text-center text-gray-900 mb-16" data-testid="about-title">
+            About us
+          </h1>
+
+          <div className="grid lg:grid-cols-2 gap-16 items-start">
             
-            {/* Left Side - About Us Content */}
+            {/* Left Side - Organization Description */}
             <div data-testid="about-content">
-              <h1 className="text-4xl font-bold text-foreground mb-6" data-testid="about-title">
-                About <span className="bg-gradient-to-r from-primary to-teal-500 bg-clip-text text-transparent">Us</span>
-              </h1>
+              <h2 className="text-3xl font-bold text-gray-900 mb-6" data-testid="org-title">
+                ISB Medical Society
+              </h2>
               
-              <div className="space-y-6 text-muted-foreground leading-relaxed">
-                <h2 className="text-2xl font-semibold text-foreground mb-4">Why We Exist</h2>
-                
-                <p data-testid="about-mission">
-                  The ISB Medical Society was founded with a clear mission: to educate the public on diseases and advocate for healthcare equity everywhere. We believe that access to medical knowledge and healthcare should not be limited by geography, economic status, or social barriers.
+              <div className="space-y-4 text-gray-700 leading-relaxed">
+                <p data-testid="about-description">
+                  We are a group of passionate students who want to educate the public on diseases and advocate for healthcare equity everywhere. Our mission is to bridge the gap between medical knowledge and public understanding, ensuring that quality healthcare education is accessible to everyone regardless of their background.
                 </p>
                 
-                <p data-testid="about-vision">
-                  Our vision is to create a world where quality healthcare education is accessible to everyone. Through our programs, activities, and community outreach, we strive to bridge the gap between medical knowledge and public understanding.
+                <p>
+                  Our founders include students with diverse interests in medicine, public health, and healthcare advocacy. We have members who have participated in various medical competitions, volunteered at local hospitals, and conducted health awareness campaigns in our community.
                 </p>
                 
-                <p data-testid="about-impact">
-                  As a student-led organization, we are passionate about making a real difference in our community and beyond. We organize workshops, awareness campaigns, fundraising events, and volunteer at local healthcare facilities to put our values into action.
+                <p>
+                  Acknowledging the growing importance of healthcare literacy in our modern world, the significance of medical knowledge is now greater than ever. The ISB Medical Society was created with the goal of providing healthcare equity in the form of giving equal access to medical education and health resources to students and community members in Thailand, and in other countries around the world.
                 </p>
                 
-                <div className="bg-blue-50 p-6 rounded-lg mt-8">
-                  <h3 className="text-xl font-semibold text-primary mb-3">Our Core Values</h3>
-                  <ul className="space-y-2 text-foreground">
-                    <li className="flex items-start">
-                      <span className="text-primary mr-2">•</span>
-                      <span><strong>Education:</strong> Providing accessible medical knowledge to all</span>
-                    </li>
-                    <li className="flex items-start">
-                      <span className="text-primary mr-2">•</span>
-                      <span><strong>Equity:</strong> Advocating for equal healthcare access</span>
-                    </li>
-                    <li className="flex items-start">
-                      <span className="text-primary mr-2">•</span>
-                      <span><strong>Community:</strong> Building stronger, healthier communities</span>
-                    </li>
-                    <li className="flex items-start">
-                      <span className="text-primary mr-2">•</span>
-                      <span><strong>Innovation:</strong> Using creative approaches to solve health challenges</span>
-                    </li>
-                  </ul>
-                </div>
+                <p>
+                  Our organization works by conducting educational workshops, organizing health awareness campaigns, partnering with local healthcare facilities, and creating resources that make medical information accessible to people of all ages and backgrounds.
+                </p>
               </div>
             </div>
 
-            {/* Right Side - Club Members Dropdown */}
+            {/* Right Side - Team Members Accordion */}
             <div data-testid="members-section">
-              <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
+              <div className="bg-white rounded-lg shadow-lg overflow-hidden">
                 
-                {/* Dropdown Header */}
-                <div className="bg-primary p-4">
-                  <h2 className="text-xl font-bold text-white text-center">Our Team</h2>
-                </div>
-                
-                {/* Dropdown Tabs */}
-                <div className="flex border-b border-gray-200">
-                  <button
-                    onClick={() => setActiveTab("officers")}
-                    className={`flex-1 py-3 px-4 text-center font-medium transition-colors ${
-                      activeTab === "officers"
-                        ? "bg-blue-50 text-primary border-b-2 border-primary"
-                        : "text-muted-foreground hover:text-primary"
-                    }`}
-                    data-testid="tab-officers"
-                  >
-                    Club Officers
-                  </button>
-                  <button
-                    onClick={() => setActiveTab("members")}
-                    className={`flex-1 py-3 px-4 text-center font-medium transition-colors ${
-                      activeTab === "members"
-                        ? "bg-blue-50 text-primary border-b-2 border-primary"
-                        : "text-muted-foreground hover:text-primary"
-                    }`}
-                    data-testid="tab-members"
-                  >
-                    Active Members
-                  </button>
-                </div>
+                <AccordionSection
+                  title="Club Officers"
+                  isOpen={openSections.officers}
+                  onToggle={() => toggleSection('officers')}
+                  testId="section-officers"
+                >
+                  <div className="space-y-2">
+                    {officers.map((officer, index) => (
+                      <ProfileCard 
+                        key={index} 
+                        person={officer} 
+                        showPosition={true}
+                      />
+                    ))}
+                  </div>
+                </AccordionSection>
 
-                {/* Content */}
-                <div className="p-6" data-testid="members-content">
-                  {activeTab === "officers" && (
-                    <div className="space-y-4">
-                      <h3 className="text-lg font-semibold text-foreground mb-4">Club Officers</h3>
-                      {officers.map((officer, index) => (
-                        <div key={index} className="border-l-4 border-primary pl-4 py-2" data-testid={`officer-${index}`}>
-                          <h4 className="font-semibold text-foreground">{officer.name}</h4>
-                          <p className="text-primary font-medium">{officer.position}</p>
-                          <p className="text-sm text-muted-foreground">{officer.year}</p>
-                        </div>
-                      ))}
-                    </div>
-                  )}
+                <AccordionSection
+                  title="Active Members"
+                  isOpen={openSections.members}
+                  onToggle={() => toggleSection('members')}
+                  testId="section-members"
+                >
+                  <div className="space-y-2">
+                    {members.map((member, index) => (
+                      <ProfileCard 
+                        key={index} 
+                        person={member}
+                      />
+                    ))}
+                  </div>
+                </AccordionSection>
 
-                  {activeTab === "members" && (
-                    <div className="space-y-3">
-                      <h3 className="text-lg font-semibold text-foreground mb-4">Active Members</h3>
-                      <div className="grid gap-3">
-                        {members.map((member, index) => (
-                          <div key={index} className="flex justify-between items-center p-3 bg-gray-50 rounded-lg" data-testid={`member-${index}`}>
-                            <span className="font-medium text-foreground">{member.name}</span>
-                            <span className="text-sm text-muted-foreground">{member.year}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
+                <AccordionSection
+                  title="Faculty Advisors"
+                  isOpen={openSections.advisors}
+                  onToggle={() => toggleSection('advisors')}
+                  testId="section-advisors"
+                >
+                  <div className="space-y-2">
+                    {advisors.map((advisor, index) => (
+                      <ProfileCard 
+                        key={index} 
+                        person={advisor} 
+                        showPosition={true}
+                      />
+                    ))}
+                  </div>
+                </AccordionSection>
+
+                <AccordionSection
+                  title="Volunteers"
+                  isOpen={openSections.volunteers}
+                  onToggle={() => toggleSection('volunteers')}
+                  testId="section-volunteers"
+                >
+                  <div className="space-y-2">
+                    {volunteers.map((volunteer, index) => (
+                      <ProfileCard 
+                        key={index} 
+                        person={volunteer}
+                      />
+                    ))}
+                  </div>
+                </AccordionSection>
+
               </div>
             </div>
 
