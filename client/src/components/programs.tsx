@@ -1,9 +1,7 @@
 import { Button } from "@/components/ui/button";
 import firstOnTheSceneImage from "@assets/firstonthescene_1756537744391.png";
 import medicalMinuteImage from "@assets/medicalminute_1756537744391.png";
-// Note: Using new fundraising image but with workaround due to uppercase .JPG extension
-// File: fundraising_1756538134231.JPG - shows students in blue shirts doing fundraising activities
-const fundraisingImage = "https://images.unsplash.com/photo-1559757175-0eb30cd8c063?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=250";
+import fundraisingImage from "@assets/fundraising_1756538236001.jpg";
 import donationImage from "@assets/donation_1756537744391.jpg";
 
 export default function Programs() {
@@ -48,7 +46,7 @@ export default function Programs() {
           {programs.map((program) => (
             <div 
               key={program.id}
-              className="bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300"
+              className="bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 flex flex-col h-full"
               data-testid={`card-activity-${program.id}`}
             >
               <div className="h-48 overflow-hidden">
@@ -59,15 +57,15 @@ export default function Programs() {
                   data-testid={`img-activity-${program.id}`}
                 />
               </div>
-              <div className="p-6">
+              <div className="p-6 flex flex-col flex-grow">
                 <h4 className="text-lg font-semibold text-primary mb-3" data-testid={`subtitle-activity-${program.id}`}>
                   {program.subtitle}
                 </h4>
-                <p className="text-muted-foreground text-sm mb-4" data-testid={`text-activity-${program.id}`}>
+                <p className="text-muted-foreground text-sm mb-4 flex-grow" data-testid={`text-activity-${program.id}`}>
                   {program.description}
                 </p>
                 <Button 
-                  className="bg-primary text-white hover:bg-primary/90 w-full"
+                  className="bg-primary text-white hover:bg-primary/90 w-full mt-auto"
                   data-testid={`button-learn-${program.id}`}
                 >
                   Learn More

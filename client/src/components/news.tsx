@@ -46,7 +46,7 @@ export default function News() {
           {newsItems.map((news) => (
             <div 
               key={news.id}
-              className="bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 border border-border"
+              className="bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 border border-border flex flex-col h-full"
               data-testid={`card-news-${news.id}`}
             >
               <div className="h-48 overflow-hidden">
@@ -57,18 +57,18 @@ export default function News() {
                   data-testid={`img-news-${news.id}`}
                 />
               </div>
-              <div className="p-6">
+              <div className="p-6 flex flex-col flex-grow">
                 <h3 className="text-lg font-bold text-foreground mb-1" data-testid={`category-news-${news.id}`}>
                   {news.category}
                 </h3>
                 <h4 className="text-xl font-bold text-foreground mb-3" data-testid={`title-news-${news.id}`}>
                   {news.title}
                 </h4>
-                <p className="text-muted-foreground mb-4" data-testid={`text-news-${news.id}`}>
+                <p className="text-muted-foreground mb-4 flex-grow" data-testid={`text-news-${news.id}`}>
                   {news.description}
                 </p>
                 <Button 
-                  className="bg-blue-500 text-white hover:bg-blue-600 w-full"
+                  className="bg-blue-500 text-white hover:bg-blue-600 w-full mt-auto"
                   data-testid={`button-read-${news.id}`}
                 >
                   Read more
