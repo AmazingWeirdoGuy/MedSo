@@ -34,9 +34,7 @@ export default function Footer() {
           {/* Organization */}
           <div data-testid="footer-organization">
             <h3 className="text-white font-bold text-lg mb-4">ORGANIZATION</h3>
-            <p className="text-sm leading-relaxed">
-              ISB is a student-led organization striving to provide equal access of medical and healthcare knowledge to all students.
-            </p>
+            <p className="text-sm leading-relaxed">ISB is a student-led organization striving to educate the community about health, advocate for healthcare equity, and raise funds for charity.</p>
           </div>
 
           {/* Medical Society for Students (Logo) */}
