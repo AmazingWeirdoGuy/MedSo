@@ -18,11 +18,7 @@ export default function Header() {
           <nav className="hidden md:flex space-x-8" data-testid="navigation">
             <a href="#" className="text-primary font-medium" data-testid="nav-home">HOME</a>
             <a href="#" className="text-muted-foreground hover:text-primary transition-colors" data-testid="nav-about">ABOUT US</a>
-            <a href="#" className="text-muted-foreground hover:text-primary transition-colors" data-testid="nav-courses">COURSES</a>
-            <a href="#" className="text-muted-foreground hover:text-primary transition-colors" data-testid="nav-activities">ACTIVITIES</a>
             <a href="#" className="text-muted-foreground hover:text-primary transition-colors" data-testid="nav-news">NEWS</a>
-            <a href="#" className="text-muted-foreground hover:text-primary transition-colors" data-testid="nav-donate">DONATE</a>
-            <a href="#" className="text-muted-foreground hover:text-primary transition-colors" data-testid="nav-feedback">STUDENT FEEDBACK</a>
             <a href="#" className="text-muted-foreground hover:text-primary transition-colors" data-testid="nav-contact">CONTACT</a>
           </nav>
 

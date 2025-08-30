@@ -33,30 +33,32 @@ export default function Programs() {
   ];
 
   return (
-    <section className="py-20 bg-gray-50" data-testid="programs-section">
+    <section className="py-20 bg-gray-50" data-testid="activities-section">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
-          <h2 className="text-4xl font-bold text-foreground mb-4" data-testid="programs-title">
-            Our <span className="bg-gradient-to-r from-primary to-teal-500 bg-clip-text text-transparent">Programs</span>
+          <h2 className="text-4xl font-bold text-foreground mb-4" data-testid="activities-title">
+            Our <span className="bg-gradient-to-r from-primary to-teal-500 bg-clip-text text-transparent">Activities</span>
           </h2>
-          <p className="text-lg text-muted-foreground max-w-3xl mx-auto" data-testid="programs-description">
-            Empowering students with medical knowledge and practical healthcare experience
+          <p className="text-lg text-muted-foreground max-w-3xl mx-auto" data-testid="activities-description">
+            Our activities comprise fund raising and setting up medical society clubs at partner schools, both are of non-profit nature.
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {programs.map((program) => (
             <div 
               key={program.id}
-              className="bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow"
-              data-testid={`card-program-${program.id}`}
+              className="bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300"
+              data-testid={`card-activity-${program.id}`}
             >
-              <img 
-                src={program.image}
-                alt={program.title}
-                className="w-full h-48 object-cover"
-                data-testid={`img-program-${program.id}`}
-              />
+              <div className="h-48 overflow-hidden">
+                <img 
+                  src={program.image}
+                  alt={program.title}
+                  className="w-full h-full object-cover hover:scale-110 transition-transform duration-300"
+                  data-testid={`img-activity-${program.id}`}
+                />
+              </div>
               <div className="p-6">
                 <h3 className="text-xl font-bold text-foreground mb-2" data-testid={`title-program-${program.id}`}>
                   {program.title}

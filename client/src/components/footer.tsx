@@ -2,7 +2,7 @@ import { Stethoscope, Mail, Facebook, Instagram, Twitter } from "lucide-react";
 
 export default function Footer() {
   return (
-    <footer className="bg-gray-800 text-gray-300 py-16" data-testid="footer">
+    <footer className="bg-gray-900 text-gray-300 py-16" data-testid="footer">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid md:grid-cols-4 gap-8">
           {/* Menu */}

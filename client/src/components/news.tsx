@@ -15,6 +15,20 @@ export default function News() {
       title: "New Partnership Announced",
       description: "MedSo partners with international healthcare organizations to expand our global health advocacy programs.",
       image: "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=300"
+    },
+    {
+      id: "medical-research",
+      category: "Medical Research",
+      title: "Student Research Initiative",
+      description: "Our students are conducting groundbreaking research in preventive medicine and community health solutions.",
+      image: "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=300"
+    },
+    {
+      id: "community-outreach",
+      category: "Community Outreach",
+      title: "Mobile Health Clinic Launch",
+      description: "Bringing healthcare services directly to underserved communities through our new mobile health clinic program.",
+      image: "https://images.unsplash.com/photo-1576091160550-2173dba999ef?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=300"
     }
   ];
 
@@ -28,18 +42,18 @@ export default function News() {
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {newsItems.map((news) => (
             <div 
               key={news.id}
-              className="bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow border border-border"
+              className="bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 border border-border"
               data-testid={`card-news-${news.id}`}
             >
-              <div className="h-64 overflow-hidden">
+              <div className="h-48 overflow-hidden">
                 <img 
                   src={news.image}
                   alt={news.title}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-cover hover:scale-110 transition-transform duration-300"
                   data-testid={`img-news-${news.id}`}
                 />
               </div>
@@ -54,7 +68,7 @@ export default function News() {
                   {news.description}
                 </p>
                 <Button 
-                  className="bg-primary text-white hover:bg-primary/90"
+                  className="bg-blue-500 text-white hover:bg-blue-600 w-full"
                   data-testid={`button-read-${news.id}`}
                 >
                   Read more
