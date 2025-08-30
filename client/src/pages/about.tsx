@@ -7,8 +7,7 @@ export default function About() {
   const [openSections, setOpenSections] = useState<{ [key: string]: boolean }>({
     officers: true, // Default to officers being open
     members: false,
-    advisors: false,
-    volunteers: false
+    advisors: false
   });
 
   const toggleSection = (section: string) => {
@@ -37,11 +36,6 @@ export default function About() {
     { name: "Mr. James Parker", position: "Health & Wellness Coordinator", department: "Student Services", image: "https://images.unsplash.com/photo-1566492031773-4f4e44671d66?w=150&h=150&fit=crop&crop=face" }
   ];
 
-  const volunteers = [
-    { name: "Maya Patel", year: "Grade 9", image: "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150&h=150&fit=crop&crop=face" },
-    { name: "Ethan Lee", year: "Grade 9", image: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=150&h=150&fit=crop&crop=face" },
-    { name: "Olivia Martinez", year: "Grade 8", image: "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=150&h=150&fit=crop&crop=face" }
-  ];
 
   const ProfileCard = ({ person, showPosition = false }: { person: any, showPosition?: boolean }) => (
     <div className="flex items-center space-x-3 p-3 hover:bg-gray-50 rounded-lg transition-colors">
@@ -187,21 +181,6 @@ export default function About() {
                   </div>
                 </AccordionSection>
 
-                <AccordionSection
-                  title="Volunteers"
-                  isOpen={openSections.volunteers}
-                  onToggle={() => toggleSection('volunteers')}
-                  testId="section-volunteers"
-                >
-                  <div className="space-y-2">
-                    {volunteers.map((volunteer, index) => (
-                      <ProfileCard 
-                        key={index} 
-                        person={volunteer}
-                      />
-                    ))}
-                  </div>
-                </AccordionSection>
 
               </div>
             </div>
