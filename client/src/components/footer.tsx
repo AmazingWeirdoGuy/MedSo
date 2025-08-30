@@ -28,7 +28,7 @@ export default function Footer() {
               <Instagram className="w-4 h-4 mr-2" /> 
               @isbmedsociety
             </p>
-            <p className="text-sm text-gray-400">These are the two ways to contact us</p>
+            
           </div>
 
           {/* Organization */}
