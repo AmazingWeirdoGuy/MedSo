@@ -2,6 +2,8 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertProgramSchema, insertNewsSchema } from "@shared/schema";
+import { sendContactEmail } from "./email";
+import { z } from "zod";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Programs routes
@@ -65,6 +67,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(201).json(news);
     } catch (error) {
       res.status(400).json({ message: "Invalid news data" });
+    }
+  });
+
+  // Contact form route
+  const contactFormSchema = z.object({
+    firstName: z.string().min(1, "First name is required"),
+    lastName: z.string().min(1, "Last name is required"),
+    email: z.string().email("Valid email is required"),
+    grade: z.string().optional(),
+    subject: z.string().min(1, "Subject is required"),
+    message: z.string().min(1, "Message is required"),
+  });
+
+  app.post("/api/contact", async (req, res) => {
+    try {
+      const validatedData = contactFormSchema.parse(req.body);
+      const success = await sendContactEmail(validatedData);
+      
+      if (success) {
+        res.json({ message: "Email sent successfully" });
+      } else {
+        res.status(500).json({ message: "Failed to send email" });
+      }
+    } catch (error) {
+      res.status(400).json({ message: "Invalid form data" });
     }
   });
 

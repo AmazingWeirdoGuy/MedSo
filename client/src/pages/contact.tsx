@@ -5,8 +5,64 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Mail, Instagram, MapPin, Phone, Clock } from "lucide-react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { useMutation } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
+import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
+
+const contactFormSchema = z.object({
+  firstName: z.string().min(1, "First name is required"),
+  lastName: z.string().min(1, "Last name is required"),
+  email: z.string().email("Valid email is required"),
+  grade: z.string().optional(),
+  subject: z.string().min(1, "Subject is required"),
+  message: z.string().min(1, "Message is required"),
+});
+
+type ContactFormData = z.infer<typeof contactFormSchema>;
 
 export default function Contact() {
+  const { toast } = useToast();
+  
+  const form = useForm<ContactFormData>({
+    resolver: zodResolver(contactFormSchema),
+    defaultValues: {
+      firstName: "",
+      lastName: "",
+      email: "",
+      grade: "",
+      subject: "",
+      message: "",
+    },
+  });
+
+  const contactMutation = useMutation({
+    mutationFn: async (data: ContactFormData) => {
+      return apiRequest('POST', '/api/contact', data);
+    },
+    onSuccess: () => {
+      toast({
+        title: "Message sent!",
+        description: "Thank you for your message. We'll get back to you soon.",
+      });
+      form.reset();
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to send message. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const onSubmit = (data: ContactFormData) => {
+    contactMutation.mutate(data);
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
@@ -32,96 +88,126 @@ export default function Contact() {
                   <CardTitle className="text-2xl font-bold text-gray-900">Send us a Message</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <form className="space-y-6" data-testid="contact-form">
-                    <div className="grid md:grid-cols-2 gap-4">
-                      <div>
-                        <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-2">
-                          First Name *
-                        </label>
-                        <Input 
-                          id="firstName"
-                          type="text"
-                          required
-                          className="w-full"
-                          data-testid="input-firstName"
+                  <Form {...form}>
+                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6" data-testid="contact-form">
+                      <div className="grid md:grid-cols-2 gap-4">
+                        <FormField
+                          control={form.control}
+                          name="firstName"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>First Name *</FormLabel>
+                              <FormControl>
+                                <Input 
+                                  {...field}
+                                  data-testid="input-firstName"
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="lastName"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Last Name *</FormLabel>
+                              <FormControl>
+                                <Input 
+                                  {...field}
+                                  data-testid="input-lastName"
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
                         />
                       </div>
-                      <div>
-                        <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 mb-2">
-                          Last Name *
-                        </label>
-                        <Input 
-                          id="lastName"
-                          type="text"
-                          required
-                          className="w-full"
-                          data-testid="input-lastName"
-                        />
-                      </div>
-                    </div>
 
-                    <div>
-                      <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-                        Email Address *
-                      </label>
-                      <Input 
-                        id="email"
-                        type="email"
-                        required
-                        className="w-full"
-                        data-testid="input-email"
+                      <FormField
+                        control={form.control}
+                        name="email"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Email Address *</FormLabel>
+                            <FormControl>
+                              <Input 
+                                {...field}
+                                type="email"
+                                data-testid="input-email"
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
                       />
-                    </div>
 
-                    <div>
-                      <label htmlFor="grade" className="block text-sm font-medium text-gray-700 mb-2">
-                        Grade Level
-                      </label>
-                      <Input 
-                        id="grade"
-                        type="text"
-                        placeholder="e.g., Grade 9, Grade 10..."
-                        className="w-full"
-                        data-testid="input-grade"
+                      <FormField
+                        control={form.control}
+                        name="grade"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Grade Level</FormLabel>
+                            <FormControl>
+                              <Input 
+                                {...field}
+                                placeholder="e.g., Grade 9, Grade 10..."
+                                data-testid="input-grade"
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
                       />
-                    </div>
 
-                    <div>
-                      <label htmlFor="subject" className="block text-sm font-medium text-gray-700 mb-2">
-                        Subject *
-                      </label>
-                      <Input 
-                        id="subject"
-                        type="text"
-                        required
-                        placeholder="What is this regarding?"
-                        className="w-full"
-                        data-testid="input-subject"
+                      <FormField
+                        control={form.control}
+                        name="subject"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Subject *</FormLabel>
+                            <FormControl>
+                              <Input 
+                                {...field}
+                                placeholder="What is this regarding?"
+                                data-testid="input-subject"
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
                       />
-                    </div>
 
-                    <div>
-                      <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-2">
-                        Message *
-                      </label>
-                      <Textarea 
-                        id="message"
-                        required
-                        rows={5}
-                        placeholder="Tell us more about your inquiry..."
-                        className="w-full"
-                        data-testid="input-message"
+                      <FormField
+                        control={form.control}
+                        name="message"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Message *</FormLabel>
+                            <FormControl>
+                              <Textarea 
+                                {...field}
+                                rows={5}
+                                placeholder="Tell us more about your inquiry..."
+                                data-testid="input-message"
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
                       />
-                    </div>
 
-                    <Button 
-                      type="submit"
-                      className="w-full bg-primary text-white hover:bg-primary/90 py-3"
-                      data-testid="button-submit"
-                    >
-                      Send Message
-                    </Button>
-                  </form>
+                      <Button 
+                        type="submit"
+                        disabled={contactMutation.isPending}
+                        className="w-full bg-primary text-white hover:bg-primary/90 py-3"
+                        data-testid="button-submit"
+                      >
+                        {contactMutation.isPending ? "Sending..." : "Send Message"}
+                      </Button>
+                    </form>
+                  </Form>
                 </CardContent>
               </Card>
             </div>
