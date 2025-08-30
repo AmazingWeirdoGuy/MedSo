@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { Link } from "wouter";
 import firstOnTheSceneImage from "@assets/firstonthescene_1756537744391.png";
 import medicalMinuteImage from "@assets/medicalminute_1756537744391.png";
 import fundraisingImage from "@assets/fundraising_1756538236001.jpg";
@@ -64,12 +65,14 @@ export default function Programs() {
                 <p className="text-muted-foreground text-sm mb-4 flex-grow" data-testid={`text-activity-${program.id}`}>
                   {program.description}
                 </p>
-                <Button 
-                  className="bg-primary text-white hover:bg-primary/90 w-full mt-auto"
-                  data-testid={`button-learn-${program.id}`}
-                >
-                  Learn More
-                </Button>
+                <Link href="/about">
+                  <Button 
+                    className="bg-primary text-white hover:bg-primary/90 w-full mt-auto"
+                    data-testid={`button-learn-${program.id}`}
+                  >
+                    Learn More
+                  </Button>
+                </Link>
               </div>
             </div>
           ))}

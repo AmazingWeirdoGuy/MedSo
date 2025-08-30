@@ -189,11 +189,6 @@ export default function Contact() {
                       <li>• Regular meetings and exciting activities</li>
                       <li>• Volunteer and leadership opportunities</li>
                     </ul>
-                    <Button 
-                      variant="secondary"
-                      className="bg-white text-primary hover:bg-gray-100"
-                      data-testid="button-join"
-                    >Learn More</Button>
                   </CardContent>
                 </Card>
 
