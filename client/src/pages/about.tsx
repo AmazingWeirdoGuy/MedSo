@@ -91,7 +91,6 @@ export default function About() {
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
-      
       <main className="py-16">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           
@@ -114,7 +113,7 @@ export default function About() {
                 </p>
                 
                 <div>
-                  <h3 className="text-xl font-semibold text-gray-900 mb-3">Why we exist</h3>
+                  <h3 className="font-semibold text-gray-900 mb-3 text-[30px]">Why we exist</h3>
                   <p>
                     We believe the next generation of healthcare professionals must not only be knowledgeable but also empathetic, socially aware, and motivated to improve lives. ISB MedSociety nurtures this vision by creating opportunities to learn, to lead, and to give back.
                   </p>
@@ -183,7 +182,6 @@ export default function About() {
           </div>
         </div>
       </main>
-
       <Footer />
     </div>
   );
