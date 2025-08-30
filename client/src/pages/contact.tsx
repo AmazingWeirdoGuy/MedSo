@@ -168,7 +168,7 @@ export default function Contact() {
                       <Clock className="w-6 h-6 text-primary mt-1" />
                       <div>
                         <h3 className="font-semibold text-gray-900">Meeting Times</h3>
-                        <p className="text-gray-600">Wednesdays & Fridays</p>
+                        <p className="text-gray-600">Thursday panther block</p>
                         <p className="text-sm text-gray-500">10:55-11:25 Room 3-207</p>
                       </div>
                     </div>
