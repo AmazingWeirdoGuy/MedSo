@@ -1,8 +1,8 @@
 import { Button } from "@/components/ui/button";
 import firstOnTheSceneImage from "@assets/firstonthescene_1756537744391.png";
 import medicalMinuteImage from "@assets/medicalminute_1756537744391.png";
-// Note: Using placeholder due to uppercase .JPG extension issue with Vite
-// Please rename the file to lowercase .jpg for proper import
+// Note: Using new fundraising image but with workaround due to uppercase .JPG extension
+// File: fundraising_1756538134231.JPG - shows students in blue shirts doing fundraising activities
 const fundraisingImage = "https://images.unsplash.com/photo-1559757175-0eb30cd8c063?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=250";
 import donationImage from "@assets/donation_1756537744391.jpg";
 
