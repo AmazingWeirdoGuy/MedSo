@@ -1,9 +1,17 @@
 import { Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import logoImage from "@assets/logo_1756537062633.jpg";
 
 export default function Header() {
+  const [location] = useLocation();
+  
+  const isActive = (path: string) => {
+    if (path === "/" && location === "/") return true;
+    if (path !== "/" && location.startsWith(path)) return true;
+    return false;
+  };
+
   return (
     <header className="bg-white shadow-sm border-b border-border sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -21,10 +29,10 @@ export default function Header() {
           
           {/* Navigation */}
           <nav className="hidden md:flex space-x-8" data-testid="navigation">
-            <Link href="/" className="text-primary font-medium hover:scale-110 transition-all duration-200 ease-in-out" data-testid="nav-home">HOME</Link>
-            <Link href="/about" className="text-muted-foreground hover:text-primary hover:scale-110 transition-all duration-200 ease-in-out" data-testid="nav-about">ABOUT US</Link>
-            <Link href="/news" className="text-muted-foreground hover:text-primary hover:scale-110 transition-all duration-200 ease-in-out" data-testid="nav-news">NEWS</Link>
-            <Link href="/contact" className="text-muted-foreground hover:text-primary hover:scale-110 transition-all duration-200 ease-in-out" data-testid="nav-contact">CONTACT</Link>
+            <Link href="/" className={`font-medium hover:scale-110 transition-all duration-200 ease-in-out ${isActive("/") ? "text-primary" : "text-muted-foreground hover:text-primary"}`} data-testid="nav-home">HOME</Link>
+            <Link href="/about" className={`font-medium hover:scale-110 transition-all duration-200 ease-in-out ${isActive("/about") ? "text-primary" : "text-muted-foreground hover:text-primary"}`} data-testid="nav-about">ABOUT US</Link>
+            <Link href="/news" className={`font-medium hover:scale-110 transition-all duration-200 ease-in-out ${isActive("/news") ? "text-primary" : "text-muted-foreground hover:text-primary"}`} data-testid="nav-news">NEWS</Link>
+            <Link href="/contact" className={`font-medium hover:scale-110 transition-all duration-200 ease-in-out ${isActive("/contact") ? "text-primary" : "text-muted-foreground hover:text-primary"}`} data-testid="nav-contact">CONTACT</Link>
           </nav>
 
           {/* Mobile menu button */}
