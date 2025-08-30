@@ -103,9 +103,7 @@ export default function About() {
             
             {/* Left Side - Organization Description */}
             <div data-testid="about-content">
-              <h2 className="text-3xl font-bold text-gray-900 mb-6" data-testid="org-title">
-                About us
-              </h2>
+              <h2 className="text-3xl font-bold text-gray-900 mb-6" data-testid="org-title">Our club</h2>
               
               <div className="space-y-6 text-gray-700 leading-relaxed">
                 <p data-testid="about-description">
