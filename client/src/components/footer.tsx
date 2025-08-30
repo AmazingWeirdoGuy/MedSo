@@ -6,9 +6,9 @@ export default function Footer() {
     <footer className="bg-gray-900 text-gray-300 py-16" data-testid="footer">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid md:grid-cols-4 gap-8">
-          {/* Menu */}
-          <div data-testid="footer-menu">
-            <h3 className="text-white font-bold text-lg mb-4">MENU</h3>
+          {/* Quick Links */}
+          <div data-testid="footer-quicklinks">
+            <h3 className="text-white font-bold text-lg mb-4">QUICK LINKS</h3>
             <ul className="space-y-3">
               <li><a href="#" className="hover:text-white transition-colors" data-testid="footer-link-home">Home</a></li>
               <li><a href="#" className="hover:text-white transition-colors" data-testid="footer-link-about">About us</a></li>
@@ -22,31 +22,13 @@ export default function Footer() {
             <h3 className="text-white font-bold text-lg mb-4">CONTACT</h3>
             <p className="mb-2 flex items-center" data-testid="footer-email">
               <Mail className="w-4 h-4 mr-2" /> 
-              contact@isbmedsociety.com
+              19609@students.isb.ac.th
             </p>
-            <div className="flex space-x-4 mt-4">
-              <a 
-                href="#" 
-                className="w-8 h-8 bg-gray-700 rounded-full flex items-center justify-center hover:bg-primary transition-colors"
-                data-testid="social-facebook"
-              >
-                <Facebook className="w-4 h-4" />
-              </a>
-              <a 
-                href="#" 
-                className="w-8 h-8 bg-gray-700 rounded-full flex items-center justify-center hover:bg-primary transition-colors"
-                data-testid="social-instagram"
-              >
-                <Instagram className="w-4 h-4" />
-              </a>
-              <a 
-                href="#" 
-                className="w-8 h-8 bg-gray-700 rounded-full flex items-center justify-center hover:bg-primary transition-colors"
-                data-testid="social-twitter"
-              >
-                <Twitter className="w-4 h-4" />
-              </a>
-            </div>
+            <p className="mb-4 flex items-center" data-testid="footer-instagram">
+              <Instagram className="w-4 h-4 mr-2" /> 
+              @isbmedsociety
+            </p>
+            <p className="text-sm text-gray-400">These are the two ways to contact us</p>
           </div>
 
           {/* Organization */}
