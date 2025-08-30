@@ -39,9 +39,7 @@ export default function Programs() {
           <h2 className="text-4xl font-bold text-foreground mb-4" data-testid="activities-title">
             Our <span className="bg-gradient-to-r from-primary to-teal-500 bg-clip-text text-transparent">Activities</span>
           </h2>
-          <p className="text-lg text-muted-foreground max-w-3xl mx-auto" data-testid="activities-description">
-            Our activities comprise fund raising and setting up medical society clubs at partner schools, both are of non-profit nature.
-          </p>
+          <p className="text-lg text-muted-foreground max-w-3xl mx-auto" data-testid="activities-description">Our activities are of non-profit nature.</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
