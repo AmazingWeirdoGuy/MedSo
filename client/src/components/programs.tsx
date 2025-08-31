@@ -37,7 +37,7 @@ export default function Programs() {
     <section className="py-20 bg-gray-50" data-testid="activities-section">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
-          <h2 className="text-4xl font-bold text-foreground mb-4" data-testid="activities-title">
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground mb-4" data-testid="activities-title">
             Our <span className="bg-gradient-to-r from-primary to-teal-500 bg-clip-text text-transparent">Activities</span>
           </h2>
         </div>
@@ -66,7 +66,7 @@ export default function Programs() {
                 </p>
                 <Link href="/about">
                   <Button 
-                    className="bg-primary text-white hover:bg-primary/90 hover:shadow-lg hover:scale-105 w-full mt-auto transition-all duration-200 ease-in-out active:scale-95"
+                    className="bg-primary text-white hover:bg-primary/90 hover:shadow-lg hover:scale-105 w-full mt-auto transition-all duration-200 ease-in-out active:scale-95 py-3 text-base"
                     data-testid={`button-learn-${program.id}`}
                   >
                     Learn More

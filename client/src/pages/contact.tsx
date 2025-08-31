@@ -70,16 +70,16 @@ export default function Contact() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           
           {/* Page Header */}
-          <div className="text-center mb-16">
-            <h1 className="text-4xl font-bold text-gray-900 mb-4" data-testid="contact-title">
+          <div className="text-center mb-12 sm:mb-16">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-4" data-testid="contact-title">
               Contact Us
             </h1>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+            <p className="text-base sm:text-lg lg:text-xl text-gray-600 max-w-3xl mx-auto px-4">
               Get in touch with ISB Medical Society. We'd love to hear from you and answer any questions you may have.
             </p>
           </div>
 
-          <div className="grid lg:grid-cols-2 gap-16">
+          <div className="grid lg:grid-cols-2 gap-8 lg:gap-16">
             
             {/* Contact Form */}
             <div data-testid="contact-form-section">
@@ -90,7 +90,7 @@ export default function Contact() {
                 <CardContent>
                   <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6" data-testid="contact-form">
-                      <div className="grid md:grid-cols-2 gap-4">
+                      <div className="grid sm:grid-cols-2 gap-4">
                         <FormField
                           control={form.control}
                           name="firstName"
@@ -201,7 +201,7 @@ export default function Contact() {
                       <Button 
                         type="submit"
                         disabled={contactMutation.isPending}
-                        className="w-full bg-primary text-white hover:bg-primary/90 hover:shadow-lg hover:scale-105 py-3 transition-all duration-200 ease-in-out active:scale-95"
+                        className="w-full bg-primary text-white hover:bg-primary/90 hover:shadow-lg hover:scale-105 py-4 text-base font-medium transition-all duration-200 ease-in-out active:scale-95"
                         data-testid="button-submit"
                       >
                         {contactMutation.isPending ? "Sending..." : "Send Message"}

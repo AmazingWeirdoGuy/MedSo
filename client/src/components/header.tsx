@@ -1,15 +1,25 @@
-import { Menu } from "lucide-react";
+import { useState } from "react";
+import { Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link, useLocation } from "wouter";
 import logoImage from "@assets/logo_1756537062633.jpg";
 
 export default function Header() {
   const [location] = useLocation();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   
   const isActive = (path: string) => {
     if (path === "/" && location === "/") return true;
     if (path !== "/" && location.startsWith(path)) return true;
     return false;
+  };
+
+  const toggleMobileMenu = () => {
+    setMobileMenuOpen(!mobileMenuOpen);
+  };
+
+  const closeMobileMenu = () => {
+    setMobileMenuOpen(false);
   };
 
   return (
@@ -40,10 +50,51 @@ export default function Header() {
             variant="ghost" 
             size="sm" 
             className="md:hidden p-2 text-muted-foreground hover:text-primary hover:scale-110 hover:bg-gray-100 transition-all duration-200 ease-in-out"
+            onClick={toggleMobileMenu}
             data-testid="mobile-menu-button"
           >
-            <Menu className="w-5 h-5" />
+            {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </Button>
+        </div>
+
+        {/* Mobile Navigation Menu */}
+        <div className={`md:hidden transition-all duration-300 ease-in-out ${mobileMenuOpen ? 'max-h-64 opacity-100' : 'max-h-0 opacity-0 overflow-hidden'}`}>
+          <nav className="px-4 py-4 border-t border-gray-200 bg-white" data-testid="mobile-navigation">
+            <div className="space-y-4">
+              <Link 
+                href="/" 
+                className={`block text-lg font-medium py-2 px-4 rounded-lg transition-all duration-200 ease-in-out ${isActive("/") ? "text-primary bg-blue-50" : "text-gray-600 hover:text-primary hover:bg-gray-50"}`}
+                onClick={closeMobileMenu}
+                data-testid="mobile-nav-home"
+              >
+                HOME
+              </Link>
+              <Link 
+                href="/about" 
+                className={`block text-lg font-medium py-2 px-4 rounded-lg transition-all duration-200 ease-in-out ${isActive("/about") ? "text-primary bg-blue-50" : "text-gray-600 hover:text-primary hover:bg-gray-50"}`}
+                onClick={closeMobileMenu}
+                data-testid="mobile-nav-about"
+              >
+                ABOUT US
+              </Link>
+              <Link 
+                href="/news" 
+                className={`block text-lg font-medium py-2 px-4 rounded-lg transition-all duration-200 ease-in-out ${isActive("/news") ? "text-primary bg-blue-50" : "text-gray-600 hover:text-primary hover:bg-gray-50"}`}
+                onClick={closeMobileMenu}
+                data-testid="mobile-nav-news"
+              >
+                NEWS
+              </Link>
+              <Link 
+                href="/contact" 
+                className={`block text-lg font-medium py-2 px-4 rounded-lg transition-all duration-200 ease-in-out ${isActive("/contact") ? "text-primary bg-blue-50" : "text-gray-600 hover:text-primary hover:bg-gray-50"}`}
+                onClick={closeMobileMenu}
+                data-testid="mobile-nav-contact"
+              >
+                CONTACT
+              </Link>
+            </div>
+          </nav>
         </div>
       </div>
     </header>

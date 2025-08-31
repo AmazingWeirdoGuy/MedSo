@@ -72,7 +72,7 @@ export default function About() {
     <div className="border-b border-gray-200 last:border-b-0 overflow-hidden">
       <button
         onClick={onToggle}
-        className="w-full px-4 py-4 flex items-center justify-between text-left hover:bg-gray-50 transition-all duration-200 ease-in-out"
+        className="w-full px-4 py-4 sm:py-5 flex items-center justify-between text-left hover:bg-gray-50 transition-all duration-200 ease-in-out touch-manipulation"
         data-testid={testId}
       >
         <span className="font-medium text-gray-900 uppercase tracking-wide text-sm">{title}</span>
@@ -93,15 +93,15 @@ export default function About() {
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           
           {/* Centered Title */}
-          <h1 className="text-4xl font-bold text-center text-gray-900 mb-16" data-testid="about-title">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-center text-gray-900 mb-12 sm:mb-16" data-testid="about-title">
             About us
           </h1>
 
-          <div className="grid lg:grid-cols-2 gap-16 items-start">
+          <div className="grid lg:grid-cols-2 gap-8 lg:gap-16 items-start">
             
             {/* Left Side - Organization Description */}
             <div data-testid="about-content">
-              <h2 className="text-3xl font-bold text-gray-900 mb-6" data-testid="org-title">Our club</h2>
+              <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-6" data-testid="org-title">Our club</h2>
               
               <div className="space-y-6 text-gray-700 leading-relaxed">
                 <p data-testid="about-description">
@@ -109,7 +109,7 @@ export default function About() {
                 </p>
                 
                 <div>
-                  <h3 className="font-semibold text-gray-900 mb-3 text-[30px]">Why we exist</h3>
+                  <h3 className="font-semibold text-gray-900 mb-3 text-xl sm:text-2xl lg:text-[30px]">Why we exist</h3>
                   <p>
                     We believe the next generation of healthcare professionals must not only be knowledgeable but also empathetic, socially aware, and motivated to improve lives. ISB MedSociety nurtures this vision by creating opportunities to learn, to lead, and to give back.
                   </p>

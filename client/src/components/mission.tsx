@@ -5,17 +5,17 @@ export default function Mission() {
     <section className="py-20 bg-white" data-testid="mission-section">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
-          <h2 className="text-4xl font-bold text-foreground mb-4" data-testid="mission-title">
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground mb-4" data-testid="mission-title">
             Our <span className="bg-gradient-to-r from-primary to-teal-500 bg-clip-text text-transparent">Mission</span>
           </h2>
-          <p className="text-lg text-muted-foreground italic max-w-4xl mx-auto" data-testid="mission-description">
+          <p className="text-base sm:text-lg text-muted-foreground italic max-w-4xl mx-auto px-4" data-testid="mission-description">
             "Our mission is to educate the public on diseases and advocate for healthcare equity everywhere."
           </p>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-8">
+        <div className="grid sm:grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
           {/* Healthcare Education */}
-          <div className="bg-blue-50 rounded-2xl p-8 text-center hover:shadow-xl hover:scale-105 hover:-translate-y-2 transition-all duration-300 ease-in-out animate-in fade-in-0 slide-in-from-bottom-4 duration-500 delay-100" data-testid="card-education">
+          <div className="bg-blue-50 rounded-2xl p-6 sm:p-8 text-center hover:shadow-xl hover:scale-105 hover:-translate-y-2 transition-all duration-300 ease-in-out animate-in fade-in-0 slide-in-from-bottom-4 duration-500 delay-100" data-testid="card-education">
             <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6 hover:scale-110 transition-transform duration-200 ease-in-out">
               <GraduationCap className="text-blue-600 w-8 h-8" />
             </div>
@@ -26,7 +26,7 @@ export default function Mission() {
           </div>
 
           {/* Healthcare Equity */}
-          <div className="bg-green-50 rounded-2xl p-8 text-center hover:shadow-xl hover:scale-105 hover:-translate-y-2 transition-all duration-300 ease-in-out animate-in fade-in-0 slide-in-from-bottom-4 duration-500 delay-200" data-testid="card-equity">
+          <div className="bg-green-50 rounded-2xl p-6 sm:p-8 text-center hover:shadow-xl hover:scale-105 hover:-translate-y-2 transition-all duration-300 ease-in-out animate-in fade-in-0 slide-in-from-bottom-4 duration-500 delay-200" data-testid="card-equity">
             <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6 hover:scale-110 transition-transform duration-200 ease-in-out">
               <Scale className="text-green-600 w-8 h-8" />
             </div>
@@ -37,7 +37,7 @@ export default function Mission() {
           </div>
 
           {/* Global Impact */}
-          <div className="bg-teal-50 rounded-2xl p-8 text-center hover:shadow-xl hover:scale-105 hover:-translate-y-2 transition-all duration-300 ease-in-out animate-in fade-in-0 slide-in-from-bottom-4 duration-500 delay-300" data-testid="card-impact">
+          <div className="bg-teal-50 rounded-2xl p-6 sm:p-8 text-center hover:shadow-xl hover:scale-105 hover:-translate-y-2 transition-all duration-300 ease-in-out animate-in fade-in-0 slide-in-from-bottom-4 duration-500 delay-300" data-testid="card-impact">
             <div className="w-16 h-16 bg-teal-100 rounded-full flex items-center justify-center mx-auto mb-6 hover:scale-110 transition-transform duration-200 ease-in-out">
               <Globe className="text-teal-600 w-8 h-8" />
             </div>
