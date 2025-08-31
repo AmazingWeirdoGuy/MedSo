@@ -22,6 +22,12 @@ export default function Header() {
     setMobileMenuOpen(false);
   };
 
+  const handleMobileNavClick = () => {
+    closeMobileMenu();
+    // Scroll to top when navigating on mobile
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   return (
     <header className="bg-white shadow-sm border-b border-border sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -64,7 +70,7 @@ export default function Header() {
               <Link 
                 href="/" 
                 className={`block text-lg font-medium py-2 px-4 rounded-lg transition-all duration-200 ease-in-out ${isActive("/") ? "text-primary bg-blue-50" : "text-gray-600 hover:text-primary hover:bg-gray-50"}`}
-                onClick={closeMobileMenu}
+                onClick={handleMobileNavClick}
                 data-testid="mobile-nav-home"
               >
                 HOME
@@ -72,7 +78,7 @@ export default function Header() {
               <Link 
                 href="/about" 
                 className={`block text-lg font-medium py-2 px-4 rounded-lg transition-all duration-200 ease-in-out ${isActive("/about") ? "text-primary bg-blue-50" : "text-gray-600 hover:text-primary hover:bg-gray-50"}`}
-                onClick={closeMobileMenu}
+                onClick={handleMobileNavClick}
                 data-testid="mobile-nav-about"
               >
                 ABOUT US
@@ -80,7 +86,7 @@ export default function Header() {
               <Link 
                 href="/news" 
                 className={`block text-lg font-medium py-2 px-4 rounded-lg transition-all duration-200 ease-in-out ${isActive("/news") ? "text-primary bg-blue-50" : "text-gray-600 hover:text-primary hover:bg-gray-50"}`}
-                onClick={closeMobileMenu}
+                onClick={handleMobileNavClick}
                 data-testid="mobile-nav-news"
               >
                 NEWS
@@ -88,7 +94,7 @@ export default function Header() {
               <Link 
                 href="/contact" 
                 className={`block text-lg font-medium py-2 px-4 rounded-lg transition-all duration-200 ease-in-out ${isActive("/contact") ? "text-primary bg-blue-50" : "text-gray-600 hover:text-primary hover:bg-gray-50"}`}
-                onClick={closeMobileMenu}
+                onClick={handleMobileNavClick}
                 data-testid="mobile-nav-contact"
               >
                 CONTACT
