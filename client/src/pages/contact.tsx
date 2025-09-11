@@ -201,10 +201,17 @@ export default function Contact() {
                       <Button 
                         type="submit"
                         disabled={contactMutation.isPending}
-                        className="w-full bg-primary text-white hover:bg-primary/90 hover:shadow-lg hover:scale-105 py-4 text-base font-medium transition-all duration-200 ease-in-out active:scale-95"
+                        className="w-full bg-primary text-white hover:bg-primary/90 hover:shadow-lg hover:scale-105 py-4 text-base font-medium transition-all duration-200 ease-in-out active:scale-95 disabled:opacity-75 disabled:scale-100 disabled:cursor-not-allowed"
                         data-testid="button-submit"
                       >
-                        {contactMutation.isPending ? "Sending..." : "Send Message"}
+                        {contactMutation.isPending ? (
+                          <div className="flex items-center gap-2">
+                            <div className="w-4 h-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                            Sending...
+                          </div>
+                        ) : (
+                          "Send Message"
+                        )}
                       </Button>
                     </form>
                   </Form>

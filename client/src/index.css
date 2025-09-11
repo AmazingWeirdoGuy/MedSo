@@ -83,3 +83,79 @@
     @apply font-sans antialiased bg-background text-foreground;
   }
 }
+
+/* Print-friendly styles for medical information */
+@media print {
+  /* Hide navigation and non-essential elements when printing */
+  header, footer, nav, .no-print {
+    display: none !important;
+  }
+
+  /* Optimize page layout for print */
+  * {
+    background: white !important;
+    color: black !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+
+  /* Ensure content fits well on printed pages */
+  body {
+    font-size: 12pt !important;
+    line-height: 1.4 !important;
+    margin: 0.5in !important;
+  }
+
+  /* Make headings stand out in print */
+  h1, h2, h3, h4, h5, h6 {
+    page-break-after: avoid;
+    font-weight: bold !important;
+    margin-top: 1em !important;
+    margin-bottom: 0.5em !important;
+  }
+
+  /* Ensure proper spacing for medical content */
+  p, li {
+    orphans: 3;
+    widows: 3;
+  }
+
+  /* Handle images appropriately */
+  img {
+    max-width: 100% !important;
+    height: auto !important;
+    page-break-inside: avoid;
+  }
+
+  /* Style links to show URLs */
+  a::after {
+    content: " (" attr(href) ")";
+    font-size: 10pt;
+    color: #666;
+  }
+
+  /* Remove hover effects and animations for print */
+  * {
+    transition: none !important;
+    animation: none !important;
+  }
+
+  /* Ensure good contrast for text */
+  .text-primary, .text-blue-600, .text-teal-600, .text-green-600 {
+    color: #000 !important;
+  }
+
+  /* Page breaks for better content flow */
+  .page-break {
+    page-break-before: always;
+  }
+
+  /* Style cards and containers for print */
+  .card, .bg-white, .bg-gray-50, .bg-blue-50, .bg-green-50, .bg-teal-50 {
+    background: white !important;
+    border: 1px solid #ccc !important;
+    border-radius: 0 !important;
+    margin-bottom: 1em !important;
+    padding: 1em !important;
+  }
+}
