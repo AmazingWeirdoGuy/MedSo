@@ -19,7 +19,7 @@ export default function About() {
   };
 
   const websiteManager = [
-    { name: "[Website Manager Name]", position: "Website Manager", image: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&h=150&fit=crop&crop=face" }
+    { name: "[Website Manager Name]", position: "Head of Website Development", image: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&h=150&fit=crop&crop=face" }
   ];
 
   const officers = [
@@ -131,7 +131,7 @@ export default function About() {
               <div className="bg-white rounded-lg shadow-lg overflow-hidden">
                 
                 <AccordionSection
-                  title="Head of Website Development"
+                  title="Website Manager"
                   isOpen={openSections.websiteManager}
                   onToggle={() => toggleSection('websiteManager')}
                   testId="section-website-manager"
