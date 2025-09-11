@@ -21,8 +21,39 @@ export default function Contact() {
             </p>
           </div>
 
-          <div className="max-w-4xl mx-auto">
+          <div className="grid lg:grid-cols-2 gap-8 lg:gap-16">
             
+            {/* Contact Form */}
+            <div data-testid="contact-form-section">
+              <Card className="shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 ease-in-out">
+                <CardContent className="pt-6">
+                  <div className="w-full" data-testid="google-form">
+                    <iframe 
+                      src="https://docs.google.com/forms/d/e/1FAIpQLSdU5C0GZRTXHHyQMo8jP6iACDbj8PXYKbwDLQIPrPSmjmmmyQ/viewform?embedded=true" 
+                      className="w-full rounded-lg h-[950px] sm:h-[900px] lg:h-[850px]"
+                      frameBorder={0} 
+                      title="ISB Medical Society Contact Form"
+                      loading="lazy"
+                      data-testid="contact-form-iframe"
+                    >
+                      Loading…
+                    </iframe>
+                    <div className="mt-4 text-center">
+                      <p className="text-sm text-gray-500 mb-2">Having trouble with the form?</p>
+                      <a 
+                        href="https://docs.google.com/forms/d/e/1FAIpQLSdU5C0GZRTXHHyQMo8jP6iACDbj8PXYKbwDLQIPrPSmjmmmyQ/viewform"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-primary hover:text-primary/80 underline text-sm font-medium transition-colors duration-200"
+                        data-testid="link-form-external"
+                      >
+                        Open form in a new tab
+                      </a>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
 
             {/* Contact Information */}
             <div data-testid="contact-info-section">
