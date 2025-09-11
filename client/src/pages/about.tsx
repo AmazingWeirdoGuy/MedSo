@@ -263,7 +263,7 @@ export default function About() {
                     <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mb-3">
                       <span className="text-blue-600 font-bold text-lg" aria-hidden="true">✓</span>
                     </div>
-                    <p className="font-medium text-center">Counts toward Service for CAS (Creativity, Activity, Service) hours</p>
+                    <p className="font-medium text-center">Counts toward Service for CAS</p>
                   </li>
                 </ul>
               </div>
