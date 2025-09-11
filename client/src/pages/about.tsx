@@ -1,6 +1,8 @@
 import { useState } from "react";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
+import { Button } from "@/components/ui/button";
+import { Link } from "wouter";
 import { ChevronDown, ChevronRight } from "lucide-react";
 
 export default function About() {
@@ -203,6 +205,71 @@ export default function About() {
             </div>
 
           </div>
+
+          {/* Interested in Joining Section */}
+          <div className="mt-16 lg:mt-20" data-testid="joining-section">
+            <div className="bg-white rounded-lg shadow-lg p-8 lg:p-12">
+              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-center text-gray-900 mb-8" data-testid="joining-title">
+                Interested in Joining?
+              </h2>
+              
+              <div className="max-w-3xl mx-auto text-center">
+                <p className="text-lg text-gray-700 mb-4 leading-relaxed" data-testid="joining-description">
+                  ISB Medical Society welcomes students who are passionate about healthcare, medicine, and making a positive impact in our community.
+                </p>
+                
+                <p className="text-sm text-gray-600 mb-6" data-testid="how-to-join">
+                  Fill out our contact form and we'll get back to you with meeting details and next steps.
+                </p>
+                
+                <div className="mb-10">
+                  <Button asChild size="lg" className="text-white bg-blue-600 hover:bg-blue-700 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 transition-colors duration-200 px-8 py-3 text-lg font-medium">
+                    <Link to="/contact" data-testid="button-join-now">
+                      Join Now
+                    </Link>
+                  </Button>
+                </div>
+                
+                <ul className="grid sm:grid-cols-2 lg:grid-cols-5 gap-6 text-gray-700 list-none">
+                  <li className="flex flex-col items-center p-4 hover:bg-gray-50 rounded-lg transition-colors duration-200" data-testid="benefit-grade-levels">
+                    <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mb-3">
+                      <span className="text-blue-600 font-bold text-lg" aria-hidden="true">✓</span>
+                    </div>
+                    <p className="font-medium text-center">Open to all grade levels</p>
+                  </li>
+                  
+                  <li className="flex flex-col items-center p-4 hover:bg-gray-50 rounded-lg transition-colors duration-200" data-testid="benefit-no-experience">
+                    <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mb-3">
+                      <span className="text-blue-600 font-bold text-lg" aria-hidden="true">✓</span>
+                    </div>
+                    <p className="font-medium text-center">No prior medical knowledge required</p>
+                  </li>
+                  
+                  <li className="flex flex-col items-center p-4 hover:bg-gray-50 rounded-lg transition-colors duration-200" data-testid="benefit-activities">
+                    <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mb-3">
+                      <span className="text-blue-600 font-bold text-lg" aria-hidden="true">✓</span>
+                    </div>
+                    <p className="font-medium text-center">Regular meetings and exciting activities</p>
+                  </li>
+                  
+                  <li className="flex flex-col items-center p-4 hover:bg-gray-50 rounded-lg transition-colors duration-200" data-testid="benefit-opportunities">
+                    <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mb-3">
+                      <span className="text-blue-600 font-bold text-lg" aria-hidden="true">✓</span>
+                    </div>
+                    <p className="font-medium text-center">Volunteer and leadership opportunities</p>
+                  </li>
+                  
+                  <li className="flex flex-col items-center p-4 hover:bg-gray-50 rounded-lg transition-colors duration-200" data-testid="benefit-cas-hours">
+                    <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mb-3">
+                      <span className="text-blue-600 font-bold text-lg" aria-hidden="true">✓</span>
+                    </div>
+                    <p className="font-medium text-center">Counts toward Service for CAS (Creativity, Activity, Service) hours</p>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
         </div>
       </main>
       <Footer />
