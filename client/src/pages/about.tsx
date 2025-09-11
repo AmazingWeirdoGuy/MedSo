@@ -19,7 +19,7 @@ export default function About() {
   };
 
   const websiteManager = [
-    { name: "[Website Manager Name]", position: "Head of Website Development", image: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&h=150&fit=crop&crop=face" }
+    { name: "Rungphob (Ronnie) Lertvilaivithaya", position: "Head of Website Development", image: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&h=150&fit=crop&crop=face" }
   ];
 
   const officers = [
