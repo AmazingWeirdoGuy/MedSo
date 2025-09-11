@@ -214,12 +214,8 @@ export default function About() {
               </h2>
               
               <div className="max-w-3xl mx-auto text-center">
-                <p className="text-lg text-gray-700 mb-4 leading-relaxed" data-testid="joining-description">
+                <p className="text-lg text-gray-700 mb-8 leading-relaxed" data-testid="joining-description">
                   ISB Medical Society welcomes students who are passionate about healthcare, medicine, and making a positive impact in our community.
-                </p>
-                
-                <p className="text-sm text-gray-600 mb-6" data-testid="how-to-join">
-                  Fill out our contact form and we'll get back to you with meeting details and next steps.
                 </p>
                 
                 <div className="mb-10">
