@@ -44,13 +44,15 @@ export default function About() {
   ];
 
 
-  const ProfileCard = ({ person, showPosition = false, showDepartment = false }: { person: any, showPosition?: boolean, showDepartment?: boolean }) => (
+  const ProfileCard = ({ person, showPosition = false, showDepartment = false, showImage = true }: { person: any, showPosition?: boolean, showDepartment?: boolean, showImage?: boolean }) => (
     <div className="flex items-center space-x-3 p-3 hover:bg-gray-50 rounded-lg transition-all duration-200 ease-in-out hover:shadow-md hover:scale-[1.02]">
-      <img 
-        src={person.image} 
-        alt={person.name}
-        className="w-12 h-12 rounded-full object-cover transition-transform duration-200 ease-in-out hover:scale-110"
-      />
+      {showImage && (
+        <img 
+          src={person.image} 
+          alt={person.name}
+          className="w-12 h-12 rounded-full object-cover transition-transform duration-200 ease-in-out hover:scale-110"
+        />
+      )}
       <div className="flex-1">
         <h4 className="font-medium text-gray-900">{person.name}</h4>
         {showPosition && person.position && (
@@ -173,6 +175,7 @@ export default function About() {
                       <ProfileCard 
                         key={index} 
                         person={member}
+                        showImage={false}
                       />
                     ))}
                   </div>
