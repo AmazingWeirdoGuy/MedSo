@@ -6,7 +6,7 @@ import { ChevronDown, ChevronRight } from "lucide-react";
 export default function About() {
   const [openSections, setOpenSections] = useState<{ [key: string]: boolean }>({
     websiteManager: true, // Default to website manager being open
-    officers: false,
+    officers: true, // Default to officers being open
     members: false,
     advisors: false
   });
