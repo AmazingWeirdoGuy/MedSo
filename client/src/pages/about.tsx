@@ -208,64 +208,156 @@ export default function About() {
           </div>
 
           {/* Interested in Joining Section */}
-          <div className="mt-16 lg:mt-20" data-testid="joining-section">
-            <div className="bg-white rounded-lg shadow-lg p-8 lg:p-12">
-              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-center text-gray-900 mb-8" data-testid="joining-title">
+          <motion.div 
+            className="mt-16 lg:mt-20" 
+            data-testid="joining-section"
+            initial={{ opacity: 0, y: 60 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
+          >
+            <motion.div 
+              className="bg-white rounded-lg shadow-lg p-8 lg:p-12"
+              whileInView={{ 
+                boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.15)" 
+              }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+            >
+              <motion.h2 
+                className="text-2xl sm:text-3xl lg:text-4xl font-bold text-center text-gray-900 mb-8" 
+                data-testid="joining-title"
+                initial={{ opacity: 0, scale: 0.8 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ 
+                  duration: 0.6, 
+                  delay: 0.3,
+                  type: "spring",
+                  stiffness: 120
+                }}
+              >
                 Interested in Joining?
-              </h2>
+              </motion.h2>
               
               <div className="max-w-3xl mx-auto text-center">
-                <p className="text-lg text-gray-700 mb-8 leading-relaxed" data-testid="joining-description">
+                <motion.p 
+                  className="text-lg text-gray-700 mb-8 leading-relaxed" 
+                  data-testid="joining-description"
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.6, delay: 0.5 }}
+                >
                   ISB Medical Society welcomes students who are passionate about healthcare, medicine, and making a positive impact in our community.
-                </p>
+                </motion.p>
                 
-                <div className="mb-10">
-                  <Button asChild size="lg" className="text-white bg-blue-600 hover:bg-blue-700 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 transition-colors duration-200 px-8 py-3 text-lg font-medium">
-                    <Link to="/contact" data-testid="button-join-now">
-                      Join Now
-                    </Link>
-                  </Button>
-                </div>
+                <motion.div 
+                  className="mb-10"
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.6, delay: 0.7 }}
+                >
+                  <motion.div
+                    whileHover={{ 
+                      scale: 1.05,
+                      boxShadow: "0 20px 40px -10px rgba(37, 99, 235, 0.3)"
+                    }}
+                    whileTap={{ scale: 0.98 }}
+                    animate={{ 
+                      boxShadow: [
+                        "0 0 0 0 rgba(37, 99, 235, 0.3)",
+                        "0 0 0 6px rgba(37, 99, 235, 0.1)", 
+                        "0 0 0 0 rgba(37, 99, 235, 0.3)"
+                      ]
+                    }}
+                    transition={{ 
+                      duration: 2,
+                      repeat: Infinity,
+                      repeatType: "reverse",
+                      ease: "easeInOut"
+                    }}
+                  >
+                    <Button asChild size="lg" className="text-white bg-blue-600 hover:bg-blue-700 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 transition-all duration-300 px-8 py-3 text-lg font-medium rounded-lg">
+                      <Link to="/contact" data-testid="button-join-now">
+                        Join Now
+                      </Link>
+                    </Button>
+                  </motion.div>
+                </motion.div>
                 
                 <ul className="grid sm:grid-cols-2 lg:grid-cols-5 gap-6 text-gray-700 list-none">
-                  <li className="flex flex-col items-center p-4 hover:bg-gray-50 rounded-lg transition-colors duration-200" data-testid="benefit-grade-levels">
-                    <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mb-3">
-                      <span className="text-blue-600 font-bold text-lg" aria-hidden="true">✓</span>
-                    </div>
-                    <p className="font-medium text-center">Open to all grade levels</p>
-                  </li>
-                  
-                  <li className="flex flex-col items-center p-4 hover:bg-gray-50 rounded-lg transition-colors duration-200" data-testid="benefit-no-experience">
-                    <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mb-3">
-                      <span className="text-blue-600 font-bold text-lg" aria-hidden="true">✓</span>
-                    </div>
-                    <p className="font-medium text-center">No prior medical knowledge required</p>
-                  </li>
-                  
-                  <li className="flex flex-col items-center p-4 hover:bg-gray-50 rounded-lg transition-colors duration-200" data-testid="benefit-activities">
-                    <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mb-3">
-                      <span className="text-blue-600 font-bold text-lg" aria-hidden="true">✓</span>
-                    </div>
-                    <p className="font-medium text-center">Regular meetings and exciting activities</p>
-                  </li>
-                  
-                  <li className="flex flex-col items-center p-4 hover:bg-gray-50 rounded-lg transition-colors duration-200" data-testid="benefit-opportunities">
-                    <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mb-3">
-                      <span className="text-blue-600 font-bold text-lg" aria-hidden="true">✓</span>
-                    </div>
-                    <p className="font-medium text-center">Volunteer and leadership opportunities</p>
-                  </li>
-                  
-                  <li className="flex flex-col items-center p-4 hover:bg-gray-50 rounded-lg transition-colors duration-200" data-testid="benefit-cas-hours">
-                    <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mb-3">
-                      <span className="text-blue-600 font-bold text-lg" aria-hidden="true">✓</span>
-                    </div>
-                    <p className="font-medium text-center">Counts toward Service for CAS</p>
-                  </li>
+                  {[
+                    { testId: "benefit-grade-levels", text: "Open to all grade levels" },
+                    { testId: "benefit-no-experience", text: "No prior medical knowledge required" },
+                    { testId: "benefit-activities", text: "Regular meetings and exciting activities" },
+                    { testId: "benefit-opportunities", text: "Volunteer and leadership opportunities" },
+                    { testId: "benefit-cas-hours", text: "Counts toward Service for CAS" }
+                  ].map((benefit, index) => (
+                    <motion.li 
+                      key={benefit.testId}
+                      className="flex flex-col items-center p-4 rounded-lg cursor-pointer" 
+                      data-testid={benefit.testId}
+                      style={{
+                        boxShadow: "0 0px 0px 0px rgba(0, 0, 0, 0)",
+                        backgroundColor: "transparent"
+                      }}
+                      initial={{ opacity: 0, y: 40, scale: 0.8 }}
+                      whileInView={{ opacity: 1, y: 0, scale: 1 }}
+                      viewport={{ once: true }}
+                      transition={{ 
+                        duration: 0.6, 
+                        delay: 0.9 + (index * 0.15),
+                        type: "spring",
+                        stiffness: 100
+                      }}
+                      whileHover={{ 
+                        scale: 1.05,
+                        y: -8,
+                        boxShadow: "0 10px 30px -10px rgba(0, 0, 0, 0.15)",
+                        backgroundColor: "rgba(249, 250, 251, 0.8)",
+                        transition: { duration: 0.3 }
+                      }}
+                      whileTap={{ scale: 0.98 }}
+                    >
+                      <motion.div 
+                        className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mb-3"
+                        whileHover={{
+                          backgroundColor: "rgba(37, 99, 235, 0.15)",
+                          scale: 1.1,
+                          rotate: [0, -10, 10, 0],
+                          transition: { duration: 0.5 }
+                        }}
+                      >
+                        <motion.span 
+                          className="text-blue-600 font-bold text-lg" 
+                          aria-hidden="true"
+                          initial={{ opacity: 0, scale: 0 }}
+                          whileInView={{ opacity: 1, scale: 1 }}
+                          viewport={{ once: true }}
+                          transition={{ 
+                            duration: 0.4, 
+                            delay: 1.2 + (index * 0.15),
+                            type: "spring",
+                            stiffness: 200
+                          }}
+                          whileHover={{
+                            color: "#1d4ed8",
+                            scale: 1.2,
+                            transition: { duration: 0.2 }
+                          }}
+                        >
+                          ✓
+                        </motion.span>
+                      </motion.div>
+                      <p className="font-medium text-center">{benefit.text}</p>
+                    </motion.li>
+                  ))}
                 </ul>
               </div>
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
 
         </div>
       </main>
