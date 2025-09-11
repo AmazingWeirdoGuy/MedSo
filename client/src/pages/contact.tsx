@@ -234,7 +234,12 @@ export default function Contact() {
                       <Mail className="w-6 h-6 text-primary mt-1" />
                       <div>
                         <h3 className="font-semibold text-gray-900">Email</h3>
-                        <p className="text-gray-600">19609@students.isb.ac.th</p>
+                        <a 
+                          href="mailto:19609@students.isb.ac.th" 
+                          className="text-gray-600 hover:text-primary transition-colors duration-200 underline"
+                        >
+                          19609@students.isb.ac.th
+                        </a>
                         <p className="text-sm text-gray-500">We typically respond within 24 hours</p>
                       </div>
                     </div>
@@ -243,7 +248,14 @@ export default function Contact() {
                       <Instagram className="w-6 h-6 text-primary mt-1" />
                       <div>
                         <h3 className="font-semibold text-gray-900">Instagram</h3>
-                        <p className="text-gray-600">@isbmedsociety</p>
+                        <a 
+                          href="https://instagram.com/isbmedsociety" 
+                          target="_blank" 
+                          rel="noopener noreferrer" 
+                          className="text-gray-600 hover:text-primary transition-colors duration-200 underline"
+                        >
+                          @isbmedsociety
+                        </a>
                         <p className="text-sm text-gray-500">Follow us for updates and news</p>
                       </div>
                     </div>

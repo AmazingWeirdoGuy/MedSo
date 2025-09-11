@@ -21,14 +21,24 @@ export default function Footer() {
           {/* Contact */}
           <div data-testid="footer-contact">
             <h3 className="text-white font-bold text-lg mb-4">CONTACT</h3>
-            <p className="mb-2 flex items-center" data-testid="footer-email">
+            <a 
+              href="mailto:19609@students.isb.ac.th" 
+              className="mb-2 flex items-center hover:text-white transition-colors duration-200" 
+              data-testid="footer-email"
+            >
               <Mail className="w-4 h-4 mr-2" /> 
               19609@students.isb.ac.th
-            </p>
-            <p className="mb-4 flex items-center" data-testid="footer-instagram">
+            </a>
+            <a 
+              href="https://instagram.com/isbmedsociety" 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              className="mb-4 flex items-center hover:text-white transition-colors duration-200" 
+              data-testid="footer-instagram"
+            >
               <Instagram className="w-4 h-4 mr-2" /> 
               @isbmedsociety
-            </p>
+            </a>
             
           </div>
 
