@@ -1,67 +1,9 @@
 import Header from "@/components/header";
 import Footer from "@/components/footer";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Mail, Instagram, MapPin, Phone, Clock } from "lucide-react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { useMutation } from "@tanstack/react-query";
-import { apiRequest } from "@/lib/queryClient";
-import { useToast } from "@/hooks/use-toast";
-import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
-
-const contactFormSchema = z.object({
-  firstName: z.string().min(1, "First name is required"),
-  lastName: z.string().min(1, "Last name is required"),
-  email: z.string().email("Valid email is required"),
-  grade: z.string().optional(),
-  subject: z.string().min(1, "Subject is required"),
-  message: z.string().min(1, "Message is required"),
-});
-
-type ContactFormData = z.infer<typeof contactFormSchema>;
 
 export default function Contact() {
-  const { toast } = useToast();
-  
-  const form = useForm<ContactFormData>({
-    resolver: zodResolver(contactFormSchema),
-    defaultValues: {
-      firstName: "",
-      lastName: "",
-      email: "",
-      grade: "",
-      subject: "",
-      message: "",
-    },
-  });
-
-  const contactMutation = useMutation({
-    mutationFn: async (data: ContactFormData) => {
-      return apiRequest('POST', '/api/contact', data);
-    },
-    onSuccess: () => {
-      toast({
-        title: "Message sent!",
-        description: "Thank you for your message. We'll get back to you soon.",
-      });
-      form.reset();
-    },
-    onError: () => {
-      toast({
-        title: "Error",
-        description: "Failed to send message. Please try again.",
-        variant: "destructive",
-      });
-    },
-  });
-
-  const onSubmit = (data: ContactFormData) => {
-    contactMutation.mutate(data);
-  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -88,133 +30,31 @@ export default function Contact() {
                   <CardTitle className="text-2xl font-bold text-gray-900">Send us a Message</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <Form {...form}>
-                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6" data-testid="contact-form">
-                      <div className="grid sm:grid-cols-2 gap-4">
-                        <FormField
-                          control={form.control}
-                          name="firstName"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>First Name *</FormLabel>
-                              <FormControl>
-                                <Input 
-                                  {...field}
-                                  data-testid="input-firstName"
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        <FormField
-                          control={form.control}
-                          name="lastName"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Last Name *</FormLabel>
-                              <FormControl>
-                                <Input 
-                                  {...field}
-                                  data-testid="input-lastName"
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-
-                      <FormField
-                        control={form.control}
-                        name="email"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Email Address *</FormLabel>
-                            <FormControl>
-                              <Input 
-                                {...field}
-                                type="email"
-                                data-testid="input-email"
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={form.control}
-                        name="grade"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Grade Level</FormLabel>
-                            <FormControl>
-                              <Input 
-                                {...field}
-                                placeholder="e.g., Grade 9, Grade 10..."
-                                data-testid="input-grade"
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={form.control}
-                        name="subject"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Subject *</FormLabel>
-                            <FormControl>
-                              <Input 
-                                {...field}
-                                placeholder="What is this regarding?"
-                                data-testid="input-subject"
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={form.control}
-                        name="message"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Message *</FormLabel>
-                            <FormControl>
-                              <Textarea 
-                                {...field}
-                                rows={5}
-                                placeholder="Tell us more about your inquiry..."
-                                data-testid="input-message"
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <Button 
-                        type="submit"
-                        disabled={contactMutation.isPending}
-                        className="w-full bg-primary text-white hover:bg-primary/90 hover:shadow-lg hover:scale-105 py-4 text-base font-medium transition-all duration-200 ease-in-out active:scale-95 disabled:opacity-75 disabled:scale-100 disabled:cursor-not-allowed"
-                        data-testid="button-submit"
+                  <div className="w-full" data-testid="google-form">
+                    <iframe 
+                      src="https://docs.google.com/forms/d/e/1FAIpQLSdU5C0GZRTXHHyQMo8jP6iACDbj8PXYKbwDLQIPrPSmjmmmyQ/viewform?embedded=true" 
+                      width="100%" 
+                      className="w-full rounded-lg h-[950px] sm:h-[900px] lg:h-[850px]"
+                      frameBorder={0} 
+                      title="ISB Medical Society Contact Form"
+                      loading="lazy"
+                      data-testid="contact-form-iframe"
+                    >
+                      Loading…
+                    </iframe>
+                    <div className="mt-4 text-center">
+                      <p className="text-sm text-gray-500 mb-2">Having trouble with the form?</p>
+                      <a 
+                        href="https://docs.google.com/forms/d/e/1FAIpQLSdU5C0GZRTXHHyQMo8jP6iACDbj8PXYKbwDLQIPrPSmjmmmyQ/viewform"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-primary hover:text-primary/80 underline text-sm font-medium transition-colors duration-200"
+                        data-testid="link-form-external"
                       >
-                        {contactMutation.isPending ? (
-                          <div className="flex items-center gap-2">
-                            <div className="w-4 h-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
-                            Sending...
-                          </div>
-                        ) : (
-                          "Send Message"
-                        )}
-                      </Button>
-                    </form>
-                  </Form>
+                        Open form in a new tab
+                      </a>
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
             </div>
