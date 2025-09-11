@@ -1,0 +1,14 @@
+User-agent: *
+Allow: /
+
+# Important pages for search engines
+Allow: /
+Allow: /about
+Allow: /news
+Allow: /contact
+
+# Sitemap location
+Sitemap: https://isbmedsociety.replit.app/sitemap.xml
+
+# Crawl delay (optional - helps prevent overwhelming the server)
+Crawl-delay: 1
