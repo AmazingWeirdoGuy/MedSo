@@ -5,7 +5,8 @@ import { ChevronDown, ChevronRight } from "lucide-react";
 
 export default function About() {
   const [openSections, setOpenSections] = useState<{ [key: string]: boolean }>({
-    officers: true, // Default to officers being open
+    websiteManager: true, // Default to website manager being open
+    officers: false,
     members: false,
     advisors: false
   });
@@ -17,20 +18,24 @@ export default function About() {
     }));
   };
 
+  const websiteManager = [
+    { name: "[Website Manager Name]", position: "Website Manager", image: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&h=150&fit=crop&crop=face" }
+  ];
+
   const officers = [
-    { name: "[President Name]", position: "President", year: "Senior", image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face" },
-    { name: "[Vice President Name]", position: "Vice President", year: "Junior", image: "https://images.unsplash.com/photo-1494790108755-2616b056b3c1?w=150&h=150&fit=crop&crop=face" },
-    { name: "[Secretary Name]", position: "Secretary", year: "Senior", image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face" },
-    { name: "[Treasurer Name]", position: "Treasurer", year: "Junior", image: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face" }
+    { name: "[President Name]", position: "President", image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face" },
+    { name: "[Vice President Name]", position: "Vice President", image: "https://images.unsplash.com/photo-1494790108755-2616b056b3c1?w=150&h=150&fit=crop&crop=face" },
+    { name: "[Secretary Name]", position: "Secretary", image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face" },
+    { name: "[Treasurer Name]", position: "Treasurer", image: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face" }
   ];
 
   const members = [
-    { name: "[Member Name 1]", year: "Senior", image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop&crop=face" },
-    { name: "[Member Name 2]", year: "Junior", image: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&h=150&fit=crop&crop=face" },
-    { name: "[Member Name 3]", year: "Sophomore", image: "https://images.unsplash.com/photo-1507591064344-4c6ce005b128?w=150&h=150&fit=crop&crop=face" },
-    { name: "[Member Name 4]", year: "Freshman", image: "https://images.unsplash.com/photo-1489424731084-a5d8b219a5bb?w=150&h=150&fit=crop&crop=face" },
-    { name: "[Member Name 5]", year: "Junior", image: "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150&h=150&fit=crop&crop=face" },
-    { name: "[Member Name 6]", year: "Sophomore", image: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=150&h=150&fit=crop&crop=face" }
+    { name: "[Member Name 1]", image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop&crop=face" },
+    { name: "[Member Name 2]", image: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&h=150&fit=crop&crop=face" },
+    { name: "[Member Name 3]", image: "https://images.unsplash.com/photo-1507591064344-4c6ce005b128?w=150&h=150&fit=crop&crop=face" },
+    { name: "[Member Name 4]", image: "https://images.unsplash.com/photo-1489424731084-a5d8b219a5bb?w=150&h=150&fit=crop&crop=face" },
+    { name: "[Member Name 5]", image: "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150&h=150&fit=crop&crop=face" },
+    { name: "[Member Name 6]", image: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=150&h=150&fit=crop&crop=face" }
   ];
 
   const advisors = [
@@ -39,7 +44,7 @@ export default function About() {
   ];
 
 
-  const ProfileCard = ({ person, showPosition = false }: { person: any, showPosition?: boolean }) => (
+  const ProfileCard = ({ person, showPosition = false, showDepartment = false }: { person: any, showPosition?: boolean, showDepartment?: boolean }) => (
     <div className="flex items-center space-x-3 p-3 hover:bg-gray-50 rounded-lg transition-all duration-200 ease-in-out hover:shadow-md hover:scale-[1.02]">
       <img 
         src={person.image} 
@@ -51,7 +56,9 @@ export default function About() {
         {showPosition && person.position && (
           <p className="text-sm text-blue-600 font-medium">{person.position}</p>
         )}
-        <p className="text-sm text-gray-500">{person.year || person.department}</p>
+        {showDepartment && person.department && (
+          <p className="text-sm text-gray-500">{person.department}</p>
+        )}
       </div>
     </div>
   );
@@ -122,6 +129,23 @@ export default function About() {
               <div className="bg-white rounded-lg shadow-lg overflow-hidden">
                 
                 <AccordionSection
+                  title="Website Manager"
+                  isOpen={openSections.websiteManager}
+                  onToggle={() => toggleSection('websiteManager')}
+                  testId="section-website-manager"
+                >
+                  <div className="space-y-2">
+                    {websiteManager.map((manager, index) => (
+                      <ProfileCard 
+                        key={index} 
+                        person={manager} 
+                        showPosition={true}
+                      />
+                    ))}
+                  </div>
+                </AccordionSection>
+
+                <AccordionSection
                   title="Club Officers"
                   isOpen={openSections.officers}
                   onToggle={() => toggleSection('officers')}
@@ -166,11 +190,11 @@ export default function About() {
                         key={index} 
                         person={advisor} 
                         showPosition={true}
+                        showDepartment={true}
                       />
                     ))}
                   </div>
                 </AccordionSection>
-
 
               </div>
             </div>
