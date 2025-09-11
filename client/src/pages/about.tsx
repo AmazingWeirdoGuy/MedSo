@@ -4,6 +4,7 @@ import Footer from "@/components/footer";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 import { ChevronDown, ChevronRight } from "lucide-react";
+import { motion } from "framer-motion";
 
 export default function About() {
   const [openSections, setOpenSections] = useState<{ [key: string]: boolean }>({
