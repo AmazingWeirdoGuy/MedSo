@@ -129,7 +129,7 @@ export default function About() {
               <div className="bg-white rounded-lg shadow-lg overflow-hidden">
                 
                 <AccordionSection
-                  title="Website Manager"
+                  title="Head of Website Development"
                   isOpen={openSections.websiteManager}
                   onToggle={() => toggleSection('websiteManager')}
                   testId="section-website-manager"
