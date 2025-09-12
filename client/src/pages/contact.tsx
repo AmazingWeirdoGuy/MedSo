@@ -71,10 +71,10 @@ export default function Contact() {
                       <div>
                         <h3 className="font-semibold text-gray-900">Email</h3>
                         <a 
-                          href="mailto:19609@students.isb.ac.th" 
+                          href="mailto:info@isbmedicalsociety.org" 
                           className="text-gray-600 hover:text-primary transition-colors duration-200 underline"
                         >
-                          19609@students.isb.ac.th
+                          info@isbmedicalsociety.org
                         </a>
                         <p className="text-sm text-gray-500">We typically respond within 24 hours</p>
                       </div>

@@ -22,12 +22,12 @@ export default function Footer() {
           <div data-testid="footer-contact">
             <h3 className="text-white font-bold text-lg mb-4">CONTACT</h3>
             <a 
-              href="mailto:19609@students.isb.ac.th" 
+              href="mailto:info@isbmedicalsociety.org" 
               className="mb-2 flex items-center hover:text-white transition-colors duration-200" 
               data-testid="footer-email"
             >
               <Mail className="w-4 h-4 mr-2" /> 
-              19609@students.isb.ac.th
+              info@isbmedicalsociety.org
             </a>
             <a 
               href="https://instagram.com/isbmedsociety" 

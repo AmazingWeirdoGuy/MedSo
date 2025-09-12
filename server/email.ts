@@ -34,7 +34,7 @@ This email was sent from the ISB Medical Society contact form.
     `.trim();
 
     await mailService.send({
-      to: '19609@students.isb.ac.th',
+      to: 'info@isbmedicalsociety.org',
       from: formData.email,
       subject: `ISB MedSociety Contact: ${formData.subject}`,
       text: emailContent,
