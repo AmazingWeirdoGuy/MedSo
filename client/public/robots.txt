@@ -7,8 +7,8 @@ Allow: /about
 Allow: /news
 Allow: /contact
 
-# Sitemap location (will work for both development and production)
-Sitemap: /sitemap.xml
+# Sitemap location
+Sitemap: https://isbmedicalsociety.org/sitemap.xml
 
 # Crawl delay (optional - helps prevent overwhelming the server)
 Crawl-delay: 1
