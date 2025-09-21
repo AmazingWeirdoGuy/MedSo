@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link, useLocation } from "wouter";
@@ -7,6 +7,7 @@ import logoImage from "@assets/logo_1756537062633.jpg";
 export default function Header() {
   const [location] = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isScrolledPastHero, setIsScrolledPastHero] = useState(false);
   
   const isActive = (path: string) => {
     if (path === "/" && location === "/") return true;
@@ -28,8 +29,40 @@ export default function Header() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  // Scroll detection for home page header transparency
+  useEffect(() => {
+    if (location !== "/") {
+      setIsScrolledPastHero(true); // Always solid on non-home pages
+      return;
+    }
+
+    const handleScroll = () => {
+      const scrollY = window.scrollY;
+      const heroHeight = window.innerHeight; // Hero is h-screen (full viewport height)
+      
+      // Header becomes solid once we scroll past 20% of the hero height
+      setIsScrolledPastHero(scrollY > heroHeight * 0.2);
+    };
+
+    // Initial check
+    handleScroll();
+    
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [location]);
+
+  const isHomePage = location === "/";
+  const isTransparent = isHomePage && !isScrolledPastHero;
+
   return (
-    <header className="bg-background dark:bg-background border-b border-border sticky top-0 z-50 surface-elevated" style={{ boxShadow: 'var(--shadow-subtle)' }}>
+    <header 
+      className={`sticky top-0 z-50 transition-all duration-300 ease-in-out border-b ${
+        isTransparent 
+          ? 'bg-black/20 dark:bg-black/20 border-white/20 backdrop-blur-md' 
+          : 'bg-background dark:bg-background border-border surface-elevated'
+      }`} 
+      style={isTransparent ? {} : { boxShadow: 'var(--shadow-subtle)' }}
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-20">
           {/* Logo */}
@@ -41,7 +74,9 @@ export default function Header() {
                 className="w-12 h-12 rounded-full object-cover"
                 data-testid="logo-image"
               />
-              <span className="text-2xl font-display text-primary">ISB Medical Society</span>
+              <span className={`text-2xl font-display transition-colors duration-300 ${
+                isTransparent ? 'text-white' : 'text-primary'
+              }`}>ISB Medical Society</span>
             </div>
           </Link>
           
@@ -49,35 +84,59 @@ export default function Header() {
           <nav className="hidden lg:flex items-center space-x-8" data-testid="navigation">
             <Link 
               href="/" 
-              className={`relative font-display font-medium text-2xl transition-colors duration-200 ${isActive("/") ? "text-primary" : "text-muted-foreground hover:text-foreground"}`} 
+              className={`relative font-display font-medium text-2xl transition-colors duration-300 ${
+                isActive("/") 
+                  ? (isTransparent ? "text-white" : "text-primary")
+                  : (isTransparent ? "text-white/80 hover:text-white" : "text-muted-foreground hover:text-foreground")
+              }`} 
               data-testid="nav-home"
             >
               Home
-              {isActive("/") && <div className="absolute -bottom-1 left-0 right-0 h-0.5 bg-primary rounded-full" />}
+              {isActive("/") && <div className={`absolute -bottom-1 left-0 right-0 h-0.5 rounded-full transition-colors duration-300 ${
+                isTransparent ? 'bg-white' : 'bg-primary'
+              }`} />}
             </Link>
             <Link 
               href="/about" 
-              className={`relative font-display font-medium text-2xl transition-colors duration-200 ${isActive("/about") ? "text-primary" : "text-muted-foreground hover:text-foreground"}`} 
+              className={`relative font-display font-medium text-2xl transition-colors duration-300 ${
+                isActive("/about") 
+                  ? (isTransparent ? "text-white" : "text-primary")
+                  : (isTransparent ? "text-white/80 hover:text-white" : "text-muted-foreground hover:text-foreground")
+              }`} 
               data-testid="nav-about"
             >
               About
-              {isActive("/about") && <div className="absolute -bottom-1 left-0 right-0 h-0.5 bg-primary rounded-full" />}
+              {isActive("/about") && <div className={`absolute -bottom-1 left-0 right-0 h-0.5 rounded-full transition-colors duration-300 ${
+                isTransparent ? 'bg-white' : 'bg-primary'
+              }`} />}
             </Link>
             <Link 
               href="/news" 
-              className={`relative font-display font-medium text-2xl transition-colors duration-200 ${isActive("/news") ? "text-primary" : "text-muted-foreground hover:text-foreground"}`} 
+              className={`relative font-display font-medium text-2xl transition-colors duration-300 ${
+                isActive("/news") 
+                  ? (isTransparent ? "text-white" : "text-primary")
+                  : (isTransparent ? "text-white/80 hover:text-white" : "text-muted-foreground hover:text-foreground")
+              }`} 
               data-testid="nav-news"
             >
               News
-              {isActive("/news") && <div className="absolute -bottom-1 left-0 right-0 h-0.5 bg-primary rounded-full" />}
+              {isActive("/news") && <div className={`absolute -bottom-1 left-0 right-0 h-0.5 rounded-full transition-colors duration-300 ${
+                isTransparent ? 'bg-white' : 'bg-primary'
+              }`} />}
             </Link>
             <Link 
               href="/contact" 
-              className={`relative font-display font-medium text-2xl transition-colors duration-200 ${isActive("/contact") ? "text-primary" : "text-muted-foreground hover:text-foreground"}`} 
+              className={`relative font-display font-medium text-2xl transition-colors duration-300 ${
+                isActive("/contact") 
+                  ? (isTransparent ? "text-white" : "text-primary")
+                  : (isTransparent ? "text-white/80 hover:text-white" : "text-muted-foreground hover:text-foreground")
+              }`} 
               data-testid="nav-contact"
             >
               Contact
-              {isActive("/contact") && <div className="absolute -bottom-1 left-0 right-0 h-0.5 bg-primary rounded-full" />}
+              {isActive("/contact") && <div className={`absolute -bottom-1 left-0 right-0 h-0.5 rounded-full transition-colors duration-300 ${
+                isTransparent ? 'bg-white' : 'bg-primary'
+              }`} />}
             </Link>
           </nav>
 
@@ -86,8 +145,12 @@ export default function Header() {
             {/* Premium CTA */}
             <Link href="/contact" className="hidden md:block">
               <Button 
-                className="bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-2 luxury-hover luxury-press font-medium text-[20px]"
-                style={{ boxShadow: 'var(--shadow-hairline)' }}
+                className={`px-6 py-2 luxury-hover luxury-press font-medium text-[20px] transition-all duration-300 ${
+                  isTransparent 
+                    ? 'bg-white/20 hover:bg-white/30 text-white border border-white/30 backdrop-blur-sm' 
+                    : 'bg-primary hover:bg-primary/90 text-primary-foreground'
+                }`}
+                style={isTransparent ? {} : { boxShadow: 'var(--shadow-hairline)' }}
                 data-testid="header-cta"
               >
                 Join Us
@@ -98,7 +161,9 @@ export default function Header() {
             <Button 
               variant="ghost" 
               size="sm" 
-              className="lg:hidden p-2 text-muted-foreground hover:text-foreground luxury-hover"
+              className={`lg:hidden p-2 luxury-hover transition-colors duration-300 ${
+                isTransparent ? 'text-white/80 hover:text-white' : 'text-muted-foreground hover:text-foreground'
+              }`}
               onClick={toggleMobileMenu}
               data-testid="mobile-menu-button"
             >
