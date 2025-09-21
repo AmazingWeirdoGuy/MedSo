@@ -56,7 +56,7 @@ export default function Hero() {
       {/* Background Carousel */}
       <div className="absolute inset-0 overflow-hidden">
         <div 
-          className="flex h-full transition-transform duration-700 ease-in-out"
+          className="flex h-full transition-all duration-700 ease-in-out"
           style={{ 
             transform: `translateX(-${currentSlide * 100}%)`,
             width: `${heroImages.length * 100}%`
@@ -65,7 +65,9 @@ export default function Hero() {
           {heroImages.map((image, index) => (
             <div
               key={index}
-              className="w-full h-full flex-shrink-0 relative"
+              className={`w-full h-full flex-shrink-0 relative transition-opacity duration-700 ease-in-out ${
+                Math.abs(index - currentSlide) <= 1 ? 'opacity-100' : 'opacity-40'
+              }`}
               style={{ width: `${100 / heroImages.length}%` }}
             >
               <div 
