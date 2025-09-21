@@ -1,5 +1,33 @@
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue:wght@400&display=swap');
+
+/* Beo Font Family */
+@font-face {
+  font-family: 'Beo';
+  src: url('/fonts/beo_regular.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Beo';
+  src: url('/fonts/beo_italic.otf') format('opentype');
+  font-weight: 400;
+  font-style: italic;
+}
+
+@font-face {
+  font-family: 'Beo';
+  src: url('/fonts/beo-bold.otf') format('opentype');
+  font-weight: 700;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Beo';
+  src: url('/fonts/beo-boldItalic.otf') format('opentype');
+  font-weight: 700;
+  font-style: italic;
+}
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -40,7 +68,7 @@
   --font-sans: Montserrat;
   --font-serif: Architects Daughter;
   --font-mono: Architects Daughter;
-  --font-display: 'Bebas Neue';
+  --font-display: 'Beo';
   --radius: 0.5rem;
   --shadow-2xs: 0px 2px 0px 0px hsl(221.2, 83.2%, 53.3% / 0.00);
   --shadow-xs: 0px 2px 0px 0px hsl(221.2, 83.2%, 53.3% / 0.00);
