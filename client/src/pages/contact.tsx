@@ -125,9 +125,7 @@ export default function Contact() {
                           >
                             @isbmedsociety
                           </a>
-                          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1 font-light">
-                            Latest updates & news
-                          </p>
+                          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1 font-light">Our social media outlet</p>
                         </div>
                       </div>
                     </div>
