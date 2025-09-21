@@ -117,7 +117,6 @@
   .font-display {
     font-weight: 800 !important;
     letter-spacing: 0.025em;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
     line-height: 1.1;
     -webkit-text-stroke: 0.25px currentColor;
   }
@@ -125,10 +124,6 @@
   /* Large headings get extra styling */
   h1.font-display, h2.font-display {
     letter-spacing: 0.05em;
-    text-shadow: 
-      0 2px 4px rgba(0, 0, 0, 0.25),
-      0.5px 0 0 currentColor,
-      -0.5px 0 0 currentColor;
     font-weight: 800 !important;
     -webkit-text-stroke: 0.3px currentColor;
   }
@@ -136,10 +131,6 @@
   /* Logo gets special treatment */
   .font-display.text-xl {
     letter-spacing: 0.1em;
-    text-shadow: 
-      0 1px 3px rgba(37, 99, 235, 0.3),
-      0.25px 0 0 currentColor,
-      -0.25px 0 0 currentColor;
     -webkit-text-stroke: 0.2px currentColor;
   }
 }
