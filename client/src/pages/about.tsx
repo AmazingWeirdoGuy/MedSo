@@ -265,21 +265,8 @@ export default function About() {
                       boxShadow: "0 20px 40px -10px rgba(37, 99, 235, 0.3)"
                     }}
                     whileTap={{ scale: 0.98 }}
-                    animate={{ 
-                      boxShadow: [
-                        "0 0 0 0 rgba(37, 99, 235, 0.3)",
-                        "0 0 0 6px rgba(37, 99, 235, 0.1)", 
-                        "0 0 0 0 rgba(37, 99, 235, 0.3)"
-                      ]
-                    }}
-                    transition={{ 
-                      duration: 2,
-                      repeat: Infinity,
-                      repeatType: "reverse",
-                      ease: "easeInOut"
-                    }}
                   >
-                    <Button asChild size="lg" className="text-white bg-blue-600 hover:bg-blue-700 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 transition-all duration-300 px-8 py-3 text-lg font-medium rounded-lg">
+                    <Button asChild size="lg" className="text-white bg-blue-600 hover:bg-blue-700 outline-none focus:outline-none focus-visible:outline-none !ring-0 focus:!ring-0 focus-visible:!ring-0 focus-visible:ring-transparent focus-visible:!ring-offset-0 transition-all duration-300 px-8 py-3 text-lg font-medium rounded-lg">
                       <Link to="/contact" data-testid="button-join-now">
                         Join Now
                       </Link>
