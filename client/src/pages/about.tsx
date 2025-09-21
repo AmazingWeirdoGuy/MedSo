@@ -123,7 +123,7 @@ export default function About() {
               <h2 className="text-2xl sm:text-3xl font-display text-foreground mb-8" data-testid="org-title">Our Organization</h2>
               
               <div className="space-y-8 text-muted-foreground leading-relaxed max-w-prose">
-                <p data-testid="about-description">
+                <p data-testid="about-description" className="text-justify">
                   ISB MedSociety is more than just a student club — it's a community built by and for those who are passionate about the medical sciences. Founded on the belief that knowledge in medicine should not be confined to classrooms, our club provides a space where students can explore the world of healthcare, develop leadership skills, and make a meaningful impact.
                 </p>
                 
