@@ -96,6 +96,18 @@ export default function Hero() {
     handleInteraction();
   };
 
+  // Handle Learn More button click
+  const handleLearnMoreClick = () => {
+    if (location === '/about') {
+      // If already on about page, scroll to top
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else {
+      // If not on about page, navigate to about page
+      navigate('/about');
+    }
+    handleInteraction();
+  };
+
   return (
     <section 
       className="relative h-screen overflow-hidden bg-black"
@@ -179,21 +191,19 @@ export default function Hero() {
                 Join Our Mission
               </Button>
               
-              <Link href="/about">
-                <Button 
-                  size="lg" 
-                  variant="outline" 
-                  className="border-2 border-white/30 hover:border-white/50 bg-white/10 hover:bg-white/20 text-white backdrop-blur-sm px-12 py-6 text-lg font-medium luxury-hover luxury-press rounded-xl"
-                  style={{ 
-                    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.2)',
-                    minWidth: '200px'
-                  }}
-                  data-testid="hero-cta-secondary"
-                  onClick={handleInteraction}
-                >
-                  Learn More
-                </Button>
-              </Link>
+              <Button 
+                size="lg" 
+                variant="outline" 
+                className="border-2 border-white/30 hover:border-white/50 bg-white/10 hover:bg-white/20 text-white backdrop-blur-sm px-12 py-6 text-lg font-medium luxury-hover luxury-press rounded-xl"
+                style={{ 
+                  boxShadow: '0 8px 32px rgba(0, 0, 0, 0.2)',
+                  minWidth: '200px'
+                }}
+                data-testid="hero-cta-secondary"
+                onClick={handleLearnMoreClick}
+              >
+                Learn More
+              </Button>
             </div>
           </div>
         </div>
