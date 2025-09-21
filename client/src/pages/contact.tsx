@@ -21,10 +21,7 @@ export default function Contact() {
               <span className="block font-extralight text-slate-300 text-2xl sm:text-3xl lg:text-4xl mb-4 uppercase tracking-[0.2em]">Any questions or Inquiries?</span>
               Get in Touch
             </h1>
-            <p className="text-xl lg:text-2xl text-slate-400 max-w-3xl mx-auto font-light leading-relaxed">
-              Begin a conversation with ISB Medical Society. 
-              <span className="block mt-2 text-slate-500">Excellence in healthcare education starts here.</span>
-            </p>
+            
           </div>
         </div>
       </section>
