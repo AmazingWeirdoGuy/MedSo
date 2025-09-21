@@ -1,29 +1,80 @@
+import { useState, useEffect } from "react";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Mail, Instagram, MapPin, Clock } from "lucide-react";
 
 export default function Contact() {
+  const [scrollY, setScrollY] = useState(0);
+
+  useEffect(() => {
+    const handleScroll = () => setScrollY(window.scrollY);
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   return (
     <div className="min-h-screen bg-slate-900 dark:bg-slate-950">
       <Header />
-      {/* Premium Hero Section */}
-      <section className="relative bg-gradient-to-b from-slate-900 to-slate-800 py-32 lg:py-40">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(148,163,184,0.05),transparent_50%)]"></div>
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+      {/* Premium Hero Section with Scroll Effects */}
+      <section 
+        className="relative bg-gradient-to-b from-slate-900 to-slate-800 py-32 lg:py-40 overflow-hidden"
+        style={{
+          height: 'min(100vh, 600px)',
+          transform: `perspective(1000px) rotateX(${Math.min(scrollY * 0.02, 5)}deg)`,
+          transformOrigin: 'bottom center',
+        }}
+      >
+        <div 
+          className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(148,163,184,0.05),transparent_50%)]"
+          style={{
+            transform: `translateY(${scrollY * 0.3}px) scale(${1 + scrollY * 0.001})`,
+            opacity: Math.max(0, 1 - scrollY * 0.002)
+          }}
+        ></div>
+        <div 
+          className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center"
+          style={{
+            transform: `translateY(${scrollY * 0.5}px)`,
+            opacity: Math.max(0, 1 - scrollY * 0.003)
+          }}
+        >
           <div className="space-y-8">
             <h1 
               className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-light text-white leading-[0.9] tracking-tight"
-              style={{ letterSpacing: '-0.02em' }}
+              style={{ 
+                letterSpacing: '-0.02em',
+                transform: `translateY(${scrollY * 0.2}px) scale(${Math.max(0.8, 1 - scrollY * 0.0005)})`
+              }}
               data-testid="contact-title"
             >
-              <span className="block font-extralight text-slate-300 text-2xl sm:text-3xl lg:text-4xl mb-4 uppercase tracking-[0.2em]">Any questions or Inquiries?</span>
-              Get in Touch
+              <span 
+                className="block font-extralight text-slate-300 text-2xl sm:text-3xl lg:text-4xl mb-4 uppercase tracking-[0.2em]"
+                style={{
+                  transform: `translateY(${scrollY * 0.15}px)`,
+                  opacity: Math.max(0, 1 - scrollY * 0.004)
+                }}
+              >
+                Any questions or inquiries?
+              </span>
+              <span style={{
+                transform: `translateY(${scrollY * 0.25}px)`,
+                opacity: Math.max(0, 1 - scrollY * 0.0035)
+              }}>
+                Get in touch with us
+              </span>
             </h1>
-            
           </div>
         </div>
+        
+        {/* Geometric folding lines */}
+        <div 
+          className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-slate-600 to-transparent"
+          style={{
+            transform: `scaleY(${1 + scrollY * 0.01}) translateY(${scrollY * 0.1}px)`,
+            opacity: Math.max(0, 1 - scrollY * 0.005)
+          }}
+        ></div>
       </section>
       <main className="relative bg-slate-50 dark:bg-slate-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 lg:py-32">
@@ -163,25 +214,25 @@ export default function Contact() {
                   <h3 className="text-2xl font-light text-white mb-6">
                     Join our community
                   </h3>
-                  <p className="text-slate-100 mb-8 font-light leading-relaxed">
+                  <p className="text-primary-foreground/90 mb-8 font-light leading-relaxed">
                     ISB Medical Society welcomes students passionate about healthcare, 
                     medicine, and positive community impact.
                   </p>
-                  <div className="space-y-3 text-slate-200 text-sm font-light">
+                  <div className="space-y-3 text-primary-foreground/80 text-sm font-light">
                     <div className="flex items-center space-x-3">
-                      <div className="w-1 h-1 bg-slate-300 rounded-full"></div>
+                      <div className="w-1 h-1 bg-primary-foreground/60 rounded-full"></div>
                       <span>Open to all grade levels</span>
                     </div>
                     <div className="flex items-center space-x-3">
-                      <div className="w-1 h-1 bg-slate-300 rounded-full"></div>
+                      <div className="w-1 h-1 bg-primary-foreground/60 rounded-full"></div>
                       <span>No prior medical knowledge required</span>
                     </div>
                     <div className="flex items-center space-x-3">
-                      <div className="w-1 h-1 bg-slate-300 rounded-full"></div>
+                      <div className="w-1 h-1 bg-primary-foreground/60 rounded-full"></div>
                       <span>Weekly meetings and activities</span>
                     </div>
                     <div className="flex items-center space-x-3">
-                      <div className="w-1 h-1 bg-slate-300 rounded-full"></div>
+                      <div className="w-1 h-1 bg-primary-foreground/60 rounded-full"></div>
                       <span>Leadership opportunities</span>
                     </div>
                   </div>
