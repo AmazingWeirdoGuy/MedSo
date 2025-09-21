@@ -114,14 +114,14 @@ export default function Hero() {
                 }}
               />
               {/* Individual image overlay for optimal contrast */}
-              <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/40 to-black/60" />
+              <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-black/20 to-black/30" />
             </div>
           ))}
         </div>
       </div>
 
       {/* Dynamic Overlay - adjusts based on content */}
-      <div className="absolute inset-0 bg-gradient-to-br from-transparent via-black/30 to-black/50" />
+      <div className="absolute inset-0 bg-gradient-to-br from-transparent via-black/10 to-black/20" />
       
       {/* Content Container */}
       <div 
