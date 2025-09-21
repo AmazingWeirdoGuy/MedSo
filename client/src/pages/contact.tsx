@@ -64,6 +64,15 @@ export default function Contact() {
                 Get in touch with us
               </span>
             </h1>
+            <p 
+              className="text-lg lg:text-xl text-slate-400 font-light mt-6"
+              style={{
+                transform: `translateY(${scrollY * 0.3}px)`,
+                opacity: Math.max(0, 1 - scrollY * 0.004)
+              }}
+            >
+              We're ready to help you 24/7
+            </p>
           </div>
         </div>
         
@@ -233,7 +242,7 @@ export default function Contact() {
                     </div>
                     <div className="flex items-center space-x-3">
                       <div className="w-1 h-1 bg-primary-foreground/60 rounded-full"></div>
-                      <span>Leadership opportunities</span>
+                      <span className="text-[#ffffff]">Leadership opportunities</span>
                     </div>
                   </div>
                 </div>
