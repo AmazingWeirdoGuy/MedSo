@@ -87,9 +87,7 @@ export default function Contact() {
                 
                 {/* Contact Methods */}
                 <div>
-                  <h2 className="text-2xl lg:text-3xl font-light text-slate-800 dark:text-slate-200 mb-8">
-                    Reach out
-                  </h2>
+                  <h2 className="text-2xl lg:text-3xl font-light text-slate-800 dark:text-slate-200 mb-8">Contact Us</h2>
                   <div className="space-y-8">
                     
                     <div className="group" data-testid="contact-email">
@@ -164,29 +162,29 @@ export default function Contact() {
                 </div>
 
                 {/* Membership Information */}
-                <div className="bg-slate-800 dark:bg-slate-900 p-8 lg:p-10">
+                <div className="bg-sky-400 dark:bg-sky-500 p-8 lg:p-10">
                   <h3 className="text-2xl font-light text-white mb-6">
                     Join our community
                   </h3>
-                  <p className="text-slate-300 mb-8 font-light leading-relaxed">
+                  <p className="text-sky-50 mb-8 font-light leading-relaxed">
                     ISB Medical Society welcomes students passionate about healthcare, 
                     medicine, and positive community impact.
                   </p>
-                  <div className="space-y-3 text-slate-400 text-sm font-light">
+                  <div className="space-y-3 text-sky-100 text-sm font-light">
                     <div className="flex items-center space-x-3">
-                      <div className="w-1 h-1 bg-slate-500 rounded-full"></div>
+                      <div className="w-1 h-1 bg-sky-200 rounded-full"></div>
                       <span>Open to all grade levels</span>
                     </div>
                     <div className="flex items-center space-x-3">
-                      <div className="w-1 h-1 bg-slate-500 rounded-full"></div>
+                      <div className="w-1 h-1 bg-sky-200 rounded-full"></div>
                       <span>No prior medical knowledge required</span>
                     </div>
                     <div className="flex items-center space-x-3">
-                      <div className="w-1 h-1 bg-slate-500 rounded-full"></div>
+                      <div className="w-1 h-1 bg-sky-200 rounded-full"></div>
                       <span>Weekly meetings and activities</span>
                     </div>
                     <div className="flex items-center space-x-3">
-                      <div className="w-1 h-1 bg-slate-500 rounded-full"></div>
+                      <div className="w-1 h-1 bg-sky-200 rounded-full"></div>
                       <span>Leadership opportunities</span>
                     </div>
                   </div>
