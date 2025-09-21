@@ -41,7 +41,7 @@ export default function Header() {
                 className="w-12 h-12 rounded-full object-cover"
                 data-testid="logo-image"
               />
-              <span className="text-xl font-display text-primary">ISB Medical Society</span>
+              <span className="text-2xl font-display text-primary">ISB Medical Society</span>
             </div>
           </Link>
           
@@ -49,7 +49,7 @@ export default function Header() {
           <nav className="hidden lg:flex items-center space-x-8" data-testid="navigation">
             <Link 
               href="/" 
-              className={`relative font-display font-medium transition-colors duration-200 ${isActive("/") ? "text-primary" : "text-muted-foreground hover:text-foreground"}`} 
+              className={`relative font-display font-medium text-2xl transition-colors duration-200 ${isActive("/") ? "text-primary" : "text-muted-foreground hover:text-foreground"}`} 
               data-testid="nav-home"
             >
               Home
@@ -57,7 +57,7 @@ export default function Header() {
             </Link>
             <Link 
               href="/about" 
-              className={`relative font-display font-medium transition-colors duration-200 ${isActive("/about") ? "text-primary" : "text-muted-foreground hover:text-foreground"}`} 
+              className={`relative font-display font-medium text-2xl transition-colors duration-200 ${isActive("/about") ? "text-primary" : "text-muted-foreground hover:text-foreground"}`} 
               data-testid="nav-about"
             >
               About
@@ -65,7 +65,7 @@ export default function Header() {
             </Link>
             <Link 
               href="/news" 
-              className={`relative font-display font-medium transition-colors duration-200 ${isActive("/news") ? "text-primary" : "text-muted-foreground hover:text-foreground"}`} 
+              className={`relative font-display font-medium text-2xl transition-colors duration-200 ${isActive("/news") ? "text-primary" : "text-muted-foreground hover:text-foreground"}`} 
               data-testid="nav-news"
             >
               News
@@ -73,7 +73,7 @@ export default function Header() {
             </Link>
             <Link 
               href="/contact" 
-              className={`relative font-display font-medium transition-colors duration-200 ${isActive("/contact") ? "text-primary" : "text-muted-foreground hover:text-foreground"}`} 
+              className={`relative font-display font-medium text-2xl transition-colors duration-200 ${isActive("/contact") ? "text-primary" : "text-muted-foreground hover:text-foreground"}`} 
               data-testid="nav-contact"
             >
               Contact
@@ -86,7 +86,7 @@ export default function Header() {
             {/* Premium CTA */}
             <Link href="/contact" className="hidden md:block">
               <Button 
-                className="bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-2 luxury-hover luxury-press font-medium"
+                className="bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-2 luxury-hover luxury-press font-medium text-2xl"
                 style={{ boxShadow: 'var(--shadow-hairline)' }}
                 data-testid="header-cta"
               >
@@ -113,7 +113,7 @@ export default function Header() {
             <div className="space-y-3">
               <Link 
                 href="/" 
-                className={`block font-display font-medium py-3 px-4 rounded-xl luxury-hover ${isActive("/") ? "text-primary bg-primary/10" : "text-muted-foreground hover:text-foreground hover:bg-muted/50"}`}
+                className={`block font-display font-medium text-2xl py-3 px-4 rounded-xl luxury-hover ${isActive("/") ? "text-primary bg-primary/10" : "text-muted-foreground hover:text-foreground hover:bg-muted/50"}`}
                 onClick={handleMobileNavClick}
                 data-testid="mobile-nav-home"
               >
@@ -121,7 +121,7 @@ export default function Header() {
               </Link>
               <Link 
                 href="/about" 
-                className={`block font-display font-medium py-3 px-4 rounded-xl luxury-hover ${isActive("/about") ? "text-primary bg-primary/10" : "text-muted-foreground hover:text-foreground hover:bg-muted/50"}`}
+                className={`block font-display font-medium text-2xl py-3 px-4 rounded-xl luxury-hover ${isActive("/about") ? "text-primary bg-primary/10" : "text-muted-foreground hover:text-foreground hover:bg-muted/50"}`}
                 onClick={handleMobileNavClick}
                 data-testid="mobile-nav-about"
               >
@@ -129,7 +129,7 @@ export default function Header() {
               </Link>
               <Link 
                 href="/news" 
-                className={`block font-display font-medium py-3 px-4 rounded-xl luxury-hover ${isActive("/news") ? "text-primary bg-primary/10" : "text-muted-foreground hover:text-foreground hover:bg-muted/50"}`}
+                className={`block font-display font-medium text-2xl py-3 px-4 rounded-xl luxury-hover ${isActive("/news") ? "text-primary bg-primary/10" : "text-muted-foreground hover:text-foreground hover:bg-muted/50"}`}
                 onClick={handleMobileNavClick}
                 data-testid="mobile-nav-news"
               >
@@ -137,7 +137,7 @@ export default function Header() {
               </Link>
               <Link 
                 href="/contact" 
-                className={`block font-display font-medium py-3 px-4 rounded-xl luxury-hover ${isActive("/contact") ? "text-primary bg-primary/10" : "text-muted-foreground hover:text-foreground hover:bg-muted/50"}`}
+                className={`block font-display font-medium text-2xl py-3 px-4 rounded-xl luxury-hover ${isActive("/contact") ? "text-primary bg-primary/10" : "text-muted-foreground hover:text-foreground hover:bg-muted/50"}`}
                 onClick={handleMobileNavClick}
                 data-testid="mobile-nav-contact"
               >
@@ -148,7 +148,7 @@ export default function Header() {
               <div className="pt-4 border-t border-border">
                 <Link href="/contact" onClick={handleMobileNavClick}>
                   <Button 
-                    className="w-full bg-primary hover:bg-primary/90 text-primary-foreground luxury-hover luxury-press"
+                    className="w-full bg-primary hover:bg-primary/90 text-primary-foreground luxury-hover luxury-press text-2xl"
                     data-testid="mobile-header-cta"
                   >
                     Join Us
