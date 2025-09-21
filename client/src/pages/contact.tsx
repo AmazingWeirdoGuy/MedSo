@@ -18,7 +18,7 @@ export default function Contact() {
               style={{ letterSpacing: '-0.02em' }}
               data-testid="contact-title"
             >
-              <span className="block font-extralight text-slate-300 text-2xl sm:text-3xl lg:text-4xl mb-4 uppercase tracking-[0.2em]">Connect</span>
+              <span className="block font-extralight text-slate-300 text-2xl sm:text-3xl lg:text-4xl mb-4 uppercase tracking-[0.2em]">Any questions or Inquiries?</span>
               Get in Touch
             </h1>
             <p className="text-xl lg:text-2xl text-slate-400 max-w-3xl mx-auto font-light leading-relaxed">
