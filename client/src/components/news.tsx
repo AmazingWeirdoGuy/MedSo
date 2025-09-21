@@ -1,5 +1,5 @@
+
 import { Button } from "@/components/ui/button";
-import { Instagram } from "lucide-react";
 
 export default function News() {
   const newsItems: any[] = [];
@@ -23,49 +23,10 @@ export default function News() {
         </div>
 
         {newsItems.length === 0 ? (
-          <div className="text-center py-16 luxury-scale-in" data-testid="news-empty-state">
-            <div className="max-w-lg mx-auto">
-              <div className="bg-card dark:bg-card border-2 border-border/60 rounded-2xl p-12 surface-elevated" style={{ boxShadow: 'var(--shadow-medium)' }}>
-                <div className="w-16 h-16 bg-primary/10 dark:bg-primary/20 rounded-2xl flex items-center justify-center mx-auto mb-8">
-                  <Instagram className="text-primary w-8 h-8" />
-                </div>
-                
-                <h3 className="text-xl font-display text-foreground mb-4">Stay Connected</h3>
-                <p className="text-muted-foreground mb-8 leading-relaxed">
-                  Follow us on social media for the latest updates on our healthcare initiatives and community programs.
-                </p>
-                
-                <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                  <a 
-                    href="https://instagram.com/isbmedsociety" 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="inline-block"
-                  >
-                    <Button 
-                      className="bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-3 luxury-hover luxury-press"
-                      style={{ boxShadow: 'var(--shadow-hairline)' }}
-                      data-testid="follow-instagram"
-                    >
-                      Follow on Instagram
-                    </Button>
-                  </a>
-                  
-                  <a 
-                    href="mailto:info@isbmedicalsociety.org"
-                    className="inline-block"
-                  >
-                    <Button 
-                      variant="outline"
-                      className="border-2 border-border hover:bg-muted/50 px-6 py-3 luxury-hover luxury-press"
-                      data-testid="subscribe-newsletter"
-                    >
-                      Contact Us
-                    </Button>
-                  </a>
-                </div>
-              </div>
-            </div>
+          <div className="text-center py-16" data-testid="news-empty-state">
+            <h3 className="text-xl text-foreground mb-2">No News Available</h3>
+            <p className="text-muted-foreground">We don't have any news to share at the moment.</p>
+            <p className="text-muted-foreground">Check back soon for updates!</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
