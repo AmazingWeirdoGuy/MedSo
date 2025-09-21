@@ -29,76 +29,132 @@ export default function Header() {
   };
 
   return (
-    <header className="bg-white shadow-sm border-b border-border sticky top-0 z-50">
+    <header className="bg-background/95 dark:bg-background/95 backdrop-blur-md border-b border-border sticky top-0 z-50" style={{ boxShadow: 'var(--shadow-hairline)' }}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
+        <div className="flex justify-between items-center h-20">
           {/* Logo */}
-          <div className="flex items-center space-x-3 hover:scale-105 transition-transform duration-200 ease-in-out" data-testid="logo">
-            <img 
-              src={logoImage}
-              alt="ISB Medical Society Logo" 
-              className="w-10 h-10 rounded-full object-cover hover:shadow-lg transition-shadow duration-200"
-              data-testid="logo-image"
-            />
-            <span className="text-xl font-bold text-primary font-display">ISB Medical Society</span>
-          </div>
+          <Link href="/">
+            <div className="flex items-center space-x-4 luxury-hover" data-testid="logo">
+              <img 
+                src={logoImage}
+                alt="ISB Medical Society Logo" 
+                className="w-12 h-12 rounded-full object-cover"
+                data-testid="logo-image"
+              />
+              <span className="text-xl font-display text-primary">ISB Medical Society</span>
+            </div>
+          </Link>
           
-          {/* Navigation */}
-          <nav className="hidden md:flex space-x-8" data-testid="navigation">
-            <Link href="/" className={`font-medium hover:scale-110 transition-all duration-200 ease-in-out ${isActive("/") ? "text-primary" : "text-muted-foreground hover:text-primary"}`} data-testid="nav-home">HOME</Link>
-            <Link href="/about" className={`font-medium hover:scale-110 transition-all duration-200 ease-in-out ${isActive("/about") ? "text-primary" : "text-muted-foreground hover:text-primary"}`} data-testid="nav-about">ABOUT US</Link>
-            <Link href="/news" className={`font-medium hover:scale-110 transition-all duration-200 ease-in-out ${isActive("/news") ? "text-primary" : "text-muted-foreground hover:text-primary"}`} data-testid="nav-news">NEWS</Link>
-            <Link href="/contact" className={`font-medium hover:scale-110 transition-all duration-200 ease-in-out ${isActive("/contact") ? "text-primary" : "text-muted-foreground hover:text-primary"}`} data-testid="nav-contact">CONTACT</Link>
+          {/* Center Navigation */}
+          <nav className="hidden lg:flex items-center space-x-8" data-testid="navigation">
+            <Link 
+              href="/" 
+              className={`relative font-medium transition-colors duration-200 ${isActive("/") ? "text-primary" : "text-muted-foreground hover:text-foreground"}`} 
+              data-testid="nav-home"
+            >
+              Home
+              {isActive("/") && <div className="absolute -bottom-1 left-0 right-0 h-0.5 bg-primary rounded-full" />}
+            </Link>
+            <Link 
+              href="/about" 
+              className={`relative font-medium transition-colors duration-200 ${isActive("/about") ? "text-primary" : "text-muted-foreground hover:text-foreground"}`} 
+              data-testid="nav-about"
+            >
+              About
+              {isActive("/about") && <div className="absolute -bottom-1 left-0 right-0 h-0.5 bg-primary rounded-full" />}
+            </Link>
+            <Link 
+              href="/news" 
+              className={`relative font-medium transition-colors duration-200 ${isActive("/news") ? "text-primary" : "text-muted-foreground hover:text-foreground"}`} 
+              data-testid="nav-news"
+            >
+              News
+              {isActive("/news") && <div className="absolute -bottom-1 left-0 right-0 h-0.5 bg-primary rounded-full" />}
+            </Link>
+            <Link 
+              href="/contact" 
+              className={`relative font-medium transition-colors duration-200 ${isActive("/contact") ? "text-primary" : "text-muted-foreground hover:text-foreground"}`} 
+              data-testid="nav-contact"
+            >
+              Contact
+              {isActive("/contact") && <div className="absolute -bottom-1 left-0 right-0 h-0.5 bg-primary rounded-full" />}
+            </Link>
           </nav>
 
-          {/* Mobile menu button */}
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            className="md:hidden p-2 text-muted-foreground hover:text-primary hover:scale-110 hover:bg-gray-100 transition-all duration-200 ease-in-out"
-            onClick={toggleMobileMenu}
-            data-testid="mobile-menu-button"
-          >
-            {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-          </Button>
+          {/* Right side - CTA and Mobile Menu */}
+          <div className="flex items-center space-x-4">
+            {/* Premium CTA */}
+            <Link href="/contact" className="hidden md:block">
+              <Button 
+                className="bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-2 luxury-hover luxury-press font-medium"
+                style={{ boxShadow: 'var(--shadow-hairline)' }}
+                data-testid="header-cta"
+              >
+                Join Us
+              </Button>
+            </Link>
+
+            {/* Mobile menu button */}
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="lg:hidden p-2 text-muted-foreground hover:text-foreground luxury-hover"
+              onClick={toggleMobileMenu}
+              data-testid="mobile-menu-button"
+            >
+              {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            </Button>
+          </div>
         </div>
 
         {/* Mobile Navigation Menu */}
-        <div className={`md:hidden transition-all duration-300 ease-in-out ${mobileMenuOpen ? 'max-h-64 opacity-100' : 'max-h-0 opacity-0 overflow-hidden'}`}>
-          <nav className="px-4 py-4 border-t border-gray-200 bg-white" data-testid="mobile-navigation">
-            <div className="space-y-4">
+        <div className={`lg:hidden transition-all duration-300 ease-in-out ${mobileMenuOpen ? 'max-h-80 opacity-100' : 'max-h-0 opacity-0 overflow-hidden'}`}>
+          <nav className="px-4 py-6 border-t border-border bg-background/95 backdrop-blur-md" data-testid="mobile-navigation">
+            <div className="space-y-3">
               <Link 
                 href="/" 
-                className={`block text-lg font-medium py-2 px-4 rounded-lg transition-all duration-200 ease-in-out ${isActive("/") ? "text-primary bg-blue-50" : "text-gray-600 hover:text-primary hover:bg-gray-50"}`}
+                className={`block font-medium py-3 px-4 rounded-xl luxury-hover ${isActive("/") ? "text-primary bg-primary/10" : "text-muted-foreground hover:text-foreground hover:bg-muted/50"}`}
                 onClick={handleMobileNavClick}
                 data-testid="mobile-nav-home"
               >
-                HOME
+                Home
               </Link>
               <Link 
                 href="/about" 
-                className={`block text-lg font-medium py-2 px-4 rounded-lg transition-all duration-200 ease-in-out ${isActive("/about") ? "text-primary bg-blue-50" : "text-gray-600 hover:text-primary hover:bg-gray-50"}`}
+                className={`block font-medium py-3 px-4 rounded-xl luxury-hover ${isActive("/about") ? "text-primary bg-primary/10" : "text-muted-foreground hover:text-foreground hover:bg-muted/50"}`}
                 onClick={handleMobileNavClick}
                 data-testid="mobile-nav-about"
               >
-                ABOUT US
+                About
               </Link>
               <Link 
                 href="/news" 
-                className={`block text-lg font-medium py-2 px-4 rounded-lg transition-all duration-200 ease-in-out ${isActive("/news") ? "text-primary bg-blue-50" : "text-gray-600 hover:text-primary hover:bg-gray-50"}`}
+                className={`block font-medium py-3 px-4 rounded-xl luxury-hover ${isActive("/news") ? "text-primary bg-primary/10" : "text-muted-foreground hover:text-foreground hover:bg-muted/50"}`}
                 onClick={handleMobileNavClick}
                 data-testid="mobile-nav-news"
               >
-                NEWS
+                News
               </Link>
               <Link 
                 href="/contact" 
-                className={`block text-lg font-medium py-2 px-4 rounded-lg transition-all duration-200 ease-in-out ${isActive("/contact") ? "text-primary bg-blue-50" : "text-gray-600 hover:text-primary hover:bg-gray-50"}`}
+                className={`block font-medium py-3 px-4 rounded-xl luxury-hover ${isActive("/contact") ? "text-primary bg-primary/10" : "text-muted-foreground hover:text-foreground hover:bg-muted/50"}`}
                 onClick={handleMobileNavClick}
                 data-testid="mobile-nav-contact"
               >
-                CONTACT
+                Contact
               </Link>
+              
+              {/* Mobile CTA */}
+              <div className="pt-4 border-t border-border">
+                <Link href="/contact" onClick={handleMobileNavClick}>
+                  <Button 
+                    className="w-full bg-primary hover:bg-primary/90 text-primary-foreground luxury-hover luxury-press"
+                    data-testid="mobile-header-cta"
+                  >
+                    Join Us
+                  </Button>
+                </Link>
+              </div>
             </div>
           </nav>
         </div>

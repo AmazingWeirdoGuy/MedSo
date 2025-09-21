@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
+import { AspectRatio } from "@/components/ui/aspect-ratio";
 import firstOnTheSceneImage from "@assets/firstonthescene_1756537744391.png";
 import medicalMinuteImage from "@assets/medicalminute_1756537744391.png";
 import fundraisingImage from "@assets/fundraising_1756538236001.jpg";
@@ -34,44 +35,60 @@ export default function Programs() {
   ];
 
   return (
-    <section className="py-20 bg-gray-50" data-testid="activities-section">
+    <section className="py-24 bg-muted/30 dark:bg-slate/10" data-testid="activities-section">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-16">
-          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground mb-4 font-display" data-testid="activities-title">
+        <div className="text-center mb-20 luxury-fade-in">
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-display text-foreground mb-6" data-testid="activities-title">
             Our <span className="text-primary">Activities</span>
           </h2>
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+            Discover the initiatives driving our mission forward
+          </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-          {programs.map((program) => (
+          {programs.map((program, index) => (
             <div 
               key={program.id}
-              className="bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 flex flex-col h-full"
+              className="group bg-card dark:bg-card border border-border rounded-2xl overflow-hidden luxury-hover luxury-press flex flex-col h-full"
+              style={{ 
+                boxShadow: 'var(--shadow-hairline)',
+                animationDelay: `${index * 100}ms`
+              }}
               data-testid={`card-activity-${program.id}`}
             >
-              <div className="h-48 overflow-hidden">
-                <img 
-                  src={program.image}
-                  alt={program.subtitle}
-                  className="w-full h-full object-cover hover:scale-110 transition-transform duration-300"
-                  data-testid={`img-activity-${program.id}`}
-                />
+              <div className="overflow-hidden">
+                <AspectRatio ratio={4 / 3}>
+                  <img 
+                    src={program.image}
+                    alt={`${program.subtitle} - ISB Medical Society activity showcasing healthcare education and community engagement`}
+                    className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-500"
+                    loading="lazy"
+                    data-testid={`img-activity-${program.id}`}
+                  />
+                </AspectRatio>
               </div>
-              <div className="p-6 flex flex-col flex-grow">
-                <h4 className="text-lg font-semibold text-primary mb-3 font-display" data-testid={`subtitle-activity-${program.id}`}>
+              
+              <div className="p-6 flex flex-col flex-grow space-y-4">
+                <h3 className="text-lg font-display text-foreground leading-snug" data-testid={`subtitle-activity-${program.id}`}>
                   {program.subtitle}
-                </h4>
-                <p className="text-muted-foreground text-sm mb-4 flex-grow" data-testid={`text-activity-${program.id}`}>
+                </h3>
+                
+                <p className="text-muted-foreground text-sm leading-relaxed flex-grow" data-testid={`text-activity-${program.id}`}>
                   {program.description}
                 </p>
-                <Link href="/about">
-                  <Button 
-                    className="bg-primary text-white hover:bg-primary/90 hover:shadow-lg hover:scale-105 w-full mt-auto transition-all duration-200 ease-in-out active:scale-95 py-3 text-base"
-                    data-testid={`button-learn-${program.id}`}
-                  >
-                    Learn More
-                  </Button>
-                </Link>
+                
+                <div className="pt-2">
+                  <Link href="/about">
+                    <Button 
+                      variant="ghost"
+                      className="w-full justify-start p-0 h-auto text-primary hover:text-primary/80 font-medium text-sm luxury-press"
+                      data-testid={`button-learn-${program.id}`}
+                    >
+                      Learn more →
+                    </Button>
+                  </Link>
+                </div>
               </div>
             </div>
           ))}
