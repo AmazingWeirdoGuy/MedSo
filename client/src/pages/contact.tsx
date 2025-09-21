@@ -18,9 +18,9 @@ export default function Contact() {
       <Header />
       {/* Premium Hero Section with Scroll Effects */}
       <section 
-        className="relative bg-gradient-to-b from-slate-900 to-slate-800 py-32 lg:py-40 overflow-hidden"
+        className="relative bg-gradient-to-b from-slate-900 to-slate-800 py-16 lg:py-20 overflow-hidden"
         style={{
-          height: 'min(100vh, 600px)',
+          height: 'min(70vh, 400px)',
           transform: `perspective(1000px) rotateX(${Math.min(scrollY * 0.02, 5)}deg)`,
           transformOrigin: 'bottom center',
         }}
@@ -214,7 +214,7 @@ export default function Contact() {
                   <h3 className="text-2xl font-light text-white mb-6">
                     Join Our Community
                   </h3>
-                  <p className="text-primary-foreground/90 mb-8 font-light leading-relaxed">
+                  <p className="mb-8 font-light leading-relaxed text-[#ffffff]">
                     ISB Medical Society welcomes students passionate about healthcare, 
                     medicine, and positive community impact.
                   </p>
