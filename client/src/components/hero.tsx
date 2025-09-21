@@ -54,26 +54,31 @@ export default function Hero() {
       onMouseLeave={() => setIsPlaying(true)}
     >
       {/* Background Carousel */}
-      <div className="absolute inset-0">
-        {heroImages.map((image, index) => (
-          <div
-            key={index}
-            className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
-              index === currentSlide ? 'opacity-100' : 'opacity-0'
-            }`}
-          >
-            <div 
-              className={`w-full h-full bg-cover bg-center bg-no-repeat transform transition-transform duration-1000 ease-out scale-105 hover:scale-110 ${
-                index === currentSlide ? 'animate-ken-burns' : ''
-              }`}
-              style={{ 
-                backgroundImage: `url(${image.src})`
-              }}
-            />
-            {/* Individual image overlay for optimal contrast */}
-            <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/40 to-black/60" />
-          </div>
-        ))}
+      <div className="absolute inset-0 overflow-hidden">
+        <div 
+          className="flex h-full transition-transform duration-700 ease-in-out"
+          style={{ 
+            transform: `translateX(-${currentSlide * 100}%)`,
+            width: `${heroImages.length * 100}%`
+          }}
+        >
+          {heroImages.map((image, index) => (
+            <div
+              key={index}
+              className="w-full h-full flex-shrink-0 relative"
+              style={{ width: `${100 / heroImages.length}%` }}
+            >
+              <div 
+                className="w-full h-full bg-cover bg-center bg-no-repeat"
+                style={{ 
+                  backgroundImage: `url(${image.src})`
+                }}
+              />
+              {/* Individual image overlay for optimal contrast */}
+              <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/40 to-black/60" />
+            </div>
+          ))}
+        </div>
       </div>
 
       {/* Dynamic Overlay - adjusts based on content */}
