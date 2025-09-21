@@ -90,7 +90,7 @@ export default function Contact() {
                 <div className="w-16 h-[1px] bg-slate-300 dark:bg-slate-600"></div>
               </div>
               
-              <div className="bg-white dark:bg-slate-800 rounded-none shadow-2xl overflow-hidden border-0" 
+              <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl overflow-hidden border-0" 
                    style={{ 
                      boxShadow: '0 25px 60px rgba(0, 0, 0, 0.12), 0 8px 25px rgba(0, 0, 0, 0.08)' 
                    }}>
@@ -210,9 +210,9 @@ export default function Contact() {
                 </div>
 
                 {/* Membership Information */}
-                <div className="bg-primary p-8 lg:p-10">
+                <div className="bg-primary rounded-2xl p-8 lg:p-10">
                   <h3 className="text-2xl font-light text-white mb-6">
-                    Join our community
+                    Join Our Community
                   </h3>
                   <p className="text-primary-foreground/90 mb-8 font-light leading-relaxed">
                     ISB Medical Society welcomes students passionate about healthcare, 
