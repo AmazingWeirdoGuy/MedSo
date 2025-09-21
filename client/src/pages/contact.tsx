@@ -6,48 +6,76 @@ import { Mail, Instagram, MapPin, Clock } from "lucide-react";
 export default function Contact() {
 
   return (
-    <div className="min-h-screen bg-background dark:bg-background">
+    <div className="min-h-screen bg-slate-900 dark:bg-slate-950">
       <Header />
-      <main className="py-24 luxury-fade-in">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          
-          {/* Page Header */}
-          <div className="text-center mb-20">
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-display text-foreground mb-6" data-testid="contact-title">
-              Contact <span className="text-primary">Us</span>
+      
+      {/* Premium Hero Section */}
+      <section className="relative bg-gradient-to-b from-slate-900 to-slate-800 py-32 lg:py-40">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(148,163,184,0.05),transparent_50%)]"></div>
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <div className="space-y-8">
+            <h1 
+              className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-light text-white leading-[0.9] tracking-tight"
+              style={{ letterSpacing: '-0.02em' }}
+              data-testid="contact-title"
+            >
+              <span className="block font-extralight text-slate-300 text-2xl sm:text-3xl lg:text-4xl mb-4 uppercase tracking-[0.2em]">Connect</span>
+              Get in Touch
             </h1>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Get in touch with ISB Medical Society. We'd love to hear from you and answer any questions you may have.
+            <p className="text-xl lg:text-2xl text-slate-400 max-w-3xl mx-auto font-light leading-relaxed">
+              Begin a conversation with ISB Medical Society. 
+              <span className="block mt-2 text-slate-500">Excellence in healthcare education starts here.</span>
             </p>
           </div>
+        </div>
+      </section>
 
-          <div className="grid lg:grid-cols-2 gap-12 lg:gap-20">
+      <main className="relative bg-slate-50 dark:bg-slate-900">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 lg:py-32">
+
+          <div className="grid lg:grid-cols-5 gap-16 lg:gap-24">
             
             {/* Contact Form */}
-            <div className="luxury-scale-in" data-testid="contact-form-section">
-              <div className="bg-card dark:bg-card border border-border rounded-2xl overflow-hidden" style={{ boxShadow: 'var(--shadow-subtle)' }}>
-                <div className="p-6">
+            <div className="lg:col-span-3" data-testid="contact-form-section">
+              <div className="mb-12">
+                <h2 className="text-3xl lg:text-4xl font-light text-slate-800 dark:text-slate-200 mb-4">
+                  Send us a message
+                </h2>
+                <div className="w-16 h-[1px] bg-slate-300 dark:bg-slate-600"></div>
+              </div>
+              
+              <div className="bg-white dark:bg-slate-800 rounded-none shadow-2xl overflow-hidden border-0" 
+                   style={{ 
+                     boxShadow: '0 25px 60px rgba(0, 0, 0, 0.12), 0 8px 25px rgba(0, 0, 0, 0.08)' 
+                   }}>
+                <div className="p-8 lg:p-12">
                   <div className="w-full" data-testid="google-form">
                     <iframe 
                       src="https://docs.google.com/forms/d/e/1FAIpQLSdU5C0GZRTXHHyQMo8jP6iACDbj8PXYKbwDLQIPrPSmjmmmyQ/viewform?embedded=true" 
-                      className="w-full rounded-lg h-[950px] sm:h-[900px] lg:h-[850px]"
+                      className="w-full h-[900px] lg:h-[850px]"
                       frameBorder={0} 
                       title="ISB Medical Society Contact Form"
                       loading="lazy"
                       data-testid="contact-form-iframe"
+                      style={{ 
+                        border: 'none',
+                        borderRadius: '0'
+                      }}
                     >
                       Loading…
                     </iframe>
-                    <div className="mt-4 text-center">
-                      <p className="text-sm text-gray-500 mb-2">Having trouble with the form?</p>
+                    <div className="mt-8 text-center border-t border-slate-100 dark:border-slate-700 pt-8">
+                      <p className="text-sm text-slate-500 dark:text-slate-400 mb-3 font-light">
+                        Experiencing technical difficulties?
+                      </p>
                       <a 
                         href="https://docs.google.com/forms/d/e/1FAIpQLSdU5C0GZRTXHHyQMo8jP6iACDbj8PXYKbwDLQIPrPSmjmmmyQ/viewform"
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-primary hover:text-primary/80 underline text-sm font-medium transition-colors duration-200"
+                        className="text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white underline text-sm font-light transition-all duration-300 tracking-wide"
                         data-testid="link-form-external"
                       >
-                        Open form in a new tab
+                        Open in new window
                       </a>
                     </div>
                   </div>
@@ -55,83 +83,124 @@ export default function Contact() {
               </div>
             </div>
 
-            {/* Contact Information */}
-            <div data-testid="contact-info-section">
-              <div className="space-y-8">
+            {/* Contact Information Sidebar */}
+            <div className="lg:col-span-2" data-testid="contact-info-section">
+              <div className="space-y-16">
                 
-                {/* Contact Details */}
-                <Card className="shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 ease-in-out">
-                  <CardHeader>
-                    <CardTitle className="text-2xl font-bold text-gray-900 font-display">Get in Touch</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-6">
+                {/* Contact Methods */}
+                <div>
+                  <h2 className="text-2xl lg:text-3xl font-light text-slate-800 dark:text-slate-200 mb-8">
+                    Reach out
+                  </h2>
+                  <div className="space-y-8">
                     
-                    <div className="flex items-start space-x-4" data-testid="contact-email">
-                      <Mail className="w-6 h-6 text-primary mt-1" />
-                      <div>
-                        <h3 className="font-semibold text-gray-900">Email</h3>
-                        <a 
-                          href="mailto:info@isbmedicalsociety.org" 
-                          className="text-gray-600 hover:text-primary transition-colors duration-200 underline"
-                        >
-                          info@isbmedicalsociety.org
-                        </a>
-                        <p className="text-sm text-gray-500">We typically respond within 24 hours</p>
+                    <div className="group" data-testid="contact-email">
+                      <div className="flex items-start space-x-4 py-6 border-b border-slate-200 dark:border-slate-700 transition-all duration-300 group-hover:border-slate-400 dark:group-hover:border-slate-500">
+                        <Mail className="w-5 h-5 text-slate-400 mt-1 group-hover:text-slate-600 dark:group-hover:text-slate-300 transition-colors duration-300" />
+                        <div className="min-w-0 flex-1">
+                          <p className="text-xs uppercase tracking-[0.15em] text-slate-500 dark:text-slate-400 font-light mb-2">
+                            Email
+                          </p>
+                          <a 
+                            href="mailto:info@isbmedicalsociety.org" 
+                            className="text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white text-lg font-light transition-colors duration-300 break-all"
+                          >
+                            info@isbmedicalsociety.org
+                          </a>
+                          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1 font-light">
+                            24-hour response time
+                          </p>
+                        </div>
                       </div>
                     </div>
 
-                    <div className="flex items-start space-x-4" data-testid="contact-instagram">
-                      <Instagram className="w-6 h-6 text-primary mt-1" />
-                      <div>
-                        <h3 className="font-semibold text-gray-900">Instagram</h3>
-                        <a 
-                          href="https://instagram.com/isbmedsociety" 
-                          target="_blank" 
-                          rel="noopener noreferrer" 
-                          className="text-gray-600 hover:text-primary transition-colors duration-200 underline"
-                        >
-                          @isbmedsociety
-                        </a>
-                        <p className="text-sm text-gray-500">Follow us for updates and news</p>
+                    <div className="group" data-testid="contact-instagram">
+                      <div className="flex items-start space-x-4 py-6 border-b border-slate-200 dark:border-slate-700 transition-all duration-300 group-hover:border-slate-400 dark:group-hover:border-slate-500">
+                        <Instagram className="w-5 h-5 text-slate-400 mt-1 group-hover:text-slate-600 dark:group-hover:text-slate-300 transition-colors duration-300" />
+                        <div className="min-w-0 flex-1">
+                          <p className="text-xs uppercase tracking-[0.15em] text-slate-500 dark:text-slate-400 font-light mb-2">
+                            Social
+                          </p>
+                          <a 
+                            href="https://instagram.com/isbmedsociety" 
+                            target="_blank" 
+                            rel="noopener noreferrer" 
+                            className="text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white text-lg font-light transition-colors duration-300"
+                          >
+                            @isbmedsociety
+                          </a>
+                          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1 font-light">
+                            Latest updates & news
+                          </p>
+                        </div>
                       </div>
                     </div>
 
-                    <div className="flex items-start space-x-4" data-testid="contact-location">
-                      <MapPin className="w-6 h-6 text-primary mt-1" />
-                      <div>
-                        <h3 className="font-semibold text-gray-900">Location</h3>
-                        <p className="text-gray-600">International School Bangkok</p>
-                        <p className="text-sm text-gray-500">Nichada Campus, Bangkok, Thailand</p>
+                    <div className="group" data-testid="contact-location">
+                      <div className="flex items-start space-x-4 py-6 border-b border-slate-200 dark:border-slate-700 transition-all duration-300 group-hover:border-slate-400 dark:group-hover:border-slate-500">
+                        <MapPin className="w-5 h-5 text-slate-400 mt-1 group-hover:text-slate-600 dark:group-hover:text-slate-300 transition-colors duration-300" />
+                        <div className="min-w-0 flex-1">
+                          <p className="text-xs uppercase tracking-[0.15em] text-slate-500 dark:text-slate-400 font-light mb-2">
+                            Location
+                          </p>
+                          <p className="text-slate-700 dark:text-slate-300 text-lg font-light">
+                            International School Bangkok
+                          </p>
+                          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1 font-light">
+                            Nichada Campus, Bangkok
+                          </p>
+                        </div>
                       </div>
                     </div>
 
-                    <div className="flex items-start space-x-4" data-testid="contact-hours">
-                      <Clock className="w-6 h-6 text-primary mt-1" />
-                      <div>
-                        <h3 className="font-semibold text-gray-900">Meeting Times</h3>
-                        <p className="text-gray-600">Thursday panther block</p>
-                        <p className="text-sm text-gray-500">10:55-11:25 Room 3-207</p>
+                    <div className="group" data-testid="contact-hours">
+                      <div className="flex items-start space-x-4 py-6 transition-all duration-300">
+                        <Clock className="w-5 h-5 text-slate-400 mt-1 group-hover:text-slate-600 dark:group-hover:text-slate-300 transition-colors duration-300" />
+                        <div className="min-w-0 flex-1">
+                          <p className="text-xs uppercase tracking-[0.15em] text-slate-500 dark:text-slate-400 font-light mb-2">
+                            Meetings
+                          </p>
+                          <p className="text-slate-700 dark:text-slate-300 text-lg font-light">
+                            Thursday Panther Block
+                          </p>
+                          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1 font-light">
+                            10:55-11:25 Room 3-207
+                          </p>
+                        </div>
                       </div>
                     </div>
 
-                  </CardContent>
-                </Card>
+                  </div>
+                </div>
 
-                {/* Join Us Card */}
-                <Card className="shadow-lg bg-gradient-to-br from-primary to-teal-500 text-white hover:shadow-xl hover:scale-105 hover:-translate-y-2 transition-all duration-300 ease-in-out">
-                  <CardContent className="p-8">
-                    <h3 className="text-2xl font-bold mb-4">Interested in Joining?</h3>
-                    <p className="mb-6 text-blue-50">
-                      ISB Medical Society welcomes students who are passionate about healthcare, medicine, and making a positive impact in our community.
-                    </p>
-                    <ul className="space-y-2 text-blue-50 mb-6">
-                      <li>• Open to all grade levels</li>
-                      <li>• No prior medical knowledge required</li>
-                      <li>• Regular meetings and exciting activities</li>
-                      <li>• Volunteer and leadership opportunities</li>
-                    </ul>
-                  </CardContent>
-                </Card>
+                {/* Membership Information */}
+                <div className="bg-slate-800 dark:bg-slate-900 p-8 lg:p-10">
+                  <h3 className="text-2xl font-light text-white mb-6">
+                    Join our community
+                  </h3>
+                  <p className="text-slate-300 mb-8 font-light leading-relaxed">
+                    ISB Medical Society welcomes students passionate about healthcare, 
+                    medicine, and positive community impact.
+                  </p>
+                  <div className="space-y-3 text-slate-400 text-sm font-light">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-1 h-1 bg-slate-500 rounded-full"></div>
+                      <span>Open to all grade levels</span>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                      <div className="w-1 h-1 bg-slate-500 rounded-full"></div>
+                      <span>No prior medical knowledge required</span>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                      <div className="w-1 h-1 bg-slate-500 rounded-full"></div>
+                      <span>Weekly meetings and activities</span>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                      <div className="w-1 h-1 bg-slate-500 rounded-full"></div>
+                      <span>Leadership opportunities</span>
+                    </div>
+                  </div>
+                </div>
 
               </div>
             </div>

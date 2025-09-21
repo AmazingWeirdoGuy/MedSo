@@ -156,7 +156,7 @@ export default function Hero() {
               <Link href="/contact">
                 <Button 
                   size="lg" 
-                  className="bg-primary hover:bg-primary/90 text-primary-foreground px-12 py-6 text-lg font-medium luxury-hover luxury-press border-0 rounded-xl backdrop-blur-sm"
+                  className="bg-sky-400 hover:bg-sky-500 text-white px-12 py-6 text-lg font-medium luxury-hover luxury-press border-0 rounded-xl backdrop-blur-sm"
                   style={{ 
                     boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.1)',
                     minWidth: '200px'
