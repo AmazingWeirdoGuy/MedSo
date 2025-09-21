@@ -91,37 +91,26 @@ export default function Hero() {
       onMouseLeave={() => setIsPlaying(true)}
     >
       {/* Background Carousel */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div 
-          className="flex h-full transition-all duration-700 ease-in-out"
-          style={{ 
-            transform: `translateX(-${currentSlide * 100}%)`,
-            width: `${heroImages.length * 100}%`
-          }}
-        >
-          {heroImages.map((image, index) => (
-            <div
-              key={index}
-              className={`w-full h-full flex-shrink-0 relative transition-opacity duration-700 ease-in-out ${
-                Math.abs(index - currentSlide) <= 1 ? 'opacity-100' : 'opacity-40'
-              }`}
-              style={{ width: `${100 / heroImages.length}%` }}
-            >
-              <div 
-                className="w-full h-full bg-cover bg-center bg-no-repeat"
-                style={{ 
-                  backgroundImage: `url(${image.src})`
-                }}
-              />
-              {/* Individual image overlay for optimal contrast */}
-              <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-black/20 to-black/30" />
-            </div>
-          ))}
-        </div>
+      <div className="absolute inset-0">
+        {heroImages.map((image, index) => (
+          <div
+            key={index}
+            className={`absolute inset-0 transition-opacity duration-700 ease-in-out ${
+              index === currentSlide ? 'opacity-100' : 'opacity-0'
+            }`}
+          >
+            <img 
+              src={image.src}
+              alt={image.alt}
+              className="w-full h-full object-cover"
+              onLoad={() => console.log('Image loaded and visible:', image.src, 'slide:', index, 'current:', currentSlide)}
+            />
+          </div>
+        ))}
       </div>
 
       {/* Dynamic Overlay - adjusts based on content */}
-      <div className="absolute inset-0 bg-gradient-to-br from-transparent via-black/10 to-black/20" />
+      <div className="absolute inset-0 bg-gradient-to-br from-transparent via-black/5 to-black/10" />
       
       {/* Content Container */}
       <div 
