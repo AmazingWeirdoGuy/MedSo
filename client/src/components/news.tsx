@@ -1,5 +1,6 @@
 
 import { Button } from "@/components/ui/button";
+import { Calendar } from "lucide-react";
 
 export default function News() {
   const newsItems: any[] = [];
@@ -24,9 +25,17 @@ export default function News() {
 
         {newsItems.length === 0 ? (
           <div className="text-center py-16" data-testid="news-empty-state">
-            <h3 className="text-xl text-foreground mb-2">No News Available</h3>
-            <p className="text-muted-foreground">We don't have any news to share at the moment.</p>
-            <p className="text-muted-foreground">Check back soon for updates!</p>
+            <div className="max-w-md mx-auto">
+              <div className="bg-white dark:bg-card rounded-2xl p-8 shadow-lg hover:shadow-xl hover:-translate-y-2 transition-all duration-300 ease-in-out">
+                <div className="w-16 h-16 bg-gray-100 dark:bg-muted rounded-full flex items-center justify-center mx-auto mb-4 hover:scale-110 transition-transform duration-200 ease-in-out">
+                  <Calendar className="w-8 h-8 text-gray-400 dark:text-muted-foreground" />
+                </div>
+                <h3 className="text-xl font-semibold text-foreground mb-2 font-display">No News Yet</h3>
+                <p className="text-muted-foreground">
+                  We don't have any news articles at the moment. Check back soon for updates on our latest activities and events!
+                </p>
+              </div>
+            </div>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
