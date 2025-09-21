@@ -40,7 +40,7 @@ export default function Header() {
               className="w-10 h-10 rounded-full object-cover hover:shadow-lg transition-shadow duration-200"
               data-testid="logo-image"
             />
-            <span className="text-xl font-bold text-primary">ISB Medical Society</span>
+            <span className="text-xl font-bold text-primary font-display">ISB Medical Society</span>
           </div>
           
           {/* Navigation */}

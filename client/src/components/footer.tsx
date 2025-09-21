@@ -9,7 +9,7 @@ export default function Footer() {
         <div className="grid md:grid-cols-4 gap-8">
           {/* Quick Links */}
           <div data-testid="footer-quicklinks">
-            <h3 className="text-white font-bold text-lg mb-4">QUICK LINKS</h3>
+            <h3 className="text-white font-bold text-lg mb-4 font-display">QUICK LINKS</h3>
             <ul className="space-y-3">
               <li><Link href="/" className="hover:text-white transition-colors" data-testid="footer-link-home">Home</Link></li>
               <li><Link href="/about" className="hover:text-white transition-colors" data-testid="footer-link-about">About us</Link></li>
@@ -20,7 +20,7 @@ export default function Footer() {
 
           {/* Contact */}
           <div data-testid="footer-contact">
-            <h3 className="text-white font-bold text-lg mb-4">CONTACT</h3>
+            <h3 className="text-white font-bold text-lg mb-4 font-display">CONTACT</h3>
             <a 
               href="mailto:info@isbmedicalsociety.org" 
               className="mb-2 flex items-center hover:text-white transition-colors duration-200" 
@@ -44,13 +44,13 @@ export default function Footer() {
 
           {/* Organization */}
           <div data-testid="footer-organization">
-            <h3 className="text-white font-bold text-lg mb-4">ORGANIZATION</h3>
+            <h3 className="text-white font-bold text-lg mb-4 font-display">ORGANIZATION</h3>
             <p className="text-sm leading-relaxed">ISB is a student-led organization striving to educate the community about health, advocate for healthcare equity, and raise funds for charity.</p>
           </div>
 
           {/* Medical Society for Students (Logo) */}
           <div data-testid="footer-logo">
-            <h3 className="text-white font-bold text-lg mb-4">ISB MEDICAL SOCIETY</h3>
+            <h3 className="text-white font-bold text-lg mb-4 font-display">ISB MEDICAL SOCIETY</h3>
             <img 
               src={logoImage}
               alt="ISB MedSociety Logo" 

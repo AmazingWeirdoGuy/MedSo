@@ -37,7 +37,7 @@ export default function Programs() {
     <section className="py-20 bg-gray-50" data-testid="activities-section">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
-          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground mb-4" data-testid="activities-title">
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground mb-4 font-display" data-testid="activities-title">
             Our <span className="text-primary">Activities</span>
           </h2>
         </div>
@@ -58,7 +58,7 @@ export default function Programs() {
                 />
               </div>
               <div className="p-6 flex flex-col flex-grow">
-                <h4 className="text-lg font-semibold text-primary mb-3" data-testid={`subtitle-activity-${program.id}`}>
+                <h4 className="text-lg font-semibold text-primary mb-3 font-display" data-testid={`subtitle-activity-${program.id}`}>
                   {program.subtitle}
                 </h4>
                 <p className="text-muted-foreground text-sm mb-4 flex-grow" data-testid={`text-activity-${program.id}`}>

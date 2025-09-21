@@ -13,7 +13,7 @@ export default function Contact() {
           
           {/* Page Header */}
           <div className="text-center mb-12 sm:mb-16">
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-4" data-testid="contact-title">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-4 font-display" data-testid="contact-title">
               Contact Us
             </h1>
             <p className="text-base sm:text-lg lg:text-xl text-gray-600 max-w-3xl mx-auto px-4">
@@ -62,7 +62,7 @@ export default function Contact() {
                 {/* Contact Details */}
                 <Card className="shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 ease-in-out">
                   <CardHeader>
-                    <CardTitle className="text-2xl font-bold text-gray-900">Get in Touch</CardTitle>
+                    <CardTitle className="text-2xl font-bold text-gray-900 font-display">Get in Touch</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-6">
                     

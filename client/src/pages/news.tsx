@@ -15,7 +15,7 @@ export default function News() {
           
           {/* Page Header */}
           <div className="text-center mb-16">
-            <h1 className="text-4xl font-bold text-gray-900 mb-4" data-testid="news-title">
+            <h1 className="text-4xl font-bold text-gray-900 mb-4 font-display" data-testid="news-title">
               Latest News
             </h1>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
@@ -31,7 +31,7 @@ export default function News() {
                   <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4 hover:scale-110 transition-transform duration-200 ease-in-out">
                     <Calendar className="w-8 h-8 text-gray-400" />
                   </div>
-                  <h3 className="text-xl font-semibold text-gray-900 mb-2">No News Yet</h3>
+                  <h3 className="text-xl font-semibold text-gray-900 mb-2 font-display">No News Yet</h3>
                   <p className="text-gray-600">
                     We don't have any news articles at the moment. Check back soon for updates on our latest activities and events!
                   </p>

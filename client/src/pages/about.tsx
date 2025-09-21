@@ -105,7 +105,7 @@ export default function About() {
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           
           {/* Centered Title */}
-          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-center text-gray-900 mb-12 sm:mb-16" data-testid="about-title">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-center text-gray-900 mb-12 sm:mb-16 font-display" data-testid="about-title">
             About us
           </h1>
 
@@ -113,7 +113,7 @@ export default function About() {
             
             {/* Left Side - Organization Description */}
             <div data-testid="about-content">
-              <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-6" data-testid="org-title">Our club</h2>
+              <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-6 font-display" data-testid="org-title">Our club</h2>
               
               <div className="space-y-6 text-gray-700 leading-relaxed">
                 <p data-testid="about-description">
@@ -121,7 +121,7 @@ export default function About() {
                 </p>
                 
                 <div>
-                  <h3 className="font-semibold text-gray-900 mb-3 text-xl sm:text-2xl lg:text-[30px]">Why we exist</h3>
+                  <h3 className="font-semibold text-gray-900 mb-3 text-xl sm:text-2xl lg:text-[30px] font-display">Why we exist</h3>
                   <p>
                     We believe the next generation of healthcare professionals must not only be knowledgeable but also empathetic, socially aware, and motivated to improve lives. ISB MedSociety nurtures this vision by creating opportunities to learn, to lead, and to give back.
                   </p>
@@ -225,7 +225,7 @@ export default function About() {
               transition={{ duration: 0.6, delay: 0.2 }}
             >
               <motion.h2 
-                className="text-2xl sm:text-3xl lg:text-4xl font-bold text-center text-gray-900 mb-8" 
+                className="text-2xl sm:text-3xl lg:text-4xl font-bold text-center text-gray-900 mb-8 font-display" 
                 data-testid="joining-title"
                 initial={{ opacity: 0, scale: 0.8 }}
                 whileInView={{ opacity: 1, scale: 1 }}
