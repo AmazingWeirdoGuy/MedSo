@@ -70,6 +70,20 @@ export default function Hero() {
     handleInteraction();
   };
 
+  // Scroll to next section
+  const scrollToNext = () => {
+    const heroSection = document.querySelector('[data-testid="hero-section"]');
+    if (heroSection) {
+      const nextSection = heroSection.nextElementSibling;
+      if (nextSection) {
+        nextSection.scrollIntoView({ 
+          behavior: 'smooth',
+          block: 'start'
+        });
+      }
+    }
+  };
+
   return (
     <section 
       className="relative h-screen overflow-hidden bg-black"
@@ -210,10 +224,16 @@ export default function Hero() {
 
       {/* Scroll Indicator */}
       <div className="absolute bottom-8 right-8 z-20">
-        <div className="flex flex-col items-center space-y-2 text-white/60">
+        <button 
+          onClick={scrollToNext}
+          className="flex flex-col items-center space-y-2 text-white/60 hover:text-white transition-colors duration-300 luxury-hover group"
+          data-testid="scroll-indicator"
+          aria-label="Scroll to next section"
+        >
           <span className="text-sm font-light tracking-wide">SCROLL</span>
-          <div className="w-px h-8 bg-gradient-to-b from-white/60 to-transparent"></div>
-        </div>
+          <div className="w-px h-8 bg-gradient-to-b from-white/60 to-transparent group-hover:from-white group-hover:to-white/20 transition-all duration-300"></div>
+          <div className="w-2 h-2 border border-white/60 border-t-0 border-l-0 transform rotate-45 group-hover:border-white transition-colors duration-300 animate-bounce"></div>
+        </button>
       </div>
 
     </section>
