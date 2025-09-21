@@ -40,9 +40,8 @@ export default function Hero() {
   useEffect(() => {
     const handleScroll = () => {
       const scrollY = window.scrollY;
-      const windowHeight = window.innerHeight;
-      const fadeStart = windowHeight * 0.3; // Start fading at 30% of viewport height
-      const fadeEnd = windowHeight * 0.6; // Completely faded at 60% of viewport height
+      const fadeStart = 0; // Start fading immediately
+      const fadeEnd = 150; // Completely faded after 150px of scroll
       
       if (scrollY <= fadeStart) {
         setScrollOpacity(1);
@@ -50,7 +49,7 @@ export default function Hero() {
         setScrollOpacity(0);
       } else {
         // Calculate opacity between fadeStart and fadeEnd
-        const fadeProgress = (scrollY - fadeStart) / (fadeEnd - fadeStart);
+        const fadeProgress = scrollY / fadeEnd;
         setScrollOpacity(1 - fadeProgress);
       }
     };
