@@ -140,9 +140,7 @@ export default function Contact() {
                           <p className="text-slate-700 dark:text-slate-300 text-lg font-light">
                             International School Bangkok
                           </p>
-                          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1 font-light">
-                            Nichada Campus, Bangkok
-                          </p>
+                          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1 font-light">Nichada Campus, Pak Kret, Nonthaburi 11120</p>
                         </div>
                       </div>
                     </div>
