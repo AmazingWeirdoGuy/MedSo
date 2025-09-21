@@ -149,9 +149,7 @@ export default function Contact() {
                       <div className="flex items-start space-x-4 py-6 transition-all duration-300">
                         <Clock className="w-5 h-5 text-slate-400 mt-1 group-hover:text-slate-600 dark:group-hover:text-slate-300 transition-colors duration-300" />
                         <div className="min-w-0 flex-1">
-                          <p className="text-xs uppercase tracking-[0.15em] text-slate-500 dark:text-slate-400 font-light mb-2">
-                            Meetings
-                          </p>
+                          <p className="text-xs uppercase tracking-[0.15em] text-slate-500 dark:text-slate-400 font-light mb-2">Meeting Times</p>
                           <p className="text-slate-700 dark:text-slate-300 text-lg font-light">
                             Thursday Panther Block
                           </p>
