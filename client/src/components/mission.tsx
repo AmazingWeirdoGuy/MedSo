@@ -2,7 +2,7 @@ import { GraduationCap, Scale, Globe } from "lucide-react";
 
 export default function Mission() {
   return (
-    <section className="py-24 bg-background dark:bg-background" data-testid="mission-section">
+    <section className="py-24 bg-gradient-to-br from-slate-50/50 via-blue-50/30 to-slate-50/50 dark:from-slate-800/30 dark:via-slate-700/20 dark:to-slate-800/30" data-testid="mission-section">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-20 luxury-fade-in">
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-display text-foreground mb-6" data-testid="mission-title">

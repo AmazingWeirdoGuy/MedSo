@@ -35,7 +35,13 @@ export default function Programs() {
   ];
 
   return (
-    <section className="py-24 bg-muted/30 dark:bg-slate/10" data-testid="activities-section">
+    <section className="py-24 bg-background dark:bg-background relative overflow-hidden" data-testid="activities-section">
+      {/* Background Pattern */}
+      <div className="absolute inset-0 -z-10 opacity-20">
+        <div className="absolute top-20 left-10 w-72 h-72 bg-primary/5 rounded-full blur-3xl" />
+        <div className="absolute bottom-20 right-10 w-96 h-96 bg-accent/5 rounded-full blur-3xl" />
+      </div>
+      
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-20 luxury-fade-in">
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-display text-foreground mb-6" data-testid="activities-title">
