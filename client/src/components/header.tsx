@@ -171,9 +171,7 @@ export default function Header() {
                 disabled={loadingNav}
               >
                 {loadingNav ? (
-                  <div className="flex items-center gap-2">
-                    <Loading size="sm" />
-                  </div>
+                  <Loading size="sm" variant="spinner" />
                 ) : (
                   'Join Us'
                 )}

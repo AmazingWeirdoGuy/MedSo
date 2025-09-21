@@ -114,10 +114,7 @@ export default function News() {
                   disabled={loadingMore}
                 >
                   {loadingMore ? (
-                    <div className="flex items-center gap-2">
-                      <Loading size="sm" />
-                      <span>Loading more news...</span>
-                    </div>
+                    <Loading size="sm" variant="line" text="Loading more news" />
                   ) : (
                     'Load More News'
                   )}

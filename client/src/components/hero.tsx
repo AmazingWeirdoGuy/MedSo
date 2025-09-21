@@ -200,10 +200,7 @@ export default function Hero() {
                 disabled={loadingButton === 'join'}
               >
                 {loadingButton === 'join' ? (
-                  <div className="flex items-center gap-2">
-                    <Loading size="sm" />
-                    <span>Loading...</span>
-                  </div>
+                  <Loading size="sm" variant="dots" />
                 ) : (
                   'Join Our Mission'
                 )}
@@ -222,10 +219,7 @@ export default function Hero() {
                 disabled={loadingButton === 'learn'}
               >
                 {loadingButton === 'learn' ? (
-                  <div className="flex items-center gap-2">
-                    <Loading size="sm" />
-                    <span>Loading...</span>
-                  </div>
+                  <Loading size="sm" variant="dots" />
                 ) : (
                   'Learn More'
                 )}

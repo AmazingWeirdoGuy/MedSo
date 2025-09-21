@@ -104,10 +104,7 @@ export default function Programs() {
                     disabled={loadingProgram === program.id}
                   >
                     {loadingProgram === program.id ? (
-                      <div className="flex items-center gap-2">
-                        <Loading size="sm" />
-                        <span>Loading...</span>
-                      </div>
+                      <Loading size="sm" variant="dots" />
                     ) : (
                       'Learn more →'
                     )}

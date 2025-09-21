@@ -288,10 +288,7 @@ export default function About() {
                       disabled={loadingJoin}
                     >
                       {loadingJoin ? (
-                        <div className="flex items-center gap-2">
-                          <Loading size="sm" />
-                          <span>Loading...</span>
-                        </div>
+                        <Loading size="sm" variant="dots" />
                       ) : (
                         'Join Now'
                       )}
