@@ -76,7 +76,7 @@ export default function Programs() {
               </div>
               
               <div className="p-6 flex flex-col flex-grow space-y-4">
-                <h3 className="text-lg font-display text-foreground leading-snug" data-testid={`subtitle-activity-${program.id}`}>
+                <h3 className="text-xl font-display text-primary leading-snug" data-testid={`subtitle-activity-${program.id}`}>
                   {program.subtitle}
                 </h3>
                 
@@ -87,8 +87,8 @@ export default function Programs() {
                 <div className="pt-2">
                   <Link href="/about">
                     <Button 
-                      variant="ghost"
-                      className="w-full justify-start p-0 h-auto text-primary hover:text-primary/80 font-medium text-sm luxury-press"
+                      className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-medium text-sm luxury-hover luxury-press"
+                      style={{ boxShadow: 'var(--shadow-hairline)' }}
                       data-testid={`button-learn-${program.id}`}
                     >
                       Learn more →
