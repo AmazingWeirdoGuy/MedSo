@@ -60,8 +60,18 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="border-t border-gray-700 mt-12 pt-8 text-center">
-          <p className="text-sm" data-testid="footer-copyright">© 2025 ISB Medical Society. All rights reserved.</p>
+        <div className="border-t border-gray-700 mt-12 pt-8">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+            <p className="text-sm" data-testid="footer-copyright">© 2025 ISB Medical Society. All rights reserved.</p>
+            <div className="flex items-center gap-6 text-sm">
+              <Link href="/terms" className="hover:text-white transition-colors" data-testid="footer-link-terms">
+                Terms of Service
+              </Link>
+              <Link href="/privacy" className="hover:text-white transition-colors" data-testid="footer-link-privacy">
+                Privacy Policy
+              </Link>
+            </div>
+          </div>
         </div>
       </div>
     </footer>

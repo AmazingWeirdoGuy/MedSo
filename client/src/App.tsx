@@ -8,6 +8,8 @@ import Home from "@/pages/home";
 import About from "@/pages/about";
 import News from "@/pages/news";
 import Contact from "@/pages/contact";
+import Terms from "@/pages/terms";
+import Privacy from "@/pages/privacy";
 import NotFound from "@/pages/not-found";
 
 // Component to handle scroll to top on route change
@@ -31,6 +33,8 @@ function Router() {
         <Route path="/about" component={About} />
         <Route path="/news" component={News} />
         <Route path="/contact" component={Contact} />
+        <Route path="/terms" component={Terms} />
+        <Route path="/privacy" component={Privacy} />
         <Route component={NotFound} />
       </Switch>
     </>
