@@ -35,7 +35,7 @@ export default function NotFound() {
 
           {/* Action Buttons */}
           <div className="space-y-4 sm:space-y-0 sm:space-x-4 sm:flex sm:justify-center">
-            <Link href="/">
+            <Link href="/" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
               <Button 
                 className="w-full sm:w-auto bg-primary text-white hover:bg-primary/90 hover:shadow-lg hover:scale-105 transition-all duration-200 ease-in-out active:scale-95 py-3 px-6"
                 data-testid="button-home"
@@ -59,16 +59,16 @@ export default function NotFound() {
           <div className="mt-12 text-center">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Looking for something specific?</h3>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
-              <Link href="/" className="text-primary hover:text-primary/80 hover:underline transition-colors duration-200" data-testid="nav-home">
+              <Link href="/" className="text-primary hover:text-primary/80 hover:underline transition-colors duration-200" data-testid="nav-home" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
                 Home
               </Link>
-              <Link href="/about" className="text-primary hover:text-primary/80 hover:underline transition-colors duration-200" data-testid="nav-about">
+              <Link href="/about" className="text-primary hover:text-primary/80 hover:underline transition-colors duration-200" data-testid="nav-about" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
                 About Us
               </Link>
-              <Link href="/news" className="text-primary hover:text-primary/80 hover:underline transition-colors duration-200" data-testid="nav-news">
+              <Link href="/news" className="text-primary hover:text-primary/80 hover:underline transition-colors duration-200" data-testid="nav-news" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
                 News
               </Link>
-              <Link href="/contact" className="text-primary hover:text-primary/80 hover:underline transition-colors duration-200" data-testid="nav-contact">
+              <Link href="/contact" className="text-primary hover:text-primary/80 hover:underline transition-colors duration-200" data-testid="nav-contact" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
                 Contact
               </Link>
             </div>

@@ -85,7 +85,7 @@ export default function Programs() {
                 </p>
                 
                 <div className="pt-2">
-                  <Link href="/about">
+                  <Link href="/about" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
                     <Button 
                       className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-medium text-sm luxury-hover luxury-press"
                       style={{ boxShadow: 'var(--shadow-hairline)' }}

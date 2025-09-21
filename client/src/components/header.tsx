@@ -29,6 +29,11 @@ export default function Header() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  const handleNavClick = () => {
+    // Scroll to top when navigating on desktop
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   // Scroll detection for home page header transparency
   useEffect(() => {
     if (location !== "/") {
@@ -91,6 +96,7 @@ export default function Header() {
                   : (isTransparent ? "text-white/80 hover:text-white" : "text-muted-foreground hover:text-foreground")
               }`} 
               data-testid="nav-home"
+              onClick={handleNavClick}
             >
               Home
               {isActive("/") && <div className={`absolute -bottom-1 left-0 right-0 h-0.5 rounded-full transition-colors duration-300 ${
@@ -105,6 +111,7 @@ export default function Header() {
                   : (isTransparent ? "text-white/80 hover:text-white" : "text-muted-foreground hover:text-foreground")
               }`} 
               data-testid="nav-about"
+              onClick={handleNavClick}
             >
               About
               {isActive("/about") && <div className={`absolute -bottom-1 left-0 right-0 h-0.5 rounded-full transition-colors duration-300 ${
@@ -119,6 +126,7 @@ export default function Header() {
                   : (isTransparent ? "text-white/80 hover:text-white" : "text-muted-foreground hover:text-foreground")
               }`} 
               data-testid="nav-news"
+              onClick={handleNavClick}
             >
               News
               {isActive("/news") && <div className={`absolute -bottom-1 left-0 right-0 h-0.5 rounded-full transition-colors duration-300 ${
@@ -133,6 +141,7 @@ export default function Header() {
                   : (isTransparent ? "text-white/80 hover:text-white" : "text-muted-foreground hover:text-foreground")
               }`} 
               data-testid="nav-contact"
+              onClick={handleNavClick}
             >
               Contact
               {isActive("/contact") && <div className={`absolute -bottom-1 left-0 right-0 h-0.5 rounded-full transition-colors duration-300 ${
@@ -144,7 +153,7 @@ export default function Header() {
           {/* Right side - CTA and Mobile Menu */}
           <div className="flex items-center space-x-4">
             {/* Premium CTA */}
-            <Link href="/contact" className="hidden md:block">
+            <Link href="/contact" className="hidden md:block" onClick={handleNavClick}>
               <Button 
                 className={`px-6 py-2 luxury-hover luxury-press font-medium text-[20px] transition-all duration-300 ${
                   isTransparent 
