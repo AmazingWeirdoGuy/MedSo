@@ -221,11 +221,11 @@ export default function Contact() {
                   <div className="space-y-3 text-primary-foreground/80 text-sm font-light">
                     <div className="flex items-center space-x-3">
                       <div className="w-1 h-1 bg-primary-foreground/60 rounded-full"></div>
-                      <span>Open to all grade levels</span>
+                      <span className="text-[#ffffff]">Open to all grade levels</span>
                     </div>
                     <div className="flex items-center space-x-3">
                       <div className="w-1 h-1 bg-primary-foreground/60 rounded-full"></div>
-                      <span>No prior medical knowledge required</span>
+                      <span className="text-[#ffffff]">No prior medical knowledge required</span>
                     </div>
                     <div className="flex items-center space-x-3">
                       <div className="w-1 h-1 bg-primary-foreground/60 rounded-full"></div>
