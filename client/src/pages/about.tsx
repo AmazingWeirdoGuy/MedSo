@@ -48,21 +48,21 @@ export default function About() {
 
 
   const ProfileCard = ({ person, showPosition = false, showDepartment = false, showImage = true }: { person: any, showPosition?: boolean, showDepartment?: boolean, showImage?: boolean }) => (
-    <div className="flex items-center space-x-3 p-3 hover:bg-gray-50 rounded-lg transition-all duration-200 ease-in-out hover:shadow-md hover:scale-[1.02]">
+    <div className="flex items-center space-x-4 p-4 bg-card dark:bg-card border border-border rounded-xl luxury-hover luxury-press" style={{ boxShadow: 'var(--shadow-hairline)' }}>
       {showImage && (
         <img 
           src={person.image} 
           alt={person.name}
-          className="w-12 h-12 rounded-full object-cover transition-transform duration-200 ease-in-out hover:scale-110"
+          className="w-14 h-14 rounded-full object-cover ring-2 ring-border"
         />
       )}
-      <div className="flex-1">
-        <h4 className="font-medium text-gray-900">{person.name}</h4>
+      <div className="flex-1 space-y-1">
+        <h4 className="font-medium text-foreground">{person.name}</h4>
         {showPosition && person.position && (
-          <p className="text-sm text-blue-600 font-medium">{person.position}</p>
+          <p className="text-sm text-primary font-medium">{person.position}</p>
         )}
         {showDepartment && person.department && (
-          <p className="text-sm text-gray-500">{person.department}</p>
+          <p className="text-sm text-muted-foreground">{person.department}</p>
         )}
       </div>
     </div>
@@ -81,47 +81,54 @@ export default function About() {
     children: React.ReactNode,
     testId: string 
   }) => (
-    <div className="border-b border-gray-200 last:border-b-0 overflow-hidden">
+    <div className="border-b border-border last:border-b-0 overflow-hidden bg-card dark:bg-card rounded-xl mb-3" style={{ boxShadow: 'var(--shadow-hairline)' }}>
       <button
         onClick={onToggle}
-        className="w-full px-4 py-4 sm:py-5 flex items-center justify-between text-left hover:bg-gray-50 transition-all duration-200 ease-in-out touch-manipulation"
+        className="w-full px-6 py-6 flex items-center justify-between text-left luxury-hover touch-manipulation"
         data-testid={testId}
       >
-        <span className="font-medium text-gray-900 uppercase tracking-wide text-sm">{title}</span>
-        <ChevronRight className={`w-4 h-4 text-gray-500 transition-transform duration-300 ease-in-out ${isOpen ? 'rotate-90' : 'rotate-0'}`} />
+        <span className="font-display text-foreground tracking-wide text-lg">{title}</span>
+        <ChevronRight className={`w-5 h-5 text-muted-foreground transition-transform duration-300 ${isOpen ? 'rotate-90' : 'rotate-0'}`} />
       </button>
-      <div className={`transition-all duration-300 ease-in-out ${isOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}`}>
-        <div className="px-4 pb-4">
-          {children}
+      <div className={`transition-all duration-300 ease-in-out ${isOpen ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'}`}>
+        <div className="px-6 pb-6 border-t border-border">
+          <div className="pt-6">
+            {children}
+          </div>
         </div>
       </div>
     </div>
   );
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background dark:bg-background">
       <Header />
-      <main className="py-16 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 ease-out">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      <main className="py-24 luxury-fade-in">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           
           {/* Centered Title */}
-          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-center text-gray-900 mb-12 sm:mb-16 font-display" data-testid="about-title">
-            About us
-          </h1>
+          <div className="text-center mb-20">
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-display text-foreground mb-6" data-testid="about-title">
+              About <span className="text-primary">Us</span>
+            </h1>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              Get to know the people and mission driving ISB Medical Society forward
+            </p>
+          </div>
 
-          <div className="grid lg:grid-cols-2 gap-8 lg:gap-16 items-start">
+          <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-start">
             
             {/* Left Side - Organization Description */}
-            <div data-testid="about-content">
-              <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-6 font-display" data-testid="org-title">Our club</h2>
+            <div className="luxury-scale-in" data-testid="about-content">
+              <h2 className="text-2xl sm:text-3xl font-display text-foreground mb-8" data-testid="org-title">Our Organization</h2>
               
-              <div className="space-y-6 text-gray-700 leading-relaxed">
+              <div className="space-y-8 text-muted-foreground leading-relaxed max-w-prose">
                 <p data-testid="about-description">
                   ISB MedSociety is more than just a student club — it's a community built by and for those who are passionate about the medical sciences. Founded on the belief that knowledge in medicine should not be confined to classrooms, our club provides a space where students can explore the world of healthcare, develop leadership skills, and make a meaningful impact.
                 </p>
                 
                 <div>
-                  <h3 className="font-semibold text-gray-900 mb-3 text-xl sm:text-2xl lg:text-[30px] font-display">Why we exist</h3>
+                  <h3 className="font-display text-foreground mb-4 text-xl">Why we exist</h3>
                   <p>
                     We believe the next generation of healthcare professionals must not only be knowledgeable but also empathetic, socially aware, and motivated to improve lives. ISB MedSociety nurtures this vision by creating opportunities to learn, to lead, and to give back.
                   </p>
@@ -130,8 +137,8 @@ export default function About() {
             </div>
 
             {/* Right Side - Team Members Accordion */}
-            <div data-testid="members-section">
-              <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+            <div className="luxury-fade-in" data-testid="members-section">
+              <div className="space-y-4">
                 
                 <AccordionSection
                   title="Website Manager"

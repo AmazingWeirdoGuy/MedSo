@@ -6,27 +6,27 @@ import { Mail, Instagram, MapPin, Clock } from "lucide-react";
 export default function Contact() {
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background dark:bg-background">
       <Header />
-      <main className="py-16 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 ease-out">
+      <main className="py-24 luxury-fade-in">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           
           {/* Page Header */}
-          <div className="text-center mb-12 sm:mb-16">
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-4 font-display" data-testid="contact-title">
-              Contact Us
+          <div className="text-center mb-20">
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-display text-foreground mb-6" data-testid="contact-title">
+              Contact <span className="text-primary">Us</span>
             </h1>
-            <p className="text-base sm:text-lg lg:text-xl text-gray-600 max-w-3xl mx-auto px-4">
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
               Get in touch with ISB Medical Society. We'd love to hear from you and answer any questions you may have.
             </p>
           </div>
 
-          <div className="grid lg:grid-cols-2 gap-8 lg:gap-16">
+          <div className="grid lg:grid-cols-2 gap-12 lg:gap-20">
             
             {/* Contact Form */}
-            <div data-testid="contact-form-section">
-              <Card className="shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 ease-in-out">
-                <CardContent className="pt-6">
+            <div className="luxury-scale-in" data-testid="contact-form-section">
+              <div className="bg-card dark:bg-card border border-border rounded-2xl overflow-hidden" style={{ boxShadow: 'var(--shadow-subtle)' }}>
+                <div className="p-6">
                   <div className="w-full" data-testid="google-form">
                     <iframe 
                       src="https://docs.google.com/forms/d/e/1FAIpQLSdU5C0GZRTXHHyQMo8jP6iACDbj8PXYKbwDLQIPrPSmjmmmyQ/viewform?embedded=true" 
@@ -51,8 +51,8 @@ export default function Contact() {
                       </a>
                     </div>
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             </div>
 
             {/* Contact Information */}
