@@ -190,10 +190,11 @@ export default function Hero() {
             <div className="flex flex-col sm:flex-row gap-6 justify-center pt-8">
               <Button 
                 size="lg" 
-                className="bg-primary/80 hover:bg-primary/90 text-white px-12 py-6 text-lg font-medium luxury-hover luxury-press border-0 rounded-xl backdrop-blur-sm"
+                className="bg-primary/80 hover:bg-primary/90 text-white px-12 py-6 text-lg font-medium luxury-hover luxury-press border border-white/20 rounded-xl backdrop-blur-md"
                 style={{ 
-                  boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.1)',
-                  minWidth: '200px'
+                  boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
+                  minWidth: '200px',
+                  background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.8) 0%, rgba(37, 99, 235, 0.9) 100%)'
                 }}
                 data-testid="hero-cta-primary"
                 onClick={handleJoinClick}
@@ -209,10 +210,11 @@ export default function Hero() {
               <Button 
                 size="lg" 
                 variant="outline" 
-                className="border-2 border-white/30 hover:border-white/50 bg-white/10 hover:bg-white/20 text-white backdrop-blur-sm px-12 py-6 text-lg font-medium luxury-hover luxury-press rounded-xl"
+                className="border border-white/30 hover:border-white/50 bg-white/15 hover:bg-white/25 text-primary hover:text-primary/90 backdrop-blur-md px-12 py-6 text-lg font-medium luxury-hover luxury-press rounded-xl"
                 style={{ 
-                  boxShadow: '0 8px 32px rgba(0, 0, 0, 0.2)',
-                  minWidth: '200px'
+                  boxShadow: '0 8px 32px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.3)',
+                  minWidth: '200px',
+                  background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.25) 100%)'
                 }}
                 data-testid="hero-cta-secondary"
                 onClick={handleLearnMoreClick}
