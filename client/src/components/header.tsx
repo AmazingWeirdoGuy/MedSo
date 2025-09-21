@@ -40,8 +40,9 @@ export default function Header() {
       const scrollY = window.scrollY;
       const heroHeight = window.innerHeight; // Hero is h-screen (full viewport height)
       
-      // Header becomes solid once we scroll past 20% of the hero height
-      setIsScrolledPastHero(scrollY > heroHeight * 0.2);
+      // Header becomes transparent when scrolled into hero (past 50px) and solid again when past hero
+      const inHeroArea = scrollY > 50 && scrollY < heroHeight * 0.9;
+      setIsScrolledPastHero(!inHeroArea); // Inverted logic: false = transparent, true = solid
     };
 
     // Initial check
