@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import groupPhotoImage from "@assets/97ccae24-4d7b-48c9-a16e-40476198cbd1_1758466251232.png";
 import hospitalVisitImage from "@assets/e5a0817e-1bad-4a67-bc34-45225337e332_1758466243134.png";
 import educationImage from "@assets/16fd4d4d-d0b8-481f-821d-9d4b8ccae2f6_1758466251232.png";
@@ -24,6 +24,7 @@ export default function Hero() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isPlaying, setIsPlaying] = useState(true);
   const [scrollOpacity, setScrollOpacity] = useState(1);
+  const [location, navigate] = useLocation();
 
   // Auto-advance carousel
   useEffect(() => {
@@ -81,6 +82,18 @@ export default function Hero() {
         });
       }
     }
+  };
+
+  // Handle Join Our Mission button click
+  const handleJoinClick = () => {
+    if (location === '/contact') {
+      // If already on contact page, scroll to top
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else {
+      // If not on contact page, navigate to contact page
+      navigate('/contact');
+    }
+    handleInteraction();
   };
 
   return (
@@ -153,20 +166,18 @@ export default function Hero() {
 
             {/* Premium CTAs */}
             <div className="flex flex-col sm:flex-row gap-6 justify-center pt-8">
-              <Link href="/contact">
-                <Button 
-                  size="lg" 
-                  className="bg-sky-400 hover:bg-sky-500 text-white px-12 py-6 text-lg font-medium luxury-hover luxury-press border-0 rounded-xl backdrop-blur-sm"
-                  style={{ 
-                    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.1)',
-                    minWidth: '200px'
-                  }}
-                  data-testid="hero-cta-primary"
-                  onClick={handleInteraction}
-                >
-                  Join Our Mission
-                </Button>
-              </Link>
+              <Button 
+                size="lg" 
+                className="bg-sky-400 hover:bg-sky-500 text-white px-12 py-6 text-lg font-medium luxury-hover luxury-press border-0 rounded-xl backdrop-blur-sm"
+                style={{ 
+                  boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.1)',
+                  minWidth: '200px'
+                }}
+                data-testid="hero-cta-primary"
+                onClick={handleJoinClick}
+              >
+                Join Our Mission
+              </Button>
               
               <Link href="/about">
                 <Button 
