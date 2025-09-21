@@ -35,7 +35,7 @@ export default function Programs() {
   ];
 
   return (
-    <section className="py-24 bg-background dark:bg-background relative overflow-hidden" data-testid="activities-section">
+    <section className="py-24 bg-gradient-to-br from-muted/20 via-background to-slate-50/30 dark:from-slate-900/30 dark:via-background dark:to-slate-800/20 relative overflow-hidden" data-testid="activities-section">
       {/* Background Pattern */}
       <div className="absolute inset-0 -z-10 opacity-20">
         <div className="absolute top-20 left-10 w-72 h-72 bg-primary/5 rounded-full blur-3xl" />
@@ -56,9 +56,9 @@ export default function Programs() {
           {programs.map((program, index) => (
             <div 
               key={program.id}
-              className="group bg-card dark:bg-card border border-border rounded-2xl overflow-hidden luxury-hover luxury-press flex flex-col h-full"
+              className="group bg-card dark:bg-card border-2 border-border/50 hover:border-border rounded-2xl overflow-hidden luxury-hover luxury-press flex flex-col h-full surface-elevated"
               style={{ 
-                boxShadow: 'var(--shadow-hairline)',
+                boxShadow: 'var(--shadow-subtle)',
                 animationDelay: `${index * 100}ms`
               }}
               data-testid={`card-activity-${program.id}`}

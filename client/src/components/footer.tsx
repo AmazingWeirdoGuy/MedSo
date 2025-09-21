@@ -4,7 +4,7 @@ import logoImage from "@assets/logo_1756537062633.jpg";
 
 export default function Footer() {
   return (
-    <footer className="bg-gray-900 text-gray-300 py-16" data-testid="footer">
+    <footer className="bg-gradient-to-br from-slate-900 via-[var(--graphite)] to-slate-800 text-slate-300 py-16 texture-noise border-t border-slate-700/50" data-testid="footer" style={{ boxShadow: 'inset 0 1px 0 0 rgb(148 163 184 / 0.1)' }}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid md:grid-cols-4 gap-8">
           {/* Quick Links */}
@@ -60,7 +60,7 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="border-t border-gray-700 mt-12 pt-8">
+        <div className="border-t border-slate-700/70 mt-12 pt-8">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
             <p className="text-sm" data-testid="footer-copyright">© 2025 ISB Medical Society. All rights reserved.</p>
             <div className="flex items-center gap-6 text-sm">

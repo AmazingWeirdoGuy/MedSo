@@ -5,7 +5,7 @@ export default function News() {
   const newsItems: any[] = [];
 
   return (
-    <section className="py-24 bg-gradient-to-br from-slate-50/40 via-white to-blue-50/20 dark:from-slate-900/50 dark:via-slate-800/30 dark:to-slate-900/50 relative" data-testid="news-section">
+    <section className="py-24 bg-gradient-to-br from-muted/30 via-background to-blue-50/20 dark:from-slate-900/40 dark:via-background dark:to-slate-800/20 relative texture-subtle" data-testid="news-section">
       {/* Subtle Decorative Elements */}
       <div className="absolute inset-0 -z-10 opacity-30">
         <div className="absolute top-32 right-20 w-48 h-48 bg-primary/8 rounded-full blur-2xl" />
@@ -25,7 +25,7 @@ export default function News() {
         {newsItems.length === 0 ? (
           <div className="text-center py-16 luxury-scale-in" data-testid="news-empty-state">
             <div className="max-w-lg mx-auto">
-              <div className="bg-card dark:bg-card border border-border rounded-2xl p-12" style={{ boxShadow: 'var(--shadow-hairline)' }}>
+              <div className="bg-card dark:bg-card border-2 border-border/60 rounded-2xl p-12 surface-elevated" style={{ boxShadow: 'var(--shadow-medium)' }}>
                 <div className="w-16 h-16 bg-primary/10 dark:bg-primary/20 rounded-2xl flex items-center justify-center mx-auto mb-8">
                   <Instagram className="text-primary w-8 h-8" />
                 </div>

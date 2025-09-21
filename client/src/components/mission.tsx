@@ -2,7 +2,7 @@ import { GraduationCap, Scale, Globe } from "lucide-react";
 
 export default function Mission() {
   return (
-    <section className="py-24 bg-gradient-to-br from-slate-50/50 via-blue-50/30 to-slate-50/50 dark:from-slate-800/30 dark:via-slate-700/20 dark:to-slate-800/30" data-testid="mission-section">
+    <section className="py-24 bg-gradient-to-br from-slate-50/50 via-blue-50/30 to-slate-50/50 dark:from-slate-800/30 dark:via-slate-700/20 dark:to-slate-800/30 texture-noise relative" data-testid="mission-section">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-20 luxury-fade-in">
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-display text-foreground mb-6" data-testid="mission-title">
@@ -15,8 +15,8 @@ export default function Mission() {
 
         <div className="grid md:grid-cols-3 gap-8 lg:gap-12">
           {/* Healthcare Education */}
-          <div className="group bg-card dark:bg-card border border-border rounded-2xl p-8 text-center luxury-hover luxury-press" 
-               style={{ boxShadow: 'var(--shadow-hairline)' }}
+          <div className="group bg-card dark:bg-card border border-border rounded-2xl p-8 text-center luxury-hover luxury-press surface-elevated" 
+               style={{ boxShadow: 'var(--shadow-subtle)' }}
                data-testid="card-education">
             <div className="w-20 h-20 bg-primary/10 dark:bg-primary/20 rounded-2xl flex items-center justify-center mx-auto mb-8 group-hover:bg-primary/15 transition-colors duration-300">
               <GraduationCap className="text-primary w-10 h-10" />
@@ -30,8 +30,8 @@ export default function Mission() {
           </div>
 
           {/* Healthcare Equity */}
-          <div className="group bg-card dark:bg-card border border-border rounded-2xl p-8 text-center luxury-hover luxury-press" 
-               style={{ boxShadow: 'var(--shadow-hairline)' }}
+          <div className="group bg-card dark:bg-card border border-border rounded-2xl p-8 text-center luxury-hover luxury-press surface-elevated" 
+               style={{ boxShadow: 'var(--shadow-subtle)' }}
                data-testid="card-equity">
             <div className="w-20 h-20 bg-accent/10 dark:bg-accent/20 rounded-2xl flex items-center justify-center mx-auto mb-8 group-hover:bg-accent/15 transition-colors duration-300">
               <Scale className="text-accent w-10 h-10" />
@@ -45,8 +45,8 @@ export default function Mission() {
           </div>
 
           {/* Global Impact */}
-          <div className="group bg-card dark:bg-card border border-border rounded-2xl p-8 text-center luxury-hover luxury-press" 
-               style={{ boxShadow: 'var(--shadow-hairline)' }}
+          <div className="group bg-card dark:bg-card border border-border rounded-2xl p-8 text-center luxury-hover luxury-press surface-elevated" 
+               style={{ boxShadow: 'var(--shadow-subtle)' }}
                data-testid="card-impact">
             <div className="w-20 h-20 bg-primary/10 dark:bg-primary/20 rounded-2xl flex items-center justify-center mx-auto mb-8 group-hover:bg-primary/15 transition-colors duration-300">
               <Globe className="text-primary w-10 h-10" />

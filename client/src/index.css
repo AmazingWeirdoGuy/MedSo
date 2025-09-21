@@ -44,20 +44,24 @@
   --primary-blue: hsl(221, 83%, 53%);
   --secondary-teal: hsl(180, 65%, 45%);
   
-  /* Luxury Shadows */
-  --shadow-hairline: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-  --shadow-subtle: 0 2px 8px 0 rgb(0 0 0 / 0.08);
-  --shadow-medium: 0 4px 16px 0 rgb(0 0 0 / 0.12);
+  /* Luxury Shadows - Enhanced for better separation */
+  --shadow-hairline: 0 1px 3px 0 rgb(0 0 0 / 0.08);
+  --shadow-subtle: 0 3px 12px 0 rgb(0 0 0 / 0.1);
+  --shadow-medium: 0 6px 20px 0 rgb(0 0 0 / 0.15);
+  --shadow-elevated: 0 10px 30px 0 rgb(0 0 0 / 0.2);
   
   /* Premium Motion */
   --ease-luxury: cubic-bezier(0.2, 0.8, 0.2, 1);
   --duration-fast: 200ms;
   --duration-medium: 300ms;
 
-  /* Design System Tokens */
+  /* Design System Tokens - Enhanced contrast */
   --background: var(--paper);
+  --background-subtle: hsl(210, 20%, 98%);
+  --background-muted: hsl(210, 15%, 96%);
   --foreground: var(--ink);
   --card: var(--paper);
+  --card-subtle: hsl(210, 25%, 97%);
   --card-foreground: var(--ink);
   --popover: var(--paper);
   --popover-foreground: var(--ink);
@@ -71,8 +75,9 @@
   --accent-foreground: var(--paper);
   --destructive: hsl(0, 84%, 60%);
   --destructive-foreground: var(--paper);
-  --border: hsl(210, 4%, 92%);
-  --input: hsl(210, 4%, 92%);
+  --border: hsl(210, 8%, 88%);
+  --border-subtle: hsl(210, 4%, 94%);
+  --input: hsl(210, 8%, 90%);
   --ring: var(--primary-blue);
   --chart-1: var(--primary-blue);
   --chart-2: var(--secondary-teal);
@@ -107,8 +112,11 @@
 .dark {
   /* Dark Mode: Sophisticated Graphite */
   --background: var(--ink);
+  --background-subtle: hsl(210, 12%, 6%);
+  --background-muted: hsl(210, 10%, 8%);
   --foreground: var(--paper);
   --card: var(--graphite);
+  --card-subtle: hsl(210, 8%, 18%);
   --card-foreground: var(--paper);
   --popover: var(--graphite);
   --popover-foreground: var(--paper);
@@ -122,7 +130,8 @@
   --accent-foreground: var(--paper);
   --destructive: hsl(0, 63%, 31%);
   --destructive-foreground: var(--paper);
-  --border: var(--slate);
+  --border: hsl(210, 6%, 30%);
+  --border-subtle: hsl(210, 6%, 20%);
   --input: var(--slate);
   --ring: var(--primary-blue);
   --sidebar: var(--graphite);
@@ -210,6 +219,29 @@
 
   .luxury-scale-in {
     animation: luxury-scale-in var(--duration-medium) var(--ease-luxury) both;
+  }
+
+  /* Premium Texture Effects */
+  .texture-subtle {
+    background-image: 
+      radial-gradient(circle at 1px 1px, rgba(255,255,255,0.15) 1px, transparent 0);
+    background-size: 20px 20px;
+  }
+  
+  .texture-noise {
+    background-image: 
+      url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.02'/%3E%3C/svg%3E");
+  }
+
+  /* Enhanced Surface Hierarchy */
+  .surface-elevated {
+    background: hsl(from var(--background) h s calc(l + 1%));
+    border: 1px solid var(--border-subtle);
+  }
+  
+  .surface-sunken {
+    background: hsl(from var(--background) h s calc(l - 1%));
+    border: 1px solid var(--border);
   }
 
   /* Respect reduced motion preferences */

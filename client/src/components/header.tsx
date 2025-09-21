@@ -29,7 +29,7 @@ export default function Header() {
   };
 
   return (
-    <header className="bg-background dark:bg-background border-b border-border sticky top-0 z-50" style={{ boxShadow: 'var(--shadow-hairline)' }}>
+    <header className="bg-background/95 dark:bg-background/95 backdrop-blur-sm border-b border-border sticky top-0 z-50 surface-elevated" style={{ boxShadow: 'var(--shadow-subtle)' }}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-20">
           {/* Logo */}
