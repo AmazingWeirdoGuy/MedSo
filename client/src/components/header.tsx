@@ -49,7 +49,7 @@ export default function Header() {
           <nav className="hidden lg:flex items-center space-x-8" data-testid="navigation">
             <Link 
               href="/" 
-              className={`relative font-medium transition-colors duration-200 ${isActive("/") ? "text-primary" : "text-muted-foreground hover:text-foreground"}`} 
+              className={`relative font-display font-medium transition-colors duration-200 ${isActive("/") ? "text-primary" : "text-muted-foreground hover:text-foreground"}`} 
               data-testid="nav-home"
             >
               Home
@@ -57,7 +57,7 @@ export default function Header() {
             </Link>
             <Link 
               href="/about" 
-              className={`relative font-medium transition-colors duration-200 ${isActive("/about") ? "text-primary" : "text-muted-foreground hover:text-foreground"}`} 
+              className={`relative font-display font-medium transition-colors duration-200 ${isActive("/about") ? "text-primary" : "text-muted-foreground hover:text-foreground"}`} 
               data-testid="nav-about"
             >
               About
@@ -65,7 +65,7 @@ export default function Header() {
             </Link>
             <Link 
               href="/news" 
-              className={`relative font-medium transition-colors duration-200 ${isActive("/news") ? "text-primary" : "text-muted-foreground hover:text-foreground"}`} 
+              className={`relative font-display font-medium transition-colors duration-200 ${isActive("/news") ? "text-primary" : "text-muted-foreground hover:text-foreground"}`} 
               data-testid="nav-news"
             >
               News
@@ -73,7 +73,7 @@ export default function Header() {
             </Link>
             <Link 
               href="/contact" 
-              className={`relative font-medium transition-colors duration-200 ${isActive("/contact") ? "text-primary" : "text-muted-foreground hover:text-foreground"}`} 
+              className={`relative font-display font-medium transition-colors duration-200 ${isActive("/contact") ? "text-primary" : "text-muted-foreground hover:text-foreground"}`} 
               data-testid="nav-contact"
             >
               Contact
@@ -113,7 +113,7 @@ export default function Header() {
             <div className="space-y-3">
               <Link 
                 href="/" 
-                className={`block font-medium py-3 px-4 rounded-xl luxury-hover ${isActive("/") ? "text-primary bg-primary/10" : "text-muted-foreground hover:text-foreground hover:bg-muted/50"}`}
+                className={`block font-display font-medium py-3 px-4 rounded-xl luxury-hover ${isActive("/") ? "text-primary bg-primary/10" : "text-muted-foreground hover:text-foreground hover:bg-muted/50"}`}
                 onClick={handleMobileNavClick}
                 data-testid="mobile-nav-home"
               >
@@ -121,7 +121,7 @@ export default function Header() {
               </Link>
               <Link 
                 href="/about" 
-                className={`block font-medium py-3 px-4 rounded-xl luxury-hover ${isActive("/about") ? "text-primary bg-primary/10" : "text-muted-foreground hover:text-foreground hover:bg-muted/50"}`}
+                className={`block font-display font-medium py-3 px-4 rounded-xl luxury-hover ${isActive("/about") ? "text-primary bg-primary/10" : "text-muted-foreground hover:text-foreground hover:bg-muted/50"}`}
                 onClick={handleMobileNavClick}
                 data-testid="mobile-nav-about"
               >
@@ -129,7 +129,7 @@ export default function Header() {
               </Link>
               <Link 
                 href="/news" 
-                className={`block font-medium py-3 px-4 rounded-xl luxury-hover ${isActive("/news") ? "text-primary bg-primary/10" : "text-muted-foreground hover:text-foreground hover:bg-muted/50"}`}
+                className={`block font-display font-medium py-3 px-4 rounded-xl luxury-hover ${isActive("/news") ? "text-primary bg-primary/10" : "text-muted-foreground hover:text-foreground hover:bg-muted/50"}`}
                 onClick={handleMobileNavClick}
                 data-testid="mobile-nav-news"
               >
@@ -137,7 +137,7 @@ export default function Header() {
               </Link>
               <Link 
                 href="/contact" 
-                className={`block font-medium py-3 px-4 rounded-xl luxury-hover ${isActive("/contact") ? "text-primary bg-primary/10" : "text-muted-foreground hover:text-foreground hover:bg-muted/50"}`}
+                className={`block font-display font-medium py-3 px-4 rounded-xl luxury-hover ${isActive("/contact") ? "text-primary bg-primary/10" : "text-muted-foreground hover:text-foreground hover:bg-muted/50"}`}
                 onClick={handleMobileNavClick}
                 data-testid="mobile-nav-contact"
               >
