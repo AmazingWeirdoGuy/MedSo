@@ -126,7 +126,7 @@ export default function About() {
                 </p>
                 
                 <div>
-                  <h3 className="font-display text-foreground mb-4 text-xl">Why We Exist?</h3>
+                  <h3 className="font-display text-foreground mb-4 text-[30px]">Why We Exist</h3>
                   <p className="text-justify">
                     We believe the next generation of healthcare professionals must not only be knowledgeable but also empathetic, socially aware, and motivated to improve lives. ISB MedSociety nurtures this vision by creating opportunities to learn, to lead, and to give back.
                   </p>
