@@ -115,23 +115,45 @@
 
   /* Enhanced Beo Font Display Styling */
   .font-display {
-    font-weight: 700 !important;
+    font-weight: 900 !important;
     letter-spacing: 0.025em;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    text-shadow: 
+      0 1px 2px rgba(0, 0, 0, 0.3),
+      1px 0 0 currentColor,
+      -1px 0 0 currentColor,
+      0 1px 0 currentColor,
+      0 -1px 0 currentColor;
     line-height: 1.1;
+    -webkit-text-stroke: 0.5px currentColor;
   }
 
   /* Large headings get extra styling */
   h1.font-display, h2.font-display {
     letter-spacing: 0.05em;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
-    font-weight: 700 !important;
+    text-shadow: 
+      0 2px 4px rgba(0, 0, 0, 0.3),
+      2px 0 0 currentColor,
+      -2px 0 0 currentColor,
+      0 2px 0 currentColor,
+      0 -2px 0 currentColor,
+      1px 1px 0 currentColor,
+      -1px -1px 0 currentColor,
+      1px -1px 0 currentColor,
+      -1px 1px 0 currentColor;
+    font-weight: 900 !important;
+    -webkit-text-stroke: 1px currentColor;
   }
 
   /* Logo gets special treatment */
   .font-display.text-xl {
     letter-spacing: 0.1em;
-    text-shadow: 0 1px 3px rgba(37, 99, 235, 0.2);
+    text-shadow: 
+      0 1px 3px rgba(37, 99, 235, 0.4),
+      1px 0 0 currentColor,
+      -1px 0 0 currentColor,
+      0 1px 0 currentColor,
+      0 -1px 0 currentColor;
+    -webkit-text-stroke: 0.75px currentColor;
   }
 }
 
