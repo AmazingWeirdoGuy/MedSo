@@ -23,6 +23,7 @@ const heroImages = [
 export default function Hero() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isPlaying, setIsPlaying] = useState(true);
+  const [scrollOpacity, setScrollOpacity] = useState(1);
 
   // Auto-advance carousel
   useEffect(() => {
@@ -34,6 +35,29 @@ export default function Hero() {
     
     return () => clearInterval(interval);
   }, [isPlaying]);
+
+  // Scroll fade effect
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollY = window.scrollY;
+      const windowHeight = window.innerHeight;
+      const fadeStart = windowHeight * 0.3; // Start fading at 30% of viewport height
+      const fadeEnd = windowHeight * 0.6; // Completely faded at 60% of viewport height
+      
+      if (scrollY <= fadeStart) {
+        setScrollOpacity(1);
+      } else if (scrollY >= fadeEnd) {
+        setScrollOpacity(0);
+      } else {
+        // Calculate opacity between fadeStart and fadeEnd
+        const fadeProgress = (scrollY - fadeStart) / (fadeEnd - fadeStart);
+        setScrollOpacity(1 - fadeProgress);
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   // Pause on user interaction
   const handleInteraction = () => {
@@ -87,7 +111,10 @@ export default function Hero() {
       <div className="absolute inset-0 bg-gradient-to-br from-transparent via-black/30 to-black/50" />
       
       {/* Content Container */}
-      <div className="relative z-10 h-full flex items-center justify-center px-4 sm:px-6 lg:px-8">
+      <div 
+        className="relative z-10 h-full flex items-center justify-center px-4 sm:px-6 lg:px-8 transition-opacity duration-300 ease-out"
+        style={{ opacity: scrollOpacity }}
+      >
         <div className="max-w-5xl mx-auto text-center">
           
           {/* Main Content */}
