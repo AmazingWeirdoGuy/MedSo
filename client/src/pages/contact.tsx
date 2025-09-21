@@ -229,7 +229,7 @@ export default function Contact() {
                     </div>
                     <div className="flex items-center space-x-3">
                       <div className="w-1 h-1 bg-primary-foreground/60 rounded-full"></div>
-                      <span>Weekly meetings and activities</span>
+                      <span className="text-[#ffffff]">Weekly meetings and activities</span>
                     </div>
                     <div className="flex items-center space-x-3">
                       <div className="w-1 h-1 bg-primary-foreground/60 rounded-full"></div>
