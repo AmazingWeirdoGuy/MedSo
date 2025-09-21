@@ -227,21 +227,21 @@ export default function Contact() {
                     ISB Medical Society welcomes students passionate about healthcare, 
                     medicine, and positive community impact.
                   </p>
-                  <div className="space-y-3 text-primary-foreground/80 text-sm font-light">
-                    <div className="flex items-center space-x-3">
-                      <div className="w-1 h-1 bg-primary-foreground/60 rounded-full"></div>
+                  <div className="space-y-4 text-primary-foreground/80 text-sm font-light">
+                    <div className="flex items-center space-x-4">
+                      <div className="w-2 h-2 bg-white rounded-sm rotate-45"></div>
                       <span className="text-[#ffffff]">Open to all grade levels</span>
                     </div>
-                    <div className="flex items-center space-x-3">
-                      <div className="w-1 h-1 bg-primary-foreground/60 rounded-full"></div>
+                    <div className="flex items-center space-x-4">
+                      <div className="w-2 h-2 bg-white rounded-sm rotate-45"></div>
                       <span className="text-[#ffffff]">No prior medical knowledge required</span>
                     </div>
-                    <div className="flex items-center space-x-3">
-                      <div className="w-1 h-1 bg-primary-foreground/60 rounded-full"></div>
+                    <div className="flex items-center space-x-4">
+                      <div className="w-2 h-2 bg-white rounded-sm rotate-45"></div>
                       <span className="text-[#ffffff]">Weekly meetings and activities</span>
                     </div>
-                    <div className="flex items-center space-x-3">
-                      <div className="w-1 h-1 bg-primary-foreground/60 rounded-full"></div>
+                    <div className="flex items-center space-x-4">
+                      <div className="w-2 h-2 bg-white rounded-sm rotate-45"></div>
                       <span className="text-[#ffffff]">Leadership opportunities</span>
                     </div>
                   </div>
