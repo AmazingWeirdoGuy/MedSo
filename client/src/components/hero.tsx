@@ -1,21 +1,22 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
-import posterImage from "@assets/poster_1756536893578.png";
+import hospitalVisitImage from "@assets/e5a0817e-1bad-4a67-bc34-45225337e332_1758465847464.png";
+import educationImage from "@assets/16fd4d4d-d0b8-481f-821d-9d4b8ccae2f6_1758465852659.png";
+import trainingImage from "@assets/97ccae24-4d7b-48c9-a16e-40476198cbd1_1758465852659.png";
 
-// Placeholder images - user will replace with new photos
 const heroImages = [
   {
-    src: posterImage,
-    alt: "ISB Medical Society - Healthcare Education"
+    src: hospitalVisitImage,
+    alt: "ISB Medical Society - Hospital Community Outreach"
   },
   {
-    src: posterImage, // Will be replaced with new images
-    alt: "ISB Medical Society - Community Outreach"
+    src: educationImage,
+    alt: "ISB Medical Society - Health Education Programs"
   },
   {
-    src: posterImage, // Will be replaced with new images  
-    alt: "ISB Medical Society - Medical Training"
+    src: trainingImage,
+    alt: "ISB Medical Society - First Aid Training Certification"
   }
 ];
 
