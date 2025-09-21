@@ -8,7 +8,6 @@ export default function Contact() {
   return (
     <div className="min-h-screen bg-slate-900 dark:bg-slate-950">
       <Header />
-      
       {/* Premium Hero Section */}
       <section className="relative bg-gradient-to-b from-slate-900 to-slate-800 py-32 lg:py-40">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(148,163,184,0.05),transparent_50%)]"></div>
@@ -29,7 +28,6 @@ export default function Contact() {
           </div>
         </div>
       </section>
-
       <main className="relative bg-slate-50 dark:bg-slate-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 lg:py-32">
 
@@ -107,9 +105,7 @@ export default function Contact() {
                           >
                             info@isbmedicalsociety.org
                           </a>
-                          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1 font-light">
-                            24-hour response time
-                          </p>
+                          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1 font-light">We try to reply in a timely manner</p>
                         </div>
                       </div>
                     </div>
