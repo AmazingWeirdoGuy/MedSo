@@ -159,29 +159,29 @@ export default function Contact() {
                 </div>
 
                 {/* Membership Information */}
-                <div className="bg-sky-400 dark:bg-sky-500 p-8 lg:p-10">
+                <div className="bg-primary p-8 lg:p-10">
                   <h3 className="text-2xl font-light text-white mb-6">
                     Join our community
                   </h3>
-                  <p className="text-sky-50 mb-8 font-light leading-relaxed">
+                  <p className="text-slate-100 mb-8 font-light leading-relaxed">
                     ISB Medical Society welcomes students passionate about healthcare, 
                     medicine, and positive community impact.
                   </p>
-                  <div className="space-y-3 text-sky-100 text-sm font-light">
+                  <div className="space-y-3 text-slate-200 text-sm font-light">
                     <div className="flex items-center space-x-3">
-                      <div className="w-1 h-1 bg-sky-200 rounded-full"></div>
+                      <div className="w-1 h-1 bg-slate-300 rounded-full"></div>
                       <span>Open to all grade levels</span>
                     </div>
                     <div className="flex items-center space-x-3">
-                      <div className="w-1 h-1 bg-sky-200 rounded-full"></div>
+                      <div className="w-1 h-1 bg-slate-300 rounded-full"></div>
                       <span>No prior medical knowledge required</span>
                     </div>
                     <div className="flex items-center space-x-3">
-                      <div className="w-1 h-1 bg-sky-200 rounded-full"></div>
+                      <div className="w-1 h-1 bg-slate-300 rounded-full"></div>
                       <span>Weekly meetings and activities</span>
                     </div>
                     <div className="flex items-center space-x-3">
-                      <div className="w-1 h-1 bg-sky-200 rounded-full"></div>
+                      <div className="w-1 h-1 bg-slate-300 rounded-full"></div>
                       <span>Leadership opportunities</span>
                     </div>
                   </div>
