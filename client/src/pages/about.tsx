@@ -111,9 +111,7 @@ export default function About() {
             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-display text-foreground mb-6" data-testid="about-title">
               About <span className="text-primary">Us</span>
             </h1>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Get to know the people and mission driving ISB Medical Society forward
-            </p>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">Get to know the people driving ISB Medical Society forward</p>
           </div>
 
           <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-start">
