@@ -1,10 +1,13 @@
+import { useState } from "react";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
 import { Button } from "@/components/ui/button";
 import { Calendar, User } from "lucide-react";
+import { Loading } from "@/components/ui/loading";
 
 export default function News() {
   const newsArticles: any[] = [];
+  const [loadingMore, setLoadingMore] = useState(false);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -104,8 +107,20 @@ export default function News() {
                   variant="outline" 
                   className="px-8 py-3 text-lg border-2 border-primary text-primary hover:bg-primary hover:text-white transition-colors"
                   data-testid="button-load-more"
+                  onClick={() => {
+                    setLoadingMore(true);
+                    setTimeout(() => setLoadingMore(false), 2000);
+                  }}
+                  disabled={loadingMore}
                 >
-                  Load More News
+                  {loadingMore ? (
+                    <div className="flex items-center gap-2">
+                      <Loading size="sm" />
+                      <span>Loading more news...</span>
+                    </div>
+                  ) : (
+                    'Load More News'
+                  )}
                 </Button>
               </div>
             </>

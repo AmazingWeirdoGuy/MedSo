@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Link, useLocation } from "wouter";
+import { Loading } from "@/components/ui/loading";
 import groupPhotoImage from "@assets/97ccae24-4d7b-48c9-a16e-40476198cbd1_1758466251232.png";
 import hospitalVisitImage from "@assets/e5a0817e-1bad-4a67-bc34-45225337e332_1758466243134.png";
 import educationImage from "@assets/16fd4d4d-d0b8-481f-821d-9d4b8ccae2f6_1758466251232.png";
@@ -25,6 +26,7 @@ export default function Hero() {
   const [isPlaying, setIsPlaying] = useState(true);
   const [scrollOpacity, setScrollOpacity] = useState(1);
   const [location, navigate] = useLocation();
+  const [loadingButton, setLoadingButton] = useState<string | null>(null);
 
   // Auto-advance carousel
   useEffect(() => {
@@ -86,26 +88,34 @@ export default function Hero() {
 
   // Handle Join Our Mission button click
   const handleJoinClick = () => {
-    if (location === '/contact') {
-      // If already on contact page, scroll to top
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    } else {
-      // If not on contact page, navigate to contact page
-      navigate('/contact');
-    }
-    handleInteraction();
+    setLoadingButton('join');
+    setTimeout(() => {
+      if (location === '/contact') {
+        // If already on contact page, scroll to top
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } else {
+        // If not on contact page, navigate to contact page
+        navigate('/contact');
+      }
+      setLoadingButton(null);
+      handleInteraction();
+    }, 500);
   };
 
   // Handle Learn More button click
   const handleLearnMoreClick = () => {
-    if (location === '/about') {
-      // If already on about page, scroll to top
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    } else {
-      // If not on about page, navigate to about page
-      navigate('/about');
-    }
-    handleInteraction();
+    setLoadingButton('learn');
+    setTimeout(() => {
+      if (location === '/about') {
+        // If already on about page, scroll to top
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } else {
+        // If not on about page, navigate to about page
+        navigate('/about');
+      }
+      setLoadingButton(null);
+      handleInteraction();
+    }, 500);
   };
 
   return (
@@ -187,8 +197,16 @@ export default function Hero() {
                 }}
                 data-testid="hero-cta-primary"
                 onClick={handleJoinClick}
+                disabled={loadingButton === 'join'}
               >
-                Join Our Mission
+                {loadingButton === 'join' ? (
+                  <div className="flex items-center gap-2">
+                    <Loading size="sm" />
+                    <span>Loading...</span>
+                  </div>
+                ) : (
+                  'Join Our Mission'
+                )}
               </Button>
               
               <Button 
@@ -201,8 +219,16 @@ export default function Hero() {
                 }}
                 data-testid="hero-cta-secondary"
                 onClick={handleLearnMoreClick}
+                disabled={loadingButton === 'learn'}
               >
-                Learn More
+                {loadingButton === 'learn' ? (
+                  <div className="flex items-center gap-2">
+                    <Loading size="sm" />
+                    <span>Loading...</span>
+                  </div>
+                ) : (
+                  'Learn More'
+                )}
               </Button>
             </div>
           </div>

@@ -2,12 +2,14 @@ import { useState, useEffect } from "react";
 import { Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link, useLocation } from "wouter";
+import { Loading } from "@/components/ui/loading";
 import logoImage from "@assets/logo_1756537062633.jpg";
 
 export default function Header() {
   const [location] = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isScrolledPastHero, setIsScrolledPastHero] = useState(false);
+  const [loadingNav, setLoadingNav] = useState(false);
   
   const isActive = (path: string) => {
     if (path === "/" && location === "/") return true;
@@ -30,8 +32,12 @@ export default function Header() {
   };
 
   const handleNavClick = () => {
-    // Scroll to top when navigating on desktop
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    setLoadingNav(true);
+    setTimeout(() => {
+      // Scroll to top when navigating on desktop
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      setLoadingNav(false);
+    }, 300);
   };
 
   // Scroll detection for home page header transparency
@@ -162,8 +168,15 @@ export default function Header() {
                 }`}
                 style={isTransparent ? {} : { boxShadow: 'var(--shadow-hairline)' }}
                 data-testid="header-cta"
+                disabled={loadingNav}
               >
-                Join Us
+                {loadingNav ? (
+                  <div className="flex items-center gap-2">
+                    <Loading size="sm" />
+                  </div>
+                ) : (
+                  'Join Us'
+                )}
               </Button>
             </Link>
 

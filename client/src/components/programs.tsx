@@ -1,12 +1,16 @@
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
+import { Loading } from "@/components/ui/loading";
 import firstOnTheSceneImage from "@assets/firstonthescene_1756537744391.png";
 import medicalMinuteImage from "@assets/medicalminute_1756537744391.png";
 import fundraisingImage from "@assets/fundraising_1756538236001.jpg";
 import donationImage from "@assets/donation_1756537744391.jpg";
 
 export default function Programs() {
+  const [loadingProgram, setLoadingProgram] = useState<string | null>(null);
+  
   const programs = [
     {
       id: "first-on-the-scene",
@@ -85,15 +89,29 @@ export default function Programs() {
                 </p>
                 
                 <div className="pt-2">
-                  <Link href="/about" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
-                    <Button 
-                      className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-medium text-sm luxury-hover luxury-press"
-                      style={{ boxShadow: 'var(--shadow-hairline)' }}
-                      data-testid={`button-learn-${program.id}`}
-                    >
-                      Learn more →
-                    </Button>
-                  </Link>
+                  <Button 
+                    className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-medium text-sm luxury-hover luxury-press"
+                    style={{ boxShadow: 'var(--shadow-hairline)' }}
+                    data-testid={`button-learn-${program.id}`}
+                    onClick={() => {
+                      setLoadingProgram(program.id);
+                      setTimeout(() => {
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                        window.location.href = '/about';
+                        setLoadingProgram(null);
+                      }, 500);
+                    }}
+                    disabled={loadingProgram === program.id}
+                  >
+                    {loadingProgram === program.id ? (
+                      <div className="flex items-center gap-2">
+                        <Loading size="sm" />
+                        <span>Loading...</span>
+                      </div>
+                    ) : (
+                      'Learn more →'
+                    )}
+                  </Button>
                 </div>
               </div>
             </div>

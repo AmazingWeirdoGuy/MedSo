@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 import { ChevronDown, ChevronRight } from "lucide-react";
 import { motion } from "framer-motion";
+import { Loading } from "@/components/ui/loading";
 
 export default function About() {
   const [openSections, setOpenSections] = useState<{ [key: string]: boolean }>({
@@ -13,6 +14,7 @@ export default function About() {
     members: false,
     advisors: false
   });
+  const [loadingJoin, setLoadingJoin] = useState(false);
 
   const toggleSection = (section: string) => {
     setOpenSections(prev => ({
@@ -271,10 +273,28 @@ export default function About() {
                     }}
                     whileTap={{ scale: 0.98 }}
                   >
-                    <Button asChild size="lg" className="text-white bg-blue-600 hover:bg-blue-700 outline-none focus:outline-none focus-visible:outline-none !ring-0 focus:!ring-0 focus-visible:!ring-0 focus-visible:ring-transparent focus-visible:!ring-offset-0 transition-all duration-300 px-8 py-3 text-lg font-medium rounded-lg">
-                      <Link to="/contact" data-testid="button-join-now" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
-                        Join Now
-                      </Link>
+                    <Button 
+                      size="lg" 
+                      className="text-white bg-blue-600 hover:bg-blue-700 outline-none focus:outline-none focus-visible:outline-none !ring-0 focus:!ring-0 focus-visible:!ring-0 focus-visible:ring-transparent focus-visible:!ring-offset-0 transition-all duration-300 px-8 py-3 text-lg font-medium rounded-lg"
+                      data-testid="button-join-now"
+                      onClick={() => {
+                        setLoadingJoin(true);
+                        setTimeout(() => {
+                          window.scrollTo({ top: 0, behavior: 'smooth' });
+                          window.location.href = '/contact';
+                          setLoadingJoin(false);
+                        }, 500);
+                      }}
+                      disabled={loadingJoin}
+                    >
+                      {loadingJoin ? (
+                        <div className="flex items-center gap-2">
+                          <Loading size="sm" />
+                          <span>Loading...</span>
+                        </div>
+                      ) : (
+                        'Join Now'
+                      )}
                     </Button>
                   </motion.div>
                 </motion.div>
