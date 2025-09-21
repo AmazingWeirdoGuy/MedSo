@@ -210,7 +210,7 @@ export default function Hero() {
               <Button 
                 size="lg" 
                 variant="outline" 
-                className="border border-white/30 hover:border-white/50 bg-white/15 hover:bg-white/25 text-primary hover:text-primary/90 backdrop-blur-md px-12 py-6 text-lg font-medium luxury-hover luxury-press rounded-xl"
+                className="border border-white/30 hover:border-white/50 bg-white/15 hover:bg-white/25 text-white hover:text-white/90 backdrop-blur-md px-12 py-6 text-lg font-medium luxury-hover luxury-press rounded-xl"
                 style={{ 
                   boxShadow: '0 8px 32px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.3)',
                   minWidth: '200px',
