@@ -250,6 +250,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/admin/members", isAuthenticated, isAdmin, async (req, res) => {
     try {
       const validatedData = insertMemberSchema.parse(req.body);
+      
+      // Get member class to determine validation rules
+      const memberClass = await storage.getMemberClass(validatedData.memberClassId!);
+      if (!memberClass) {
+        return res.status(400).json({ message: "Invalid member class" });
+      }
+      
+      // Apply conditional validation based on member class
+      if (memberClass.name === "Active Member") {
+        // Active Members only need name - force role and image to null
+        validatedData.role = null;
+        validatedData.image = null;
+      } else {
+        // Other classes need name, role, and image
+        if (!validatedData.role?.trim()) {
+          return res.status(400).json({ message: "Role is required for " + memberClass.name });
+        }
+        if (!validatedData.image?.trim()) {
+          return res.status(400).json({ message: "Image is required for " + memberClass.name });
+        }
+      }
+      
       const member = await storage.createMember(validatedData);
       res.status(201).json(member);
     } catch (error) {
@@ -260,6 +282,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.put("/api/admin/members/:id", isAuthenticated, isAdmin, async (req, res) => {
     try {
       const validatedData = insertMemberSchema.partial().parse(req.body);
+      
+      // If memberClassId is being updated, apply conditional validation
+      if (validatedData.memberClassId) {
+        const memberClass = await storage.getMemberClass(validatedData.memberClassId);
+        if (!memberClass) {
+          return res.status(400).json({ message: "Invalid member class" });
+        }
+        
+        if (memberClass.name === "Active Member") {
+          // Active Members only need name - force role and image to null
+          validatedData.role = null;
+          validatedData.image = null;
+        } else {
+          // Other classes need name, role, and image
+          if (validatedData.role !== undefined && !validatedData.role?.trim()) {
+            return res.status(400).json({ message: "Role is required for " + memberClass.name });
+          }
+          if (validatedData.image !== undefined && !validatedData.image?.trim()) {
+            return res.status(400).json({ message: "Image is required for " + memberClass.name });
+          }
+        }
+      }
+      
       const member = await storage.updateMember(req.params.id, validatedData);
       res.json(member);
     } catch (error) {
