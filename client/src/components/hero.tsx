@@ -27,13 +27,20 @@ export default function Hero() {
   const [scrollOpacity, setScrollOpacity] = useState(1);
   const [location, navigate] = useLocation();
   const [loadingButton, setLoadingButton] = useState<string | null>(null);
+  const [isTransitioning, setIsTransitioning] = useState(false);
 
-  // Auto-advance carousel
+  // Auto-advance carousel with transition effects
   useEffect(() => {
     if (!isPlaying) return;
     
     const interval = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % heroImages.length);
+      setIsTransitioning(true);
+      setTimeout(() => {
+        setCurrentSlide((prev) => (prev + 1) % heroImages.length);
+        setTimeout(() => {
+          setIsTransitioning(false);
+        }, 800); // Allow transition to complete
+      }, 100);
     }, 6000); // 6 seconds per slide
     
     return () => clearInterval(interval);
@@ -68,7 +75,13 @@ export default function Hero() {
   };
 
   const goToSlide = (index: number) => {
-    setCurrentSlide(index);
+    setIsTransitioning(true);
+    setTimeout(() => {
+      setCurrentSlide(index);
+      setTimeout(() => {
+        setIsTransitioning(false);
+      }, 800);
+    }, 100);
     handleInteraction();
   };
 
@@ -125,28 +138,60 @@ export default function Hero() {
       onMouseEnter={() => setIsPlaying(false)}
       onMouseLeave={() => setIsPlaying(true)}
     >
-      {/* Background Carousel */}
-      <div className="absolute inset-0">
-        {heroImages.map((image, index) => (
-          <div
-            key={index}
-            className={`absolute inset-0 transition-opacity duration-700 ease-in-out ${
-              index === currentSlide ? 'opacity-100' : 'opacity-0'
-            }`}
-          >
-            <img 
-              src={image.src}
-              alt={image.alt}
-              className="w-full h-full object-cover"
-              onLoad={() => console.log('Image loaded and visible:', image.src, 'slide:', index, 'current:', currentSlide)}
-            />
-            {/* Dim the background image only - fades away on scroll */}
-            <div 
-              className="absolute inset-0 bg-black/70 transition-opacity duration-300 ease-out"
-              style={{ opacity: scrollOpacity }}
-            />
-          </div>
-        ))}
+      {/* Enhanced Background Carousel with Fade + Swipe + Heat Effects */}
+      <div className="absolute inset-0 overflow-hidden">
+        {heroImages.map((image, index) => {
+          const isActive = index === currentSlide;
+          const isPrev = index === (currentSlide - 1 + heroImages.length) % heroImages.length;
+          const isNext = index === (currentSlide + 1) % heroImages.length;
+          
+          return (
+            <div
+              key={index}
+              className={`absolute inset-0 transition-all duration-1000 ease-out ${
+                isActive 
+                  ? 'opacity-100 transform translate-x-0 scale-100' 
+                  : isPrev 
+                    ? 'opacity-0 transform -translate-x-full scale-105'
+                    : isNext
+                      ? 'opacity-0 transform translate-x-full scale-105'
+                      : 'opacity-0 transform translate-x-0 scale-110'
+              }`}
+              style={{
+                filter: isTransitioning && isActive 
+                  ? 'blur(2px) saturate(1.3) contrast(1.1) brightness(1.1)' 
+                  : 'blur(0px) saturate(1) contrast(1) brightness(1)',
+                transition: 'all 800ms cubic-bezier(0.25, 0.46, 0.45, 0.94)'
+              }}
+            >
+              <img 
+                src={image.src}
+                alt={image.alt}
+                className="w-full h-full object-cover"
+                style={{
+                  transform: isTransitioning && isActive ? 'scale(1.02)' : 'scale(1)',
+                  transition: 'transform 800ms ease-out'
+                }}
+                onLoad={() => console.log('Image loaded and visible:', image.src, 'slide:', index, 'current:', currentSlide)}
+              />
+              {/* Heat effect overlay during transitions */}
+              {isTransitioning && isActive && (
+                <div 
+                  className="absolute inset-0 transition-opacity duration-300"
+                  style={{
+                    background: 'radial-gradient(circle at center, rgba(255, 69, 0, 0.15) 0%, rgba(255, 140, 0, 0.08) 40%, transparent 70%)',
+                    mixBlendMode: 'soft-light'
+                  }}
+                />
+              )}
+              {/* Dim the background image only - fades away on scroll */}
+              <div 
+                className="absolute inset-0 bg-black/70 transition-opacity duration-300 ease-out"
+                style={{ opacity: scrollOpacity }}
+              />
+            </div>
+          );
+        })}
       </div>
 
       {/* Split layout with dedicated text area */}
