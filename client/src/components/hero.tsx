@@ -159,34 +159,33 @@ export default function Hero() {
             opacity: scrollOpacity
           }}
         >
-          <div className="max-w-xl space-y-8 luxury-fade-in">
+          <div className="max-w-2xl space-y-12 luxury-fade-in">
             
             {/* Clean, readable typography */}
-            <div className="space-y-6">
+            <div className="space-y-8">
               <h1 
-                className="text-6xl sm:text-7xl lg:text-8xl xl:text-9xl text-white leading-[0.85] tracking-tighter font-black"
+                className="text-5xl sm:text-6xl lg:text-7xl xl:text-8xl text-white leading-[1.1] tracking-wide"
                 style={{ 
-                  fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
-                  letterSpacing: '-0.04em',
-                  textShadow: '2px 2px 4px rgba(0, 0, 0, 0.8)',
-                  fontWeight: '900'
+                  fontFamily: '"SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", sans-serif',
+                  letterSpacing: '0.02em',
+                  textShadow: '1px 1px 2px rgba(0, 0, 0, 0.5)',
+                  fontWeight: '200'
                 }}
                 data-testid="hero-title"
               >
-                ADVANCING
-                <span className="block text-primary font-black mt-1">
-                  HEALTHCARE
-                </span>
-                <span className="block text-white/90 text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-light mt-2 tracking-wider">
+                <span className="block font-extralight">Advancing</span>
+                <span className="block text-primary font-thin mt-4">Healthcare</span>
+                <span className="block text-white/80 text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-light mt-6 tracking-[0.05em]">
                   Education & Equity
                 </span>
               </h1>
               
               <p 
-                className="text-lg sm:text-xl lg:text-2xl text-white leading-relaxed font-medium"
+                className="text-base sm:text-lg lg:text-xl text-white/90 leading-loose font-light"
                 style={{ 
-                  letterSpacing: '0.01em',
-                  textShadow: '1px 1px 3px rgba(0, 0, 0, 0.8)'
+                  letterSpacing: '0.025em',
+                  textShadow: '1px 1px 2px rgba(0, 0, 0, 0.4)',
+                  lineHeight: '1.8'
                 }}
                 data-testid="hero-description"
               >
@@ -196,7 +195,7 @@ export default function Hero() {
             </div>
 
             {/* Premium CTAs */}
-            <div className="flex flex-col sm:flex-row gap-4 pt-4">
+            <div className="flex flex-col sm:flex-row gap-6 pt-8">
               <Button 
                 size="lg" 
                 className="bg-primary/80 hover:bg-primary/90 text-white px-12 py-6 text-lg font-medium luxury-hover luxury-press border border-white/20 rounded-xl backdrop-blur-md"
