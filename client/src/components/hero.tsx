@@ -164,15 +164,20 @@ export default function Hero() {
             {/* Clean, readable typography */}
             <div className="space-y-6">
               <h1 
-                className="text-5xl sm:text-6xl lg:text-7xl xl:text-8xl font-display text-white leading-tight tracking-tight font-bold"
+                className="text-6xl sm:text-7xl lg:text-8xl xl:text-9xl text-white leading-[0.85] tracking-tighter font-black"
                 style={{ 
-                  letterSpacing: '-0.02em',
-                  textShadow: '2px 2px 4px rgba(0, 0, 0, 0.8)'
+                  fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+                  letterSpacing: '-0.04em',
+                  textShadow: '2px 2px 4px rgba(0, 0, 0, 0.8)',
+                  fontWeight: '900'
                 }}
                 data-testid="hero-title"
               >
-                Advancing Healthcare
-                <span className="block text-primary font-light mt-2">
+                ADVANCING
+                <span className="block text-primary font-black mt-1">
+                  HEALTHCARE
+                </span>
+                <span className="block text-white/90 text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-light mt-2 tracking-wider">
                   Education & Equity
                 </span>
               </h1>
