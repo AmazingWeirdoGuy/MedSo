@@ -1,14 +1,781 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Users, Newspaper, Image, Settings, BarChart3, Eye, Plus } from "lucide-react";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { Users, Newspaper, Image, Settings, BarChart3, Eye, Plus, Edit, Trash2, Mail, ExternalLink, GraduationCap } from "lucide-react";
 import { Loading } from "@/components/ui/loading";
-import type { Member, News, HeroImage, AdminUser } from "@shared/schema";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { insertMemberSchema } from "@shared/schema";
+import { apiRequest, queryClient } from "@/lib/queryClient";
+import { z } from "zod";
+import type { Member, News, HeroImage, AdminUser, InsertMember } from "@shared/schema";
+
+// Member form schema with extended validation
+const memberFormSchema = insertMemberSchema.extend({
+  name: z.string().min(1, "Name is required").max(100, "Name must be less than 100 characters"),
+  role: z.string().min(1, "Role is required").max(50, "Role must be less than 50 characters"), 
+  bio: z.string().optional(),
+  email: z.string().email("Invalid email address").optional().or(z.literal("")),
+  linkedIn: z.string().url("Invalid LinkedIn URL").optional().or(z.literal("")),
+  year: z.string().optional(),
+  image: z.string().url("Invalid image URL").optional().or(z.literal("")),
+  displayOrder: z.number().min(0).default(0),
+  isActive: z.boolean().default(true),
+});
+
+type MemberFormData = z.infer<typeof memberFormSchema>;
+
+function MemberManagement() {
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [editingMember, setEditingMember] = useState<Member | null>(null);
+  const [deletingMemberId, setDeletingMemberId] = useState<string | null>(null);
+  const { toast } = useToast();
+
+  // Fetch members
+  const { data: members, isLoading, isError, refetch } = useQuery<Member[]>({
+    queryKey: ["/api/admin/members"],
+  });
+
+  // Sort members by display order
+  const sortedMembers = members ? [...members].sort((a, b) => {
+    const orderA = a.displayOrder || 0;
+    const orderB = b.displayOrder || 0;
+    if (orderA !== orderB) return orderA - orderB;
+    return a.name.localeCompare(b.name);
+  }) : [];
+
+  // Add member mutation
+  const addMemberMutation = useMutation({
+    mutationFn: async (data: MemberFormData) => {
+      return apiRequest("POST", "/api/admin/members", data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/members"] });
+      setIsAddDialogOpen(false);
+      toast({
+        title: "Success",
+        description: "Member added successfully!",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to add member. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Update member mutation
+  const updateMemberMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: Partial<MemberFormData> }) => {
+      return apiRequest("PUT", `/api/admin/members/${id}`, data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/members"] });
+      setEditingMember(null);
+      toast({
+        title: "Success",
+        description: "Member updated successfully!",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to update member. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Delete member mutation
+  const deleteMemberMutation = useMutation({
+    mutationFn: async (id: string) => {
+      setDeletingMemberId(id);
+      return apiRequest("DELETE", `/api/admin/members/${id}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/members"] });
+      setDeletingMemberId(null);
+      toast({
+        title: "Success",
+        description: "Member deleted successfully!",
+      });
+    },
+    onError: () => {
+      setDeletingMemberId(null);
+      toast({
+        title: "Error",
+        description: "Failed to delete member. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  if (isLoading) {
+    return (
+      <Card className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-md border border-white/20">
+        <CardContent className="flex items-center justify-center py-12">
+          <Loading size="lg" variant="spinner" />
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (isError) {
+    return (
+      <Card className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-md border border-white/20">
+        <CardContent className="text-center py-12">
+          <div className="space-y-4">
+            <div className="text-red-500 dark:text-red-400">
+              <Users className="h-16 w-16 mx-auto mb-4" />
+              <h3 className="text-lg font-semibold mb-2">Failed to Load Members</h3>
+              <p className="text-muted-foreground">There was an error loading the member list. Please try again.</p>
+            </div>
+            <Button onClick={() => refetch()} data-testid="button-retry-members">
+              Try Again
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <Card className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-md border border-white/20">
+      <CardHeader>
+        <div className="flex items-center justify-between">
+          <div>
+            <CardTitle>Member Management</CardTitle>
+            <CardDescription>Add, edit, and manage society members</CardDescription>
+          </div>
+          <AddMemberDialog
+            isOpen={isAddDialogOpen}
+            onOpenChange={setIsAddDialogOpen}
+            onSubmit={(data) => addMemberMutation.mutate(data)}
+            isLoading={addMemberMutation.isPending}
+          />
+        </div>
+      </CardHeader>
+      <CardContent>
+        {sortedMembers && sortedMembers.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {sortedMembers.map((member) => (
+              <MemberCard
+                key={member.id}
+                member={member}
+                onEdit={(member) => setEditingMember(member)}
+                onDelete={(id) => deleteMemberMutation.mutate(id)}
+                isDeleting={deletingMemberId === member.id}
+              />
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-12">
+            <Users className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
+            <h3 className="text-lg font-semibold mb-2">No Members Yet</h3>
+            <p className="text-muted-foreground mb-4">Start by adding your first society member</p>
+            <Button onClick={() => setIsAddDialogOpen(true)} data-testid="button-add-first-member">
+              <Plus className="h-4 w-4 mr-2" />
+              Add First Member
+            </Button>
+          </div>
+        )}
+
+        {/* Edit Member Dialog */}
+        {editingMember && (
+          <EditMemberDialog
+            member={editingMember}
+            isOpen={!!editingMember}
+            onOpenChange={(open) => !open && setEditingMember(null)}
+            onSubmit={(data) => updateMemberMutation.mutate({ id: editingMember.id, data })}
+            isLoading={updateMemberMutation.isPending}
+          />
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+// Member Card Component
+function MemberCard({ 
+  member, 
+  onEdit, 
+  onDelete, 
+  isDeleting 
+}: { 
+  member: Member; 
+  onEdit: (member: Member) => void; 
+  onDelete: (id: string) => void;
+  isDeleting: boolean;
+}) {
+  return (
+    <div className="group relative bg-white/50 dark:bg-slate-800/50 rounded-lg border border-white/20 p-6 hover:bg-white/70 dark:hover:bg-slate-800/70 transition-all duration-300">
+      {/* Member Photo */}
+      <div className="flex items-start gap-4 mb-4">
+        <div className="relative">
+          <img
+            src={member.image || "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&h=150"}
+            alt={member.name}
+            className="w-16 h-16 rounded-full object-cover border-2 border-white/20"
+            data-testid={`img-member-${member.id}`}
+          />
+          <div className={`absolute -bottom-1 -right-1 w-5 h-5 rounded-full border-2 border-white ${member.isActive ? 'bg-green-500' : 'bg-gray-400'}`} />
+        </div>
+        <div className="flex-1 min-w-0">
+          <h3 className="font-semibold text-slate-900 dark:text-white truncate" data-testid={`text-member-name-${member.id}`}>
+            {member.name}
+          </h3>
+          <p className="text-blue-600 dark:text-blue-400 text-sm font-medium" data-testid={`text-member-role-${member.id}`}>
+            {member.role}
+          </p>
+          {member.year && (
+            <p className="text-muted-foreground text-xs flex items-center gap-1">
+              <GraduationCap className="h-3 w-3" />
+              {member.year}
+            </p>
+          )}
+        </div>
+      </div>
+
+      {/* Member Bio */}
+      {member.bio && (
+        <p className="text-sm text-muted-foreground mb-4 line-clamp-3" data-testid={`text-member-bio-${member.id}`}>
+          {member.bio}
+        </p>
+      )}
+
+      {/* Contact Info */}
+      <div className="flex items-center gap-2 mb-4">
+        {member.email && (
+          <a
+            href={`mailto:${member.email}`}
+            className="inline-flex items-center gap-1 text-xs text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
+            data-testid={`link-member-email-${member.id}`}
+          >
+            <Mail className="h-3 w-3" />
+            Email
+          </a>
+        )}
+        {member.linkedIn && (
+          <a
+            href={member.linkedIn}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1 text-xs text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
+            data-testid={`link-member-linkedin-${member.id}`}
+          >
+            <ExternalLink className="h-3 w-3" />
+            LinkedIn
+          </a>
+        )}
+      </div>
+
+      {/* Action Buttons */}
+      <div className="flex items-center justify-between">
+        <Badge variant={member.isActive ? "default" : "secondary"} data-testid={`badge-member-status-${member.id}`}>
+          {member.isActive ? "Active" : "Inactive"}
+        </Badge>
+        <div className="flex items-center gap-2">
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => onEdit(member)}
+            data-testid={`button-edit-member-${member.id}`}
+          >
+            <Edit className="h-3 w-3" />
+          </Button>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button
+                size="sm"
+                variant="outline"
+                className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20"
+                disabled={isDeleting}
+                data-testid={`button-delete-member-${member.id}`}
+              >
+                {isDeleting ? <Loading size="sm" variant="spinner" /> : <Trash2 className="h-3 w-3" />}
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Delete Member</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Are you sure you want to delete {member.name}? This action cannot be undone.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={() => onDelete(member.id)}
+                  className="bg-red-600 hover:bg-red-700"
+                >
+                  Delete
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Add Member Dialog Component
+function AddMemberDialog({ 
+  isOpen, 
+  onOpenChange, 
+  onSubmit, 
+  isLoading 
+}: { 
+  isOpen: boolean; 
+  onOpenChange: (open: boolean) => void; 
+  onSubmit: (data: MemberFormData) => void;
+  isLoading: boolean;
+}) {
+  const form = useForm<MemberFormData>({
+    resolver: zodResolver(memberFormSchema),
+    defaultValues: {
+      name: "",
+      role: "",
+      bio: "",
+      email: "",
+      linkedIn: "",
+      year: "",
+      image: "",
+      displayOrder: 0,
+      isActive: true,
+    },
+  });
+
+  const handleSubmit = (data: MemberFormData) => {
+    onSubmit(data);
+    form.reset();
+  };
+
+  return (
+    <Dialog open={isOpen} onOpenChange={onOpenChange}>
+      <DialogTrigger asChild>
+        <Button data-testid="button-add-member">
+          <Plus className="h-4 w-4 mr-2" />
+          Add Member
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>Add New Member</DialogTitle>
+          <DialogDescription>
+            Add a new member to the ISB Medical Society
+          </DialogDescription>
+        </DialogHeader>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Name *</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Enter member name" {...field} data-testid="input-member-name" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="role"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Role *</FormLabel>
+                    <FormControl>
+                      <Input placeholder="e.g., President, Vice President" {...field} data-testid="input-member-role" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <FormField
+              control={form.control}
+              name="bio"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Bio</FormLabel>
+                  <FormControl>
+                    <Textarea 
+                      placeholder="Brief description of the member's background and interests"
+                      className="min-h-[100px]"
+                      {...field} 
+                      data-testid="input-member-bio"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Email</FormLabel>
+                    <FormControl>
+                      <Input type="email" placeholder="member@isbmedicalsociety.org" {...field} data-testid="input-member-email" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="year"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Grade/Year</FormLabel>
+                    <FormControl>
+                      <Input placeholder="e.g., Grade 12, Senior" {...field} data-testid="input-member-year" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="image"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Profile Image URL</FormLabel>
+                    <FormControl>
+                      <Input placeholder="https://example.com/image.jpg" {...field} data-testid="input-member-image" />
+                    </FormControl>
+                    <FormDescription>URL to the member's profile photo</FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="linkedIn"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>LinkedIn Profile</FormLabel>
+                    <FormControl>
+                      <Input placeholder="https://linkedin.com/in/username" {...field} data-testid="input-member-linkedin" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="displayOrder"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Display Order</FormLabel>
+                    <FormControl>
+                      <Input 
+                        type="number" 
+                        placeholder="0" 
+                        {...field}
+                        onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
+                        data-testid="input-member-display-order" 
+                      />
+                    </FormControl>
+                    <FormDescription>Lower numbers appear first</FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="isActive"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                    <div className="space-y-0.5">
+                      <FormLabel className="text-base">Active Member</FormLabel>
+                      <FormDescription>
+                        Show this member on the public website
+                      </FormDescription>
+                    </div>
+                    <FormControl>
+                      <Switch 
+                        checked={field.value} 
+                        onCheckedChange={field.onChange}
+                        data-testid="switch-member-active"
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <DialogFooter>
+              <Button 
+                type="button" 
+                variant="outline" 
+                onClick={() => onOpenChange(false)}
+                disabled={isLoading}
+              >
+                Cancel
+              </Button>
+              <Button 
+                type="submit" 
+                disabled={isLoading}
+                data-testid="button-submit-member"
+              >
+                {isLoading ? <Loading size="sm" variant="spinner" className="mr-2" /> : null}
+                Add Member
+              </Button>
+            </DialogFooter>
+          </form>
+        </Form>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+// Edit Member Dialog Component  
+function EditMemberDialog({ 
+  member,
+  isOpen, 
+  onOpenChange, 
+  onSubmit, 
+  isLoading 
+}: { 
+  member: Member;
+  isOpen: boolean; 
+  onOpenChange: (open: boolean) => void; 
+  onSubmit: (data: Partial<MemberFormData>) => void;
+  isLoading: boolean;
+}) {
+  const form = useForm<MemberFormData>({
+    resolver: zodResolver(memberFormSchema),
+    defaultValues: {
+      name: member.name,
+      role: member.role,
+      bio: member.bio || "",
+      email: member.email || "",
+      linkedIn: member.linkedIn || "",
+      year: member.year || "",
+      image: member.image || "",
+      displayOrder: member.displayOrder || 0,
+      isActive: member.isActive,
+    },
+  });
+
+  const handleSubmit = (data: MemberFormData) => {
+    onSubmit(data);
+  };
+
+  return (
+    <Dialog open={isOpen} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>Edit Member</DialogTitle>
+          <DialogDescription>
+            Update {member.name}'s information
+          </DialogDescription>
+        </DialogHeader>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Name *</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Enter member name" {...field} data-testid="input-edit-member-name" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="role"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Role *</FormLabel>
+                    <FormControl>
+                      <Input placeholder="e.g., President, Vice President" {...field} data-testid="input-edit-member-role" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <FormField
+              control={form.control}
+              name="bio"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Bio</FormLabel>
+                  <FormControl>
+                    <Textarea 
+                      placeholder="Brief description of the member's background and interests"
+                      className="min-h-[100px]"
+                      {...field} 
+                      data-testid="input-edit-member-bio"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Email</FormLabel>
+                    <FormControl>
+                      <Input type="email" placeholder="member@isbmedicalsociety.org" {...field} data-testid="input-edit-member-email" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="year"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Grade/Year</FormLabel>
+                    <FormControl>
+                      <Input placeholder="e.g., Grade 12, Senior" {...field} data-testid="input-edit-member-year" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="image"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Profile Image URL</FormLabel>
+                    <FormControl>
+                      <Input placeholder="https://example.com/image.jpg" {...field} data-testid="input-edit-member-image" />
+                    </FormControl>
+                    <FormDescription>URL to the member's profile photo</FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="linkedIn"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>LinkedIn Profile</FormLabel>
+                    <FormControl>
+                      <Input placeholder="https://linkedin.com/in/username" {...field} data-testid="input-edit-member-linkedin" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="displayOrder"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Display Order</FormLabel>
+                    <FormControl>
+                      <Input 
+                        type="number" 
+                        placeholder="0" 
+                        {...field}
+                        onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
+                        data-testid="input-edit-member-display-order" 
+                      />
+                    </FormControl>
+                    <FormDescription>Lower numbers appear first</FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="isActive"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                    <div className="space-y-0.5">
+                      <FormLabel className="text-base">Active Member</FormLabel>
+                      <FormDescription>
+                        Show this member on the public website
+                      </FormDescription>
+                    </div>
+                    <FormControl>
+                      <Switch 
+                        checked={field.value} 
+                        onCheckedChange={field.onChange}
+                        data-testid="switch-edit-member-active"
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <DialogFooter>
+              <Button 
+                type="button" 
+                variant="outline" 
+                onClick={() => onOpenChange(false)}
+                disabled={isLoading}
+              >
+                Cancel
+              </Button>
+              <Button 
+                type="submit" 
+                disabled={isLoading}
+                data-testid="button-update-member"
+              >
+                {isLoading ? <Loading size="sm" variant="spinner" className="mr-2" /> : null}
+                Update Member
+              </Button>
+            </DialogFooter>
+          </form>
+        </Form>
+      </DialogContent>
+    </Dialog>
+  );
+}
 
 export default function AdminPage() {
   const { toast } = useToast();
@@ -301,23 +1068,7 @@ export default function AdminPage() {
           </TabsContent>
 
           <TabsContent value="members">
-            <Card className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-md border border-white/20">
-              <CardHeader>
-                <CardTitle>Member Management</CardTitle>
-                <CardDescription>Add, edit, and manage society members</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center py-12">
-                  <Users className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
-                  <h3 className="text-lg font-semibold mb-2">Member Management</h3>
-                  <p className="text-muted-foreground mb-4">This feature will be implemented in the next step</p>
-                  <Button data-testid="button-add-member">
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add New Member
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+            <MemberManagement />
           </TabsContent>
 
           <TabsContent value="news">
