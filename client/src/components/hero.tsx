@@ -144,11 +144,8 @@ export default function Hero() {
         ))}
       </div>
 
-      {/* Subtle Bang & Olufsen style overlay system */}
-      {/* Minimal edge vignette for depth */}
-      <div className="absolute inset-0 bg-gradient-radial from-transparent via-transparent to-black/15" />
-      {/* Light directional gradient for content focus */}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent" />
+      {/* Minimal overlay - just for depth */}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent" />
       
       {/* Content Container */}
       <div 
@@ -160,45 +157,35 @@ export default function Hero() {
           {/* Main Content with Glass Text Panel */}
           <div className="space-y-8 luxury-fade-in">
             
-            {/* Modern glass panel with Bang & Olufsen sophistication */}
-            <div 
-              className="backdrop-blur-md bg-white/5 rounded-3xl border border-white/20 p-8 sm:p-12 mx-auto max-w-4xl"
-              style={{
-                background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.04) 100%)',
-                boxShadow: '0 8px 40px rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.2), inset 0 -1px 0 rgba(255, 255, 255, 0.05)',
-                border: '1px solid rgba(255, 255, 255, 0.25)'
-              }}
-            >
-              {/* Dramatic Typography */}
-              <div className="space-y-6">
-                <h1 
-                  className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-display text-white leading-[0.9] tracking-tight"
-                  style={{ 
-                    textShadow: '0 1px 3px rgba(0, 0, 0, 0.3), 0 4px 12px rgba(0, 0, 0, 0.15)',
-                    letterSpacing: '-0.02em',
-                    filter: 'drop-shadow(0 1px 2px rgba(0, 0, 0, 0.2))'
-                  }}
-                  data-testid="hero-title"
-                >
-                  Advancing Healthcare
-                  <span className="block text-primary font-light">
-                    Education & Equity
-                  </span>
-                </h1>
-                
-                <p 
-                  className="text-lg sm:text-xl lg:text-2xl text-white/95 leading-relaxed max-w-3xl mx-auto font-light"
-                  style={{ 
-                    textShadow: '0 1px 3px rgba(0, 0, 0, 0.25), 0 2px 6px rgba(0, 0, 0, 0.15)',
-                    letterSpacing: '0.01em',
-                    filter: 'drop-shadow(0 1px 1px rgba(0, 0, 0, 0.2))'
-                  }}
-                  data-testid="hero-description"
-                >
-                  A student-led organization dedicated to educating our community about health, 
-                  advocating for healthcare equity, and supporting medical initiatives worldwide.
-                </p>
-              </div>
+            {/* Text with stroke outline approach */}
+            <div className="space-y-6 max-w-4xl mx-auto">
+              <h1 
+                className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-display text-white leading-[0.9] tracking-tight font-bold"
+                style={{ 
+                  WebkitTextStroke: '2px rgba(0, 0, 0, 0.8)',
+                  paintOrder: 'stroke fill',
+                  letterSpacing: '-0.02em'
+                } as React.CSSProperties}
+                data-testid="hero-title"
+              >
+                Advancing Healthcare
+                <span className="block text-primary font-light">
+                  Education & Equity
+                </span>
+              </h1>
+              
+              <p 
+                className="text-lg sm:text-xl lg:text-2xl text-white leading-relaxed max-w-3xl mx-auto font-medium"
+                style={{ 
+                  WebkitTextStroke: '1px rgba(0, 0, 0, 0.6)',
+                  paintOrder: 'stroke fill',
+                  letterSpacing: '0.01em'
+                } as React.CSSProperties}
+                data-testid="hero-description"
+              >
+                A student-led organization dedicated to educating our community about health, 
+                advocating for healthcare equity, and supporting medical initiatives worldwide.
+              </p>
             </div>
 
             {/* Premium CTAs */}
