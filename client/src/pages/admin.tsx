@@ -12,7 +12,9 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { Users, Newspaper, Image, Plus, Edit, Trash2, Mail, ExternalLink, GraduationCap } from "lucide-react";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Users, Newspaper, Image, Plus, Edit, Trash2, Mail, ExternalLink, GraduationCap, Check, X, Save } from "lucide-react";
 import { Loading } from "@/components/ui/loading";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import type { Member, MemberClass, News, HeroImage, AdminUser } from "@shared/schema";
@@ -339,6 +341,525 @@ function MemberManagement() {
         )}
       </CardContent>
     </Card>
+  );
+}
+
+// Class Section Component for Accordion
+function ClassSection({ 
+  value, 
+  title, 
+  members, 
+  memberClasses, 
+  className 
+}: {
+  value: string;
+  title: string;
+  members: Member[];
+  memberClasses: MemberClass[] | undefined;
+  className: string;
+}) {
+  const [addingNew, setAddingNew] = useState(false);
+  const { toast } = useToast();
+
+  // Mutations
+  const updateMemberMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: any }) => {
+      return apiRequest("PUT", `/api/admin/members/${id}`, data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/members"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/members"] });
+      toast({
+        title: "Success",
+        description: "Member updated successfully!",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to update member. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const addMemberMutation = useMutation({
+    mutationFn: async (data: any) => {
+      return apiRequest("POST", "/api/admin/members", data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/members"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/members"] });
+      setAddingNew(false);
+      toast({
+        title: "Success",
+        description: "Member added successfully!",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to add member. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const deleteMemberMutation = useMutation({
+    mutationFn: async (id: string) => {
+      return apiRequest("DELETE", `/api/admin/members/${id}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/members"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/members"] });
+      toast({
+        title: "Success",
+        description: "Member deleted successfully!",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to delete member. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const targetClass = memberClasses?.find(mc => mc.name === className);
+  const isActiveMemberClass = className === "Active Member";
+
+  return (
+    <AccordionItem value={value} className="border border-white/20 rounded-lg mb-4">
+      <AccordionTrigger 
+        className="px-6 py-4 hover:bg-white/50 dark:hover:bg-slate-800/50 rounded-t-lg"
+        data-testid={`accordion-${value}`}
+      >
+        <div className="flex items-center justify-between w-full mr-4">
+          <span className="text-lg font-medium">{title}</span>
+          <Badge variant="outline" className="ml-2">
+            {members.length} {members.length === 1 ? 'member' : 'members'}
+          </Badge>
+        </div>
+      </AccordionTrigger>
+      <AccordionContent className="px-6 pb-6">
+        <div className="space-y-4">
+          <div className="flex justify-between items-center">
+            <p className="text-sm text-muted-foreground">
+              Manage {title.toLowerCase()} for the medical society
+            </p>
+            <Button
+              size="sm"
+              onClick={() => setAddingNew(true)}
+              disabled={addingNew}
+              data-testid={`button-add-${value}`}
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Add {className}
+            </Button>
+          </div>
+
+          <div className="border border-white/20 rounded-lg overflow-hidden">
+            <Table>
+              <TableHeader>
+                <TableRow className="bg-white/30 dark:bg-slate-800/30">
+                  <TableHead className="w-[200px]">Name</TableHead>
+                  {!isActiveMemberClass && <TableHead className="w-[150px]">Role</TableHead>}
+                  {!isActiveMemberClass && <TableHead className="w-[100px]">Image</TableHead>}
+                  <TableHead className="w-[150px]">Email</TableHead>
+                  <TableHead className="w-[80px]">Order</TableHead>
+                  <TableHead className="w-[80px]">Active</TableHead>
+                  <TableHead className="w-[120px]">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {addingNew && (
+                  <NewMemberInlineRow
+                    memberClassId={targetClass?.id || ""}
+                    isActiveMemberClass={isActiveMemberClass}
+                    onSave={(data) => addMemberMutation.mutate(data)}
+                    onCancel={() => setAddingNew(false)}
+                    isLoading={addMemberMutation.isPending}
+                  />
+                )}
+                {members.map((member) => (
+                  <MemberInlineRow
+                    key={member.id}
+                    member={member}
+                    isActiveMemberClass={isActiveMemberClass}
+                    onSave={(data) => updateMemberMutation.mutate({ id: member.id, data })}
+                    onDelete={() => deleteMemberMutation.mutate(member.id)}
+                    isUpdating={updateMemberMutation.isPending}
+                    isDeleting={deleteMemberMutation.isPending}
+                  />
+                ))}
+                {members.length === 0 && !addingNew && (
+                  <TableRow>
+                    <TableCell 
+                      colSpan={isActiveMemberClass ? 5 : 7} 
+                      className="text-center py-8 text-muted-foreground"
+                    >
+                      No {title.toLowerCase()} yet. Click "Add {className}" to get started.
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        </div>
+      </AccordionContent>
+    </AccordionItem>
+  );
+}
+
+// Member Inline Row Component for editing
+function MemberInlineRow({
+  member,
+  isActiveMemberClass,
+  onSave,
+  onDelete,
+  isUpdating,
+  isDeleting
+}: {
+  member: Member;
+  isActiveMemberClass: boolean;
+  onSave: (data: any) => void;
+  onDelete: () => void;
+  isUpdating: boolean;
+  isDeleting: boolean;
+}) {
+  const [isEditing, setIsEditing] = useState(false);
+  const [formData, setFormData] = useState({
+    name: member.name || "",
+    role: member.role || "",
+    image: member.image || "",
+    email: member.email || "",
+    displayOrder: member.displayOrder || 0,
+    isActive: member.isActive ?? true,
+  });
+
+  const handleSave = () => {
+    const dataToSave = { ...formData };
+    if (isActiveMemberClass) {
+      dataToSave.role = "";
+      dataToSave.image = "";
+    }
+    onSave(dataToSave);
+    setIsEditing(false);
+  };
+
+  const handleCancel = () => {
+    setFormData({
+      name: member.name || "",
+      role: member.role || "",
+      image: member.image || "",
+      email: member.email || "",
+      displayOrder: member.displayOrder || 0,
+      isActive: member.isActive ?? true,
+    });
+    setIsEditing(false);
+  };
+
+  return (
+    <TableRow className="hover:bg-white/20 dark:hover:bg-slate-800/20">
+      <TableCell>
+        {isEditing ? (
+          <Input
+            value={formData.name}
+            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+            placeholder="Enter name"
+            className="h-8"
+            data-testid={`input-edit-name-${member.id}`}
+          />
+        ) : (
+          <span data-testid={`text-name-${member.id}`}>{member.name}</span>
+        )}
+      </TableCell>
+      
+      {!isActiveMemberClass && (
+        <TableCell>
+          {isEditing ? (
+            <Input
+              value={formData.role}
+              onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+              placeholder="Enter role"
+              className="h-8"
+              data-testid={`input-edit-role-${member.id}`}
+            />
+          ) : (
+            <span data-testid={`text-role-${member.id}`}>{member.role}</span>
+          )}
+        </TableCell>
+      )}
+
+      {!isActiveMemberClass && (
+        <TableCell>
+          {isEditing ? (
+            <Input
+              value={formData.image}
+              onChange={(e) => setFormData({ ...formData, image: e.target.value })}
+              placeholder="Image URL"
+              className="h-8"
+              data-testid={`input-edit-image-${member.id}`}
+            />
+          ) : (
+            member.image ? (
+              <img 
+                src={member.image} 
+                alt={member.name}
+                className="w-8 h-8 rounded-full object-cover"
+                data-testid={`img-${member.id}`}
+              />
+            ) : (
+              <span className="text-muted-foreground text-sm">No image</span>
+            )
+          )}
+        </TableCell>
+      )}
+
+      <TableCell>
+        {isEditing ? (
+          <Input
+            value={formData.email}
+            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+            placeholder="Email"
+            className="h-8"
+            data-testid={`input-edit-email-${member.id}`}
+          />
+        ) : (
+          <span data-testid={`text-email-${member.id}`}>{member.email || "—"}</span>
+        )}
+      </TableCell>
+
+      <TableCell>
+        {isEditing ? (
+          <Input
+            type="number"
+            value={formData.displayOrder}
+            onChange={(e) => setFormData({ ...formData, displayOrder: parseInt(e.target.value) || 0 })}
+            className="h-8 w-16"
+            data-testid={`input-edit-order-${member.id}`}
+          />
+        ) : (
+          <span data-testid={`text-order-${member.id}`}>{member.displayOrder || 0}</span>
+        )}
+      </TableCell>
+
+      <TableCell>
+        {isEditing ? (
+          <input
+            type="checkbox"
+            checked={formData.isActive}
+            onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
+            data-testid={`checkbox-edit-active-${member.id}`}
+          />
+        ) : (
+          <Badge variant={member.isActive ? "default" : "secondary"} data-testid={`badge-active-${member.id}`}>
+            {member.isActive ? "Active" : "Inactive"}
+          </Badge>
+        )}
+      </TableCell>
+
+      <TableCell>
+        <div className="flex items-center gap-2">
+          {isEditing ? (
+            <>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={handleSave}
+                disabled={isUpdating || !formData.name.trim()}
+                data-testid={`button-save-${member.id}`}
+              >
+                {isUpdating ? <Loading size="sm" variant="spinner" /> : <Check className="h-3 w-3" />}
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={handleCancel}
+                disabled={isUpdating}
+                data-testid={`button-cancel-${member.id}`}
+              >
+                <X className="h-3 w-3" />
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => setIsEditing(true)}
+                data-testid={`button-edit-${member.id}`}
+              >
+                <Edit className="h-3 w-3" />
+              </Button>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="text-red-600 hover:text-red-700"
+                    disabled={isDeleting}
+                    data-testid={`button-delete-${member.id}`}
+                  >
+                    {isDeleting ? <Loading size="sm" variant="spinner" /> : <Trash2 className="h-3 w-3" />}
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Delete Member</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Are you sure you want to delete {member.name}? This action cannot be undone.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={onDelete}
+                      className="bg-red-600 hover:bg-red-700"
+                    >
+                      Delete
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </>
+          )}
+        </div>
+      </TableCell>
+    </TableRow>
+  );
+}
+
+// New Member Inline Row Component
+function NewMemberInlineRow({
+  memberClassId,
+  isActiveMemberClass,
+  onSave,
+  onCancel,
+  isLoading
+}: {
+  memberClassId: string;
+  isActiveMemberClass: boolean;
+  onSave: (data: any) => void;
+  onCancel: () => void;
+  isLoading: boolean;
+}) {
+  const [formData, setFormData] = useState({
+    name: "",
+    role: "",
+    image: "",
+    email: "",
+    displayOrder: 0,
+    isActive: true,
+    memberClassId: memberClassId,
+  });
+
+  const handleSave = () => {
+    if (!formData.name.trim()) return;
+    
+    const dataToSave = { ...formData };
+    if (isActiveMemberClass) {
+      dataToSave.role = "";
+      dataToSave.image = "";
+    } else {
+      if (!dataToSave.role.trim() || !dataToSave.image.trim()) return;
+    }
+    
+    onSave(dataToSave);
+  };
+
+  const canSave = formData.name.trim() && 
+    (isActiveMemberClass || (formData.role.trim() && formData.image.trim()));
+
+  return (
+    <TableRow className="bg-blue-50 dark:bg-blue-900/20">
+      <TableCell>
+        <Input
+          value={formData.name}
+          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+          placeholder="Enter name *"
+          className="h-8"
+          data-testid="input-new-name"
+        />
+      </TableCell>
+      
+      {!isActiveMemberClass && (
+        <TableCell>
+          <Input
+            value={formData.role}
+            onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+            placeholder="Enter role *"
+            className="h-8"
+            data-testid="input-new-role"
+          />
+        </TableCell>
+      )}
+
+      {!isActiveMemberClass && (
+        <TableCell>
+          <Input
+            value={formData.image}
+            onChange={(e) => setFormData({ ...formData, image: e.target.value })}
+            placeholder="Image URL *"
+            className="h-8"
+            data-testid="input-new-image"
+          />
+        </TableCell>
+      )}
+
+      <TableCell>
+        <Input
+          value={formData.email}
+          onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+          placeholder="Email"
+          className="h-8"
+          data-testid="input-new-email"
+        />
+      </TableCell>
+
+      <TableCell>
+        <Input
+          type="number"
+          value={formData.displayOrder}
+          onChange={(e) => setFormData({ ...formData, displayOrder: parseInt(e.target.value) || 0 })}
+          className="h-8 w-16"
+          data-testid="input-new-order"
+        />
+      </TableCell>
+
+      <TableCell>
+        <input
+          type="checkbox"
+          checked={formData.isActive}
+          onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
+          data-testid="checkbox-new-active"
+        />
+      </TableCell>
+
+      <TableCell>
+        <div className="flex items-center gap-2">
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={handleSave}
+            disabled={isLoading || !canSave}
+            data-testid="button-save-new"
+          >
+            {isLoading ? <Loading size="sm" variant="spinner" /> : <Check className="h-3 w-3" />}
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={onCancel}
+            disabled={isLoading}
+            data-testid="button-cancel-new"
+          >
+            <X className="h-3 w-3" />
+          </Button>
+        </div>
+      </TableCell>
+    </TableRow>
   );
 }
 
