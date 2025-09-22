@@ -31,7 +31,7 @@ export default function About() {
   });
 
   const { data: memberClasses = [] } = useQuery<MemberClass[]>({
-    queryKey: ["/api/admin/member-classes"],
+    queryKey: ["/api/member-classes"],
   });
 
   // Group members by class

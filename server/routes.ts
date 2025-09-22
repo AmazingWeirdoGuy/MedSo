@@ -283,9 +283,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const validatedData = insertMemberSchema.partial().parse(req.body);
       
-      // If memberClassId is being updated, apply conditional validation
-      if (validatedData.memberClassId) {
-        const memberClass = await storage.getMemberClass(validatedData.memberClassId);
+      // Get the current member to determine class if not being changed
+      const currentMember = await storage.getMember(req.params.id);
+      if (!currentMember) {
+        return res.status(404).json({ message: "Member not found" });
+      }
+      
+      // Use provided memberClassId or current member's class
+      const targetClassId = validatedData.memberClassId || currentMember.memberClassId;
+      
+      if (targetClassId) {
+        const memberClass = await storage.getMemberClass(targetClassId);
         if (!memberClass) {
           return res.status(400).json({ message: "Invalid member class" });
         }
