@@ -155,12 +155,12 @@ export default function Hero() {
             background: 'linear-gradient(135deg, rgba(0, 0, 0, 0.3) 0%, rgba(0, 0, 0, 0.1) 100%)'
           }}
         >
-          <div className="max-w-lg space-y-8 luxury-fade-in">
+          <div className="max-w-xl space-y-8 luxury-fade-in">
             
             {/* Clean, readable typography */}
             <div className="space-y-6">
               <h1 
-                className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-display text-white leading-tight tracking-tight"
+                className="text-5xl sm:text-6xl lg:text-7xl xl:text-8xl font-display text-white leading-tight tracking-tight"
                 style={{ 
                   letterSpacing: '-0.02em'
                 }}
