@@ -140,8 +140,11 @@ export default function Hero() {
               className="w-full h-full object-cover"
               onLoad={() => console.log('Image loaded and visible:', image.src, 'slide:', index, 'current:', currentSlide)}
             />
-            {/* Dim the background image only */}
-            <div className="absolute inset-0 bg-black/40" />
+            {/* Dim the background image only - fades away on scroll */}
+            <div 
+              className="absolute inset-0 bg-black/40 transition-opacity duration-300 ease-out"
+              style={{ opacity: scrollOpacity }}
+            />
           </div>
         ))}
       </div>
