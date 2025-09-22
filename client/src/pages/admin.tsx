@@ -371,6 +371,22 @@ function ClassSection({
   const targetClass = memberClasses?.find(mc => mc.name === className);
   const isActiveMemberClass = className === "Active Member";
 
+  // Handle missing member class
+  if (memberClasses && !targetClass) {
+    return (
+      <AccordionItem value={value} className="border border-red-200 rounded-lg mb-4">
+        <AccordionTrigger className="px-6 py-4 text-red-600">
+          <span>{title} (Class Not Found)</span>
+        </AccordionTrigger>
+        <AccordionContent className="px-6 pb-6">
+          <p className="text-red-600 text-sm">
+            Member class "{className}" not found in database. Please check member class configuration.
+          </p>
+        </AccordionContent>
+      </AccordionItem>
+    );
+  }
+
   return (
     <AccordionItem value={value} className="border border-white/20 rounded-lg mb-4">
       <AccordionTrigger 
@@ -489,6 +505,9 @@ function MemberInlineRow({
     onSave(dataToSave);
     setIsEditing(false);
   };
+
+  const canSave = formData.name.trim() && 
+    (isActiveMemberClass || (formData.role.trim() && formData.image.trim()));
 
   const handleCancel = () => {
     setFormData({
@@ -610,7 +629,7 @@ function MemberInlineRow({
                 size="sm"
                 variant="outline"
                 onClick={handleSave}
-                disabled={isUpdating || !formData.name.trim()}
+                disabled={isUpdating || !canSave}
                 data-testid={`button-save-${member.id}`}
               >
                 {isUpdating ? <Loading size="sm" variant="spinner" /> : <Check className="h-3 w-3" />}
