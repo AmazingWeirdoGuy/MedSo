@@ -332,3 +332,8 @@
     padding: 1em !important;
   }
 }
+
+/* Custom gradient utilities */
+.bg-gradient-radial {
+  background: radial-gradient(circle, var(--tw-gradient-stops));
+}

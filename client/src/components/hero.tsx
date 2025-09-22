@@ -144,8 +144,18 @@ export default function Hero() {
         ))}
       </div>
 
-      {/* Dynamic Overlay - adjusts based on content */}
-      <div className="absolute inset-0 bg-gradient-to-br from-transparent via-black/5 to-black/10" />
+      {/* Layered overlay system for optimal readability */}
+      {/* Global vignette - darkens edges while preserving center */}
+      <div className="absolute inset-0 bg-gradient-radial from-transparent via-black/10 to-black/30" />
+      {/* Directional scrim - bottom gradient for text area */}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-black/15 to-transparent" />
+      {/* Focal scrim - targeted darkening behind content */}
+      <div 
+        className="absolute inset-0"
+        style={{ 
+          background: 'radial-gradient(ellipse 60% 50% at 50% 65%, rgba(0,0,0,0.25) 0%, transparent 70%)'
+        }}
+      />
       
       {/* Content Container */}
       <div 
@@ -154,36 +164,46 @@ export default function Hero() {
       >
         <div className="max-w-5xl mx-auto text-center">
           
-          {/* Main Content */}
+          {/* Main Content with Glass Text Panel */}
           <div className="space-y-8 luxury-fade-in">
             
-            {/* Dramatic Typography */}
-            <div className="space-y-6">
-              <h1 
-                className="text-5xl sm:text-6xl lg:text-7xl xl:text-8xl font-display text-white leading-[0.9] tracking-tight"
-                style={{ 
-                  textShadow: '0 4px 20px rgba(0, 0, 0, 0.8), 0 0 40px rgba(0, 0, 0, 0.5)',
-                  letterSpacing: '-0.02em'
-                }}
-                data-testid="hero-title"
-              >
-                Advancing Healthcare
-                <span className="block text-primary font-light">
-                  Education & Equity
-                </span>
-              </h1>
-              
-              <p 
-                className="text-xl sm:text-2xl lg:text-3xl text-white/90 leading-relaxed max-w-4xl mx-auto font-light"
-                style={{ 
-                  textShadow: '0 2px 10px rgba(0, 0, 0, 0.8)',
-                  letterSpacing: '0.01em'
-                }}
-                data-testid="hero-description"
-              >
-                A student-led organization dedicated to educating our community about health, 
-                advocating for healthcare equity, and supporting medical initiatives worldwide.
-              </p>
+            {/* Glass headline plaque for enhanced readability */}
+            <div 
+              className="backdrop-blur-sm bg-black/20 rounded-2xl border border-white/10 p-8 sm:p-12 mx-auto max-w-4xl"
+              style={{
+                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1)'
+              }}
+            >
+              {/* Dramatic Typography */}
+              <div className="space-y-6">
+                <h1 
+                  className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-display text-white leading-[0.9] tracking-tight"
+                  style={{ 
+                    textShadow: '0 2px 8px rgba(0, 0, 0, 0.8), 0 4px 16px rgba(0, 0, 0, 0.4), 0 8px 32px rgba(0, 0, 0, 0.2)',
+                    letterSpacing: '-0.02em',
+                    filter: 'drop-shadow(0 1px 2px rgba(0, 0, 0, 0.8))'
+                  }}
+                  data-testid="hero-title"
+                >
+                  Advancing Healthcare
+                  <span className="block text-primary font-light">
+                    Education & Equity
+                  </span>
+                </h1>
+                
+                <p 
+                  className="text-lg sm:text-xl lg:text-2xl text-white/95 leading-relaxed max-w-3xl mx-auto font-light"
+                  style={{ 
+                    textShadow: '0 1px 4px rgba(0, 0, 0, 0.8), 0 2px 8px rgba(0, 0, 0, 0.4)',
+                    letterSpacing: '0.01em',
+                    filter: 'drop-shadow(0 1px 2px rgba(0, 0, 0, 0.6))'
+                  }}
+                  data-testid="hero-description"
+                >
+                  A student-led organization dedicated to educating our community about health, 
+                  advocating for healthcare equity, and supporting medical initiatives worldwide.
+                </p>
+              </div>
             </div>
 
             {/* Premium CTAs */}
