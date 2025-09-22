@@ -496,6 +496,10 @@ function AddMemberDialog({
     queryKey: ["/api/admin/member-classes"],
   });
 
+  // Determine if selected class is Active Member
+  const selectedMemberClass = memberClasses?.find(mc => mc.id === formData.memberClassId);
+  const isActiveMember = selectedMemberClass?.name === "Active Member";
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSubmit(formData);
@@ -541,17 +545,19 @@ function AddMemberDialog({
                 data-testid="input-member-name"
               />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="role">Role *</Label>
-              <Input
-                id="role"
-                value={formData.role}
-                onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-                placeholder="e.g., President, Vice President"
-                required
-                data-testid="input-member-role"
-              />
-            </div>
+            {!isActiveMember && (
+              <div className="space-y-2">
+                <Label htmlFor="role">Role *</Label>
+                <Input
+                  id="role"
+                  value={formData.role}
+                  onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+                  placeholder="e.g., President, Vice President"
+                  required
+                  data-testid="input-member-role"
+                />
+              </div>
+            )}
           </div>
 
           <div className="space-y-2">
@@ -611,16 +617,19 @@ function AddMemberDialog({
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="image">Profile Image URL</Label>
-              <Input
-                id="image"
-                value={formData.image}
-                onChange={(e) => setFormData({ ...formData, image: e.target.value })}
-                placeholder="https://example.com/image.jpg"
-                data-testid="input-member-image"
-              />
-            </div>
+            {!isActiveMember && (
+              <div className="space-y-2">
+                <Label htmlFor="image">Profile Image URL *</Label>
+                <Input
+                  id="image"
+                  value={formData.image}
+                  onChange={(e) => setFormData({ ...formData, image: e.target.value })}
+                  placeholder="https://example.com/image.jpg"
+                  required
+                  data-testid="input-member-image"
+                />
+              </div>
+            )}
             <div className="space-y-2">
               <Label htmlFor="linkedIn">LinkedIn Profile</Label>
               <Input
@@ -713,6 +722,10 @@ function EditMemberDialog({
     queryKey: ["/api/admin/member-classes"],
   });
 
+  // Determine if selected class is Active Member
+  const selectedMemberClass = memberClasses?.find(mc => mc.id === formData.memberClassId);
+  const isActiveMember = selectedMemberClass?.name === "Active Member";
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSubmit(formData);
@@ -740,17 +753,19 @@ function EditMemberDialog({
                 data-testid="input-edit-member-name"
               />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="edit-role">Role *</Label>
-              <Input
-                id="edit-role"
-                value={formData.role}
-                onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-                placeholder="e.g., President, Vice President"
-                required
-                data-testid="input-edit-member-role"
-              />
-            </div>
+            {!isActiveMember && (
+              <div className="space-y-2">
+                <Label htmlFor="edit-role">Role *</Label>
+                <Input
+                  id="edit-role"
+                  value={formData.role}
+                  onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+                  placeholder="e.g., President, Vice President"
+                  required
+                  data-testid="input-edit-member-role"
+                />
+              </div>
+            )}
           </div>
 
           <div className="space-y-2">
@@ -810,16 +825,19 @@ function EditMemberDialog({
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="edit-image">Profile Image URL</Label>
-              <Input
-                id="edit-image"
-                value={formData.image}
-                onChange={(e) => setFormData({ ...formData, image: e.target.value })}
-                placeholder="https://example.com/image.jpg"
-                data-testid="input-edit-member-image"
-              />
-            </div>
+            {!isActiveMember && (
+              <div className="space-y-2">
+                <Label htmlFor="edit-image">Profile Image URL *</Label>
+                <Input
+                  id="edit-image"
+                  value={formData.image}
+                  onChange={(e) => setFormData({ ...formData, image: e.target.value })}
+                  placeholder="https://example.com/image.jpg"
+                  required
+                  data-testid="input-edit-member-image"
+                />
+              </div>
+            )}
             <div className="space-y-2">
               <Label htmlFor="edit-linkedIn">LinkedIn Profile</Label>
               <Input
