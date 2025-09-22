@@ -140,6 +140,8 @@ export default function Hero() {
               className="w-full h-full object-cover"
               onLoad={() => console.log('Image loaded and visible:', image.src, 'slide:', index, 'current:', currentSlide)}
             />
+            {/* Dim the background image only */}
+            <div className="absolute inset-0 bg-black/40" />
           </div>
         ))}
       </div>
@@ -151,8 +153,7 @@ export default function Hero() {
         <div 
           className="h-full flex items-center justify-center p-8 sm:p-12 lg:p-16 transition-opacity duration-300 ease-out"
           style={{ 
-            opacity: scrollOpacity,
-            background: 'linear-gradient(135deg, rgba(0, 0, 0, 0.75) 0%, rgba(0, 0, 0, 0.5) 100%)'
+            opacity: scrollOpacity
           }}
         >
           <div className="max-w-xl space-y-8 luxury-fade-in">
@@ -236,8 +237,6 @@ export default function Hero() {
         </div>
       </div>
       
-      {/* Mobile overlay for better readability on small screens */}
-      <div className="lg:hidden absolute inset-0 bg-gradient-to-t from-black/70 via-black/40 to-transparent" />
 
       {/* Elegant Carousel Indicators */}
       <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-20">
