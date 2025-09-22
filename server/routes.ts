@@ -161,6 +161,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Hero images routes (public)
+  app.get("/api/hero-images", async (req, res) => {
+    try {
+      const heroImages = await storage.getHeroImages();
+      res.json(heroImages);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch hero images" });
+    }
+  });
+
   // Contact form route
   const contactFormSchema = z.object({
     firstName: z.string().min(1, "First name is required"),

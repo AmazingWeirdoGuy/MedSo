@@ -193,6 +193,7 @@ function MemberManagement() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/members"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/members"] });
       setIsAddDialogOpen(false);
       toast({
         title: "Success",
@@ -215,6 +216,7 @@ function MemberManagement() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/members"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/members"] });
       setEditingMember(null);
       toast({
         title: "Success",
@@ -238,6 +240,7 @@ function MemberManagement() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/members"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/members"] });
       setDeletingMemberId(null);
       toast({
         title: "Success",
@@ -554,14 +557,14 @@ function AddMemberDialog({
           <div className="space-y-2">
             <Label htmlFor="memberClass">Member Class</Label>
             <Select
-              value={formData.memberClassId}
-              onValueChange={(value) => setFormData({ ...formData, memberClassId: value })}
+              value={formData.memberClassId || "none"}
+              onValueChange={(value) => setFormData({ ...formData, memberClassId: value === "none" ? "" : value })}
             >
               <SelectTrigger data-testid="select-member-class">
                 <SelectValue placeholder="Select member class" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">No Class Assigned</SelectItem>
+                <SelectItem value="none">No Class Assigned</SelectItem>
                 {memberClasses?.map((memberClass) => (
                   <SelectItem key={memberClass.id} value={memberClass.id}>
                     {memberClass.name}
@@ -753,14 +756,14 @@ function EditMemberDialog({
           <div className="space-y-2">
             <Label htmlFor="edit-memberClass">Member Class</Label>
             <Select
-              value={formData.memberClassId}
-              onValueChange={(value) => setFormData({ ...formData, memberClassId: value })}
+              value={formData.memberClassId || "none"}
+              onValueChange={(value) => setFormData({ ...formData, memberClassId: value === "none" ? "" : value })}
             >
               <SelectTrigger data-testid="select-edit-member-class">
                 <SelectValue placeholder="Select member class" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">No Class Assigned</SelectItem>
+                <SelectItem value="none">No Class Assigned</SelectItem>
                 {memberClasses?.map((memberClass) => (
                   <SelectItem key={memberClass.id} value={memberClass.id}>
                     {memberClass.name}
@@ -904,6 +907,7 @@ function NewsManagement() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/news"] });
       queryClient.invalidateQueries({ queryKey: ["/api/news"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/news/published"] });
       setIsAddDialogOpen(false);
       toast({
         title: "Success",
@@ -927,6 +931,7 @@ function NewsManagement() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/news"] });
       queryClient.invalidateQueries({ queryKey: ["/api/news"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/news/published"] });
       setEditingNews(null);
       toast({
         title: "Success",
@@ -950,6 +955,7 @@ function NewsManagement() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/news"] });
       queryClient.invalidateQueries({ queryKey: ["/api/news"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/news/published"] });
       setDeletingNewsId(null);
       toast({
         title: "Success",
@@ -1705,6 +1711,7 @@ function HeroImageManagement() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/hero-images"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/hero-images"] });
       setIsAddDialogOpen(false);
       toast({
         title: "Success",
@@ -1727,6 +1734,7 @@ function HeroImageManagement() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/hero-images"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/hero-images"] });
       setEditingHeroImage(null);
       toast({
         title: "Success",
@@ -1749,6 +1757,7 @@ function HeroImageManagement() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/hero-images"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/hero-images"] });
       setDeletingHeroImageId(null);
       toast({
         title: "Success",
