@@ -50,7 +50,7 @@ export const memberClasses = pgTable("member_classes", {
 export const members = pgTable("members", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   name: text("name").notNull(),
-  role: text("role").notNull(), // President, Vice President, Secretary, etc.
+  role: text("role"), // President, Vice President, Secretary, etc. (nullable for Active Members)
   memberClassId: varchar("member_class_id").references(() => memberClasses.id),
   bio: text("bio"),
   image: text("image"), // Profile image URL
