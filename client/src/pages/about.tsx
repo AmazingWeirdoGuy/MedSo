@@ -6,6 +6,8 @@ import { Link } from "wouter";
 import { ChevronDown, ChevronRight } from "lucide-react";
 import { motion } from "framer-motion";
 import { Loading } from "@/components/ui/loading";
+import { useQuery } from "@tanstack/react-query";
+import type { Member, MemberClass } from "@shared/schema";
 
 export default function About() {
   const [openSections, setOpenSections] = useState<{ [key: string]: boolean }>({
@@ -23,35 +25,31 @@ export default function About() {
     }));
   };
 
-  const websiteManager = [
-    { name: "Rungphob (Ronnie) Lertvilaivithaya", position: "Head of Website Development", image: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&h=150&fit=crop&crop=face" }
-  ];
+  // Fetch members and member classes from API
+  const { data: members = [], isLoading: membersLoading } = useQuery<Member[]>({
+    queryKey: ["/api/members"],
+  });
 
-  const officers = [
-    { name: "[President Name]", position: "President", image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face" },
-    { name: "[Vice President Name]", position: "Vice President", image: "https://images.unsplash.com/photo-1494790108755-2616b056b3c1?w=150&h=150&fit=crop&crop=face" },
-    { name: "[Secretary Name]", position: "Secretary", image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face" },
-    { name: "[Treasurer Name]", position: "Treasurer", image: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face" }
-  ];
+  const { data: memberClasses = [] } = useQuery<MemberClass[]>({
+    queryKey: ["/api/admin/member-classes"],
+  });
 
-  const members = [
-    { name: "[Member Name 1]", image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop&crop=face" },
-    { name: "[Member Name 2]", image: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&h=150&fit=crop&crop=face" },
-    { name: "[Member Name 3]", image: "https://images.unsplash.com/photo-1507591064344-4c6ce005b128?w=150&h=150&fit=crop&crop=face" },
-    { name: "[Member Name 4]", image: "https://images.unsplash.com/photo-1489424731084-a5d8b219a5bb?w=150&h=150&fit=crop&crop=face" },
-    { name: "[Member Name 5]", image: "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150&h=150&fit=crop&crop=face" },
-    { name: "[Member Name 6]", image: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=150&h=150&fit=crop&crop=face" }
-  ];
+  // Group members by class
+  const getClassMembers = (className: string) => {
+    const memberClass = memberClasses.find(mc => mc.name === className);
+    if (!memberClass) return [];
+    return members.filter(member => member.memberClassId === memberClass.id && member.isActive);
+  };
 
-  const advisors = [
-    { name: "[Faculty Advisor Name 1]", position: "Faculty Advisor", department: "Biology Department", image: "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=150&h=150&fit=crop&crop=face" },
-    { name: "[Faculty Advisor Name 2]", position: "Health & Wellness Coordinator", department: "Student Services", image: "https://images.unsplash.com/photo-1566492031773-4f4e44671d66?w=150&h=150&fit=crop&crop=face" }
-  ];
+  const websiteManagers = getClassMembers("Website Manager");
+  const officers = getClassMembers("Officer");
+  const activeMembers = getClassMembers("Active Member");
+  const facultyAdvisors = getClassMembers("Faculty Advisors");
 
 
-  const ProfileCard = ({ person, showPosition = false, showDepartment = false, showImage = true }: { person: any, showPosition?: boolean, showDepartment?: boolean, showImage?: boolean }) => (
+  const ProfileCard = ({ person, showPosition = false, showDepartment = false, showImage = true }: { person: Member, showPosition?: boolean, showDepartment?: boolean, showImage?: boolean }) => (
     <div className="flex items-center space-x-4 p-4 bg-card dark:bg-card border border-border rounded-xl luxury-hover luxury-press" style={{ boxShadow: 'var(--shadow-hairline)' }}>
-      {showImage && (
+      {showImage && person.image && (
         <img 
           src={person.image} 
           alt={person.name}
@@ -60,11 +58,11 @@ export default function About() {
       )}
       <div className="flex-1 space-y-1">
         <h4 className="font-medium text-foreground">{person.name}</h4>
-        {showPosition && person.position && (
-          <p className="text-sm text-primary font-medium">{person.position}</p>
+        {showPosition && person.role && (
+          <p className="text-sm text-primary font-medium">{person.role}</p>
         )}
-        {showDepartment && person.department && (
-          <p className="text-sm text-muted-foreground">{person.department}</p>
+        {showDepartment && person.bio && (
+          <p className="text-sm text-muted-foreground">{person.bio}</p>
         )}
       </div>
     </div>
@@ -147,9 +145,9 @@ export default function About() {
                   testId="section-website-manager"
                 >
                   <div className="space-y-2">
-                    {websiteManager.map((manager, index) => (
+                    {websiteManagers.map((manager: Member, index: number) => (
                       <ProfileCard 
-                        key={index} 
+                        key={manager.id} 
                         person={manager} 
                         showPosition={true}
                       />
@@ -164,9 +162,9 @@ export default function About() {
                   testId="section-officers"
                 >
                   <div className="space-y-2">
-                    {officers.map((officer, index) => (
+                    {officers.map((officer: Member, index: number) => (
                       <ProfileCard 
-                        key={index} 
+                        key={officer.id} 
                         person={officer} 
                         showPosition={true}
                       />
@@ -181,9 +179,9 @@ export default function About() {
                   testId="section-members"
                 >
                   <div className="space-y-2">
-                    {members.map((member, index) => (
+                    {activeMembers.map((member: Member, index: number) => (
                       <ProfileCard 
-                        key={index} 
+                        key={member.id} 
                         person={member}
                         showImage={false}
                       />
@@ -198,9 +196,9 @@ export default function About() {
                   testId="section-advisors"
                 >
                   <div className="space-y-2">
-                    {advisors.map((advisor, index) => (
+                    {facultyAdvisors.map((advisor: Member, index: number) => (
                       <ProfileCard 
-                        key={index} 
+                        key={advisor.id} 
                         person={advisor} 
                         showPosition={true}
                         showDepartment={true}
