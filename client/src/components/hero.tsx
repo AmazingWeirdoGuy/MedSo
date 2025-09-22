@@ -164,9 +164,8 @@ export default function Hero() {
             {/* Clean, readable typography */}
             <div className="space-y-8">
               <h1 
-                className="text-5xl sm:text-6xl lg:text-7xl xl:text-8xl text-white leading-[1.1] tracking-wide"
+                className="text-5xl sm:text-6xl lg:text-7xl xl:text-8xl font-display text-white leading-[1.1] tracking-wide"
                 style={{ 
-                  fontFamily: '"SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", sans-serif',
                   letterSpacing: '0.02em',
                   textShadow: '1px 1px 2px rgba(0, 0, 0, 0.5)',
                   fontWeight: '200'
