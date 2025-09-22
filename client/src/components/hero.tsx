@@ -152,7 +152,7 @@ export default function Hero() {
           className="h-full flex items-center justify-center p-8 sm:p-12 lg:p-16 transition-opacity duration-300 ease-out"
           style={{ 
             opacity: scrollOpacity,
-            background: 'linear-gradient(135deg, rgba(0, 0, 0, 0.3) 0%, rgba(0, 0, 0, 0.1) 100%)'
+            background: 'linear-gradient(135deg, rgba(0, 0, 0, 0.75) 0%, rgba(0, 0, 0, 0.5) 100%)'
           }}
         >
           <div className="max-w-xl space-y-8 luxury-fade-in">
@@ -160,9 +160,10 @@ export default function Hero() {
             {/* Clean, readable typography */}
             <div className="space-y-6">
               <h1 
-                className="text-5xl sm:text-6xl lg:text-7xl xl:text-8xl font-display text-white leading-tight tracking-tight"
+                className="text-5xl sm:text-6xl lg:text-7xl xl:text-8xl font-display text-white leading-tight tracking-tight font-bold"
                 style={{ 
-                  letterSpacing: '-0.02em'
+                  letterSpacing: '-0.02em',
+                  textShadow: '2px 2px 4px rgba(0, 0, 0, 0.8)'
                 }}
                 data-testid="hero-title"
               >
@@ -173,9 +174,10 @@ export default function Hero() {
               </h1>
               
               <p 
-                className="text-base sm:text-lg lg:text-xl text-white/90 leading-relaxed font-light"
+                className="text-lg sm:text-xl lg:text-2xl text-white leading-relaxed font-medium"
                 style={{ 
-                  letterSpacing: '0.01em'
+                  letterSpacing: '0.01em',
+                  textShadow: '1px 1px 3px rgba(0, 0, 0, 0.8)'
                 }}
                 data-testid="hero-description"
               >
@@ -235,7 +237,7 @@ export default function Hero() {
       </div>
       
       {/* Mobile overlay for better readability on small screens */}
-      <div className="lg:hidden absolute inset-0 bg-gradient-to-t from-black/40 via-black/20 to-transparent" />
+      <div className="lg:hidden absolute inset-0 bg-gradient-to-t from-black/70 via-black/40 to-transparent" />
 
       {/* Elegant Carousel Indicators */}
       <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-20">
