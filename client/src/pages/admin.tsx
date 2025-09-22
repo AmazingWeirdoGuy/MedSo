@@ -170,118 +170,54 @@ export default function AdminPage() {
 
 // Member Management Component
 function MemberManagement() {
-  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-  const [editingMember, setEditingMember] = useState<Member | null>(null);
-  const [deletingMemberId, setDeletingMemberId] = useState<string | null>(null);
   const { toast } = useToast();
 
-  // Fetch members
-  const { data: members, isLoading, isError, refetch } = useQuery<Member[]>({
+  // Fetch members and member classes
+  const { data: members, isLoading: membersLoading, isError: membersError } = useQuery<Member[]>({
     queryKey: ["/api/admin/members"],
   });
 
-  // Sort members by display order
-  const sortedMembers = members ? [...members].sort((a, b) => {
-    const orderA = a.displayOrder || 0;
-    const orderB = b.displayOrder || 0;
-    if (orderA !== orderB) return orderA - orderB;
-    return a.name.localeCompare(b.name);
-  }) : [];
-
-  // Add member mutation
-  const addMemberMutation = useMutation({
-    mutationFn: async (data: any) => {
-      return apiRequest("POST", "/api/admin/members", data);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/admin/members"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/members"] });
-      setIsAddDialogOpen(false);
-      toast({
-        title: "Success",
-        description: "Member added successfully!",
-      });
-    },
-    onError: () => {
-      toast({
-        title: "Error",
-        description: "Failed to add member. Please try again.",
-        variant: "destructive",
-      });
-    },
+  const { data: memberClasses, isLoading: classesLoading } = useQuery<MemberClass[]>({
+    queryKey: ["/api/admin/member-classes"],
   });
 
-  // Update member mutation
-  const updateMemberMutation = useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: any }) => {
-      return apiRequest("PUT", `/api/admin/members/${id}`, data);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/admin/members"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/members"] });
-      setEditingMember(null);
-      toast({
-        title: "Success",
-        description: "Member updated successfully!",
+  // Group members by class
+  const getClassMembers = (className: string) => {
+    if (!members || !memberClasses) return [];
+    const memberClass = memberClasses.find(mc => mc.name === className);
+    if (!memberClass) return [];
+    return members
+      .filter(member => member.memberClassId === memberClass.id && member.isActive)
+      .sort((a, b) => {
+        const orderA = a.displayOrder || 0;
+        const orderB = b.displayOrder || 0;
+        if (orderA !== orderB) return orderA - orderB;
+        return a.name.localeCompare(b.name);
       });
-    },
-    onError: () => {
-      toast({
-        title: "Error",
-        description: "Failed to update member. Please try again.",
-        variant: "destructive",
-      });
-    },
-  });
+  };
 
-  // Delete member mutation
-  const deleteMemberMutation = useMutation({
-    mutationFn: async (id: string) => {
-      setDeletingMemberId(id);
-      return apiRequest("DELETE", `/api/admin/members/${id}`);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/admin/members"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/members"] });
-      setDeletingMemberId(null);
-      toast({
-        title: "Success",
-        description: "Member deleted successfully!",
-      });
-    },
-    onError: () => {
-      setDeletingMemberId(null);
-      toast({
-        title: "Error",
-        description: "Failed to delete member. Please try again.",
-        variant: "destructive",
-      });
-    },
-  });
+  const websiteManagers = getClassMembers("Website Manager");
+  const officers = getClassMembers("Officer");
+  const activeMembers = getClassMembers("Active Member");
+  const facultyAdvisors = getClassMembers("Faculty Advisors");
 
-  if (isLoading) {
+
+
+
+  if (membersLoading || classesLoading) {
     return (
-      <Card className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-md border border-white/20">
-        <CardContent className="flex items-center justify-center py-12">
-          <Loading size="lg" variant="spinner" />
-        </CardContent>
-      </Card>
+      <div className="flex items-center justify-center p-8">
+        <Loading variant="spinner" size="lg" />
+      </div>
     );
   }
 
-  if (isError) {
+  if (membersError) {
     return (
-      <Card className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-md border border-white/20">
-        <CardContent className="text-center py-12">
-          <div className="space-y-4">
-            <div className="text-red-500 dark:text-red-400">
-              <Users className="h-16 w-16 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold mb-2">Failed to Load Members</h3>
-              <p className="text-muted-foreground">There was an error loading the member list. Please try again.</p>
-            </div>
-            <Button onClick={() => refetch()} data-testid="button-retry-members">
-              Try Again
-            </Button>
+      <Card>
+        <CardContent className="p-6">
+          <div className="text-center text-red-600">
+            <p>Failed to load members. Please try again.</p>
           </div>
         </CardContent>
       </Card>
@@ -289,56 +225,62 @@ function MemberManagement() {
   }
 
   return (
-    <Card className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-md border border-white/20">
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <div>
-            <CardTitle>Member Management</CardTitle>
-            <CardDescription>Add, edit, and manage society members</CardDescription>
-          </div>
-          <AddMemberDialog
-            isOpen={isAddDialogOpen}
-            onOpenChange={setIsAddDialogOpen}
-            onSubmit={(data) => addMemberMutation.mutate(data)}
-            isLoading={addMemberMutation.isPending}
-          />
-        </div>
+    <Card 
+      className="bg-white/70 dark:bg-slate-800/70 backdrop-blur-md border-white/20"
+      style={{
+        boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
+      }}
+    >
+      <CardHeader className="border-b border-white/10">
+        <CardTitle 
+          className="text-2xl text-slate-900 dark:text-white"
+          style={{ 
+            fontFamily: 'Beo, serif',
+            letterSpacing: '0.02em'
+          }}
+          data-testid="members-title"
+        >
+          Members Management
+        </CardTitle>
+        <CardDescription>
+          Manage members by their roles and classifications
+        </CardDescription>
       </CardHeader>
-      <CardContent>
-        {sortedMembers && sortedMembers.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {sortedMembers.map((member) => (
-              <MemberCard
-                key={member.id}
-                member={member}
-                onEdit={(member) => setEditingMember(member)}
-                onDelete={(id) => deleteMemberMutation.mutate(id)}
-                isDeleting={deletingMemberId === member.id}
-              />
-            ))}
-          </div>
-        ) : (
-          <div className="text-center py-12">
-            <Users className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
-            <h3 className="text-lg font-semibold mb-2">No Members Yet</h3>
-            <p className="text-muted-foreground mb-4">Start by adding your first society member</p>
-            <Button onClick={() => setIsAddDialogOpen(true)} data-testid="button-add-first-member">
-              <Plus className="h-4 w-4 mr-2" />
-              Add First Member
-            </Button>
-          </div>
-        )}
 
-        {/* Edit Member Dialog */}
-        {editingMember && (
-          <EditMemberDialog
-            member={editingMember}
-            isOpen={!!editingMember}
-            onOpenChange={(open) => !open && setEditingMember(null)}
-            onSubmit={(data) => updateMemberMutation.mutate({ id: editingMember.id, data })}
-            isLoading={updateMemberMutation.isPending}
+      <CardContent className="p-6">
+        <Accordion type="multiple" defaultValue={["website-manager", "officer"]}>
+          <ClassSection
+            value="website-manager"
+            title="Website Manager"
+            members={websiteManagers}
+            memberClasses={memberClasses}
+            className="Website Manager"
           />
-        )}
+          
+          <ClassSection
+            value="officer"
+            title="Officers"
+            members={officers}
+            memberClasses={memberClasses}
+            className="Officer"
+          />
+          
+          <ClassSection
+            value="active-member"
+            title="Active Members"
+            members={activeMembers}
+            memberClasses={memberClasses}
+            className="Active Member"
+          />
+          
+          <ClassSection
+            value="faculty-advisor"
+            title="Faculty Advisors"
+            members={facultyAdvisors}
+            memberClasses={memberClasses}
+            className="Faculty Advisors"
+          />
+        </Accordion>
       </CardContent>
     </Card>
   );
