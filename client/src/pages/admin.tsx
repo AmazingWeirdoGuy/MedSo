@@ -816,7 +816,7 @@ export default function AdminPage() {
         variant: "destructive",
       });
       setTimeout(() => {
-        window.location.href = "/api/login";
+        window.location.href = "/login";
       }, 1000);
       return;
     }
@@ -908,7 +908,14 @@ export default function AdminPage() {
               </Badge>
               <Button 
                 variant="outline" 
-                onClick={() => window.location.href = "/api/logout"}
+                onClick={async () => {
+                  try {
+                    await fetch("/api/logout", { method: "POST", credentials: "include" });
+                    window.location.href = "/login";
+                  } catch (error) {
+                    window.location.href = "/login";
+                  }
+                }}
                 data-testid="button-logout"
               >
                 Logout

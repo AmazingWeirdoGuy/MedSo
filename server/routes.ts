@@ -3,35 +3,79 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertProgramSchema, insertNewsSchema, insertMemberSchema, insertHeroImageSchema, insertAdminUserSchema } from "@shared/schema";
 import { sendContactEmail } from "./email";
-import { setupAuth, isAuthenticated } from "./replitAuth";
+import { getSession } from "./replitAuth";
 import { z } from "zod";
 
-export async function registerRoutes(app: Express): Promise<Server> {
-  // Setup authentication
-  await setupAuth(app);
+// Simple authentication middleware
+const isAuthenticated = (req: any, res: any, next: any) => {
+  if (req.session && (req.session as any).isAuthenticated) {
+    return next();
+  }
+  return res.status(401).json({ message: "Authentication required" });
+};
 
-  // Auth routes
-  app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
+// Simple admin check middleware
+const isAdmin = (req: any, res: any, next: any) => {
+  if (req.session && (req.session as any).isAuthenticated && (req.session as any).isAdmin) {
+    return next();
+  }
+  return res.status(403).json({ message: "Admin access required" });
+};
+
+export async function registerRoutes(app: Express): Promise<Server> {
+  // Setup session middleware
+  app.set("trust proxy", 1);
+  app.use(getSession());
+
+  // Simple login route
+  const loginSchema = z.object({
+    username: z.string(),
+    password: z.string(),
+  });
+
+  app.post('/api/login', async (req, res) => {
     try {
-      const userId = req.user.claims.sub;
-      const user = await storage.getUser(userId);
-      res.json(user);
+      const { username, password } = loginSchema.parse(req.body);
+      
+      // Check hardcoded credentials
+      if (username === 'admin' && password === 'password') {
+        (req.session as any).isAuthenticated = true;
+        (req.session as any).isAdmin = true;
+        (req.session as any).user = {
+          id: 'admin',
+          username: 'admin',
+          role: 'admin'
+        };
+        res.json({ message: "Login successful" });
+      } else {
+        res.status(401).json({ message: "Invalid username or password" });
+      }
     } catch (error) {
-      console.error("Error fetching user:", error);
-      res.status(500).json({ message: "Failed to fetch user" });
+      res.status(400).json({ message: "Invalid request data" });
     }
+  });
+
+  // Logout route
+  app.post('/api/logout', (req, res) => {
+    req.session.destroy(() => {
+      res.json({ message: "Logged out successfully" });
+    });
+  });
+
+  // Auth status route
+  app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
+    res.json((req.session as any).user);
   });
 
   // Check if user is admin
   app.get('/api/auth/admin', isAuthenticated, async (req: any, res) => {
-    try {
-      const userId = req.user.claims.sub;
-      const adminUser = await storage.getAdminUser(userId);
-      res.json({ isAdmin: !!adminUser, adminUser });
-    } catch (error) {
-      console.error("Error checking admin status:", error);
-      res.status(500).json({ message: "Failed to check admin status" });
-    }
+    res.json({ 
+      isAdmin: (req.session as any).isAdmin || false, 
+      adminUser: (req.session as any).isAdmin ? { 
+        id: 'admin',
+        role: 'admin' 
+      } : null 
+    });
   });
   // Programs routes
   app.get("/api/programs", async (req, res) => {
@@ -123,19 +167,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Admin-only routes
-  const isAdmin = async (req: any, res: any, next: any) => {
-    try {
-      const userId = req.user.claims.sub;
-      const adminUser = await storage.getAdminUser(userId);
-      if (!adminUser) {
-        return res.status(403).json({ message: "Admin access required" });
-      }
-      req.adminUser = adminUser;
-      next();
-    } catch (error) {
-      res.status(500).json({ message: "Failed to verify admin status" });
-    }
-  };
 
   // Members management routes
   app.get("/api/admin/members", isAuthenticated, isAdmin, async (req, res) => {
