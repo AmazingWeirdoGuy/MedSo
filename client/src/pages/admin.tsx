@@ -877,24 +877,282 @@ function EditMemberDialog({
   );
 }
 
-// News Management Component (Placeholder)
+// News Management Component
 function NewsManagement() {
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [editingNews, setEditingNews] = useState<News | null>(null);
+  const [deletingNewsId, setDeletingNewsId] = useState<string | null>(null);
+  const { toast } = useToast();
+
+  // Fetch news
+  const { data: newsItems, isLoading, isError, refetch } = useQuery<News[]>({
+    queryKey: ["/api/admin/news"],
+  });
+
+  // Sort news by creation date (newest first)
+  const sortedNews = newsItems ? [...newsItems].sort((a, b) => {
+    const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+    const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+    return dateB - dateA;
+  }) : [];
+
+  // Add news mutation
+  const addNewsMutation = useMutation({
+    mutationFn: async (data: any) => {
+      return apiRequest("POST", "/api/admin/news", data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/news"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/news"] });
+      setIsAddDialogOpen(false);
+      toast({
+        title: "Success",
+        description: "News article added successfully!",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to add news article. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Update news mutation
+  const updateNewsMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: any }) => {
+      return apiRequest("PUT", `/api/admin/news/${id}`, data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/news"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/news"] });
+      setEditingNews(null);
+      toast({
+        title: "Success",
+        description: "News article updated successfully!",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to update news article. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Delete news mutation
+  const deleteNewsMutation = useMutation({
+    mutationFn: async (id: string) => {
+      return apiRequest("DELETE", `/api/admin/news/${id}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/news"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/news"] });
+      setDeletingNewsId(null);
+      toast({
+        title: "Success",
+        description: "News article deleted successfully!",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to delete news article. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  if (isLoading) {
+    return (
+      <Card className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-md border border-white/20">
+        <CardContent className="flex items-center justify-center py-8">
+          <Loading size="lg" variant="spinner" />
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (isError) {
+    return (
+      <Card className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-md border border-white/20">
+        <CardContent className="text-center py-8">
+          <p className="text-red-600 dark:text-red-400">Failed to load news articles</p>
+          <Button onClick={() => refetch()} className="mt-4">
+            Retry
+          </Button>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <Card className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-md border border-white/20">
       <CardHeader>
-        <CardTitle>News Management</CardTitle>
-        <CardDescription>Create, edit, and publish news articles</CardDescription>
+        <div className="flex items-center justify-between">
+          <div>
+            <CardTitle className="flex items-center gap-2">
+              <Newspaper className="h-5 w-5" />
+              News Management
+            </CardTitle>
+            <CardDescription>
+              Create, edit, and publish news articles
+            </CardDescription>
+          </div>
+          <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+            <DialogTrigger asChild>
+              <Button data-testid="button-add-news">
+                <Plus className="h-4 w-4 mr-2" />
+                Add News Article
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+              <NewsForm
+                onSubmit={(data) => addNewsMutation.mutate(data)}
+                isLoading={addNewsMutation.isPending}
+              />
+            </DialogContent>
+          </Dialog>
+        </div>
       </CardHeader>
       <CardContent>
-        <div className="text-center py-12">
-          <Newspaper className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
-          <h3 className="text-lg font-semibold mb-2">News Management</h3>
-          <p className="text-muted-foreground mb-4">Coming soon - add and manage news articles</p>
-          <Button data-testid="button-add-news" disabled>
-            <Plus className="h-4 w-4 mr-2" />
-            Add News Article
-          </Button>
-        </div>
+        {sortedNews.length === 0 ? (
+          <div className="text-center py-8">
+            <Newspaper className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
+            <h3 className="text-lg font-semibold mb-2">No News Articles</h3>
+            <p className="text-muted-foreground mb-4">
+              Create your first news article to share updates
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {sortedNews.map((newsItem) => (
+              <div
+                key={newsItem.id}
+                className="flex items-start gap-4 p-4 rounded-lg border bg-card hover:bg-accent/50 transition-colors"
+                data-testid={`news-item-${newsItem.id}`}
+              >
+                <img
+                  src={newsItem.image}
+                  alt={newsItem.title}
+                  className="w-20 h-20 rounded-lg object-cover flex-shrink-0"
+                />
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="space-y-1 flex-1">
+                      <div className="flex items-center gap-2">
+                        <h3 className="font-semibold truncate">{newsItem.title}</h3>
+                        <Badge variant={newsItem.isPublished ? "default" : "secondary"}>
+                          {newsItem.isPublished ? "Published" : "Draft"}
+                        </Badge>
+                        <Badge variant="outline" className="text-xs">
+                          {newsItem.category}
+                        </Badge>
+                      </div>
+                      <p className="text-sm text-muted-foreground line-clamp-2">
+                        {newsItem.description}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        Created: {newsItem.createdAt ? new Date(newsItem.createdAt).toLocaleDateString() : 'Unknown'}
+                        {newsItem.publishDate && (
+                          <span> • Published: {new Date(newsItem.publishDate).toLocaleDateString()}</span>
+                        )}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Dialog
+                        open={editingNews?.id === newsItem.id}
+                        onOpenChange={(open) =>
+                          setEditingNews(open ? newsItem : null)
+                        }
+                      >
+                        <DialogTrigger asChild>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            data-testid={`button-edit-news-${newsItem.id}`}
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+                          <NewsForm
+                            newsItem={newsItem}
+                            onSubmit={(data) =>
+                              updateNewsMutation.mutate({
+                                id: newsItem.id,
+                                data,
+                              })
+                            }
+                            isLoading={updateNewsMutation.isPending}
+                          />
+                        </DialogContent>
+                      </Dialog>
+
+                      <AlertDialog
+                        open={deletingNewsId === newsItem.id}
+                        onOpenChange={(open) =>
+                          setDeletingNewsId(open ? newsItem.id : null)
+                        }
+                      >
+                        <AlertDialogTrigger asChild>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300"
+                            data-testid={`button-delete-news-${newsItem.id}`}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Delete News Article</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Are you sure you want to delete "{newsItem.title}"? This action cannot be undone.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction
+                              onClick={() => deleteNewsMutation.mutate(newsItem.id)}
+                              className="bg-red-600 hover:bg-red-700"
+                            >
+                              Delete
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Edit News Dialog */}
+        {editingNews && (
+          <Dialog
+            open={!!editingNews}
+            onOpenChange={(open) => !open && setEditingNews(null)}
+          >
+            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+              <NewsForm
+                newsItem={editingNews}
+                onSubmit={(data) =>
+                  updateNewsMutation.mutate({
+                    id: editingNews.id,
+                    data,
+                  })
+                }
+                isLoading={updateNewsMutation.isPending}
+              />
+            </DialogContent>
+          </Dialog>
+        )}
       </CardContent>
     </Card>
   );
@@ -1255,25 +1513,582 @@ function MemberClassForm({
   );
 }
 
-// Hero Images Management Component (Placeholder)
+// News Form Component
+function NewsForm({
+  newsItem,
+  onSubmit,
+  isLoading,
+}: {
+  newsItem?: News;
+  onSubmit: (data: any) => void;
+  isLoading: boolean;
+}) {
+  const [formData, setFormData] = useState({
+    category: newsItem?.category || "",
+    title: newsItem?.title || "",
+    description: newsItem?.description || "",
+    content: newsItem?.content || "",
+    image: newsItem?.image || "",
+    isPublished: newsItem?.isPublished ?? false,
+    publishDate: newsItem?.publishDate ? new Date(newsItem.publishDate).toISOString().split('T')[0] : "",
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onSubmit({
+      ...formData,
+      publishDate: formData.publishDate ? new Date(formData.publishDate) : null,
+    });
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <DialogHeader>
+        <DialogTitle>
+          {newsItem ? "Edit News Article" : "Add News Article"}
+        </DialogTitle>
+        <DialogDescription>
+          {newsItem
+            ? "Update the news article information"
+            : "Create a new news article to share updates"}
+        </DialogDescription>
+      </DialogHeader>
+
+      <div className="space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <Label htmlFor="title">Title *</Label>
+            <Input
+              id="title"
+              value={formData.title}
+              onChange={(e) =>
+                setFormData({ ...formData, title: e.target.value })
+              }
+              placeholder="News article title"
+              required
+              data-testid="input-news-title"
+            />
+          </div>
+          <div>
+            <Label htmlFor="category">Category *</Label>
+            <Select
+              value={formData.category}
+              onValueChange={(value) => setFormData({ ...formData, category: value })}
+            >
+              <SelectTrigger data-testid="select-news-category">
+                <SelectValue placeholder="Select category" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="General">General</SelectItem>
+                <SelectItem value="Events">Events</SelectItem>
+                <SelectItem value="Research">Research</SelectItem>
+                <SelectItem value="Community">Community</SelectItem>
+                <SelectItem value="Healthcare">Healthcare</SelectItem>
+                <SelectItem value="Announcements">Announcements</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
+        <div>
+          <Label htmlFor="description">Description *</Label>
+          <Textarea
+            id="description"
+            value={formData.description}
+            onChange={(e) =>
+              setFormData({ ...formData, description: e.target.value })
+            }
+            placeholder="Brief description of the news article"
+            required
+            rows={3}
+            data-testid="input-news-description"
+          />
+        </div>
+
+        <div>
+          <Label htmlFor="content">Content</Label>
+          <Textarea
+            id="content"
+            value={formData.content}
+            onChange={(e) =>
+              setFormData({ ...formData, content: e.target.value })
+            }
+            placeholder="Full article content"
+            rows={8}
+            data-testid="input-news-content"
+          />
+        </div>
+
+        <div>
+          <Label htmlFor="image">Image URL *</Label>
+          <Input
+            id="image"
+            value={formData.image}
+            onChange={(e) =>
+              setFormData({ ...formData, image: e.target.value })
+            }
+            placeholder="https://example.com/image.jpg"
+            required
+            data-testid="input-news-image"
+          />
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="flex items-center space-x-2">
+            <input
+              type="checkbox"
+              id="isPublished"
+              checked={formData.isPublished}
+              onChange={(e) =>
+                setFormData({ ...formData, isPublished: e.target.checked })
+              }
+              data-testid="input-news-published"
+            />
+            <Label htmlFor="isPublished">Published</Label>
+          </div>
+          
+          {formData.isPublished && (
+            <div>
+              <Label htmlFor="publishDate">Publish Date</Label>
+              <Input
+                id="publishDate"
+                type="date"
+                value={formData.publishDate}
+                onChange={(e) =>
+                  setFormData({ ...formData, publishDate: e.target.value })
+                }
+                data-testid="input-news-publish-date"
+              />
+            </div>
+          )}
+        </div>
+      </div>
+
+      <DialogFooter>
+        <Button
+          type="submit"
+          disabled={isLoading || !formData.title.trim() || !formData.category.trim() || !formData.description.trim() || !formData.image.trim()}
+          data-testid="button-submit-news"
+        >
+          {isLoading && <Loading size="sm" variant="spinner" className="mr-2" />}
+          {newsItem ? "Update" : "Create"} News Article
+        </Button>
+      </DialogFooter>
+    </form>
+  );
+}
+
+// Hero Images Management Component
 function HeroImageManagement() {
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [editingHeroImage, setEditingHeroImage] = useState<HeroImage | null>(null);
+  const [deletingHeroImageId, setDeletingHeroImageId] = useState<string | null>(null);
+  const { toast } = useToast();
+
+  // Fetch hero images
+  const { data: heroImages, isLoading, isError, refetch } = useQuery<HeroImage[]>({
+    queryKey: ["/api/admin/hero-images"],
+  });
+
+  // Sort hero images by display order
+  const sortedHeroImages = heroImages ? [...heroImages].sort((a, b) => {
+    const orderA = a.displayOrder || 0;
+    const orderB = b.displayOrder || 0;
+    if (orderA !== orderB) return orderA - orderB;
+    return a.title.localeCompare(b.title);
+  }) : [];
+
+  // Add hero image mutation
+  const addHeroImageMutation = useMutation({
+    mutationFn: async (data: any) => {
+      return apiRequest("POST", "/api/admin/hero-images", data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/hero-images"] });
+      setIsAddDialogOpen(false);
+      toast({
+        title: "Success",
+        description: "Hero image added successfully!",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to add hero image. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Update hero image mutation
+  const updateHeroImageMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: any }) => {
+      return apiRequest("PUT", `/api/admin/hero-images/${id}`, data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/hero-images"] });
+      setEditingHeroImage(null);
+      toast({
+        title: "Success",
+        description: "Hero image updated successfully!",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to update hero image. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Delete hero image mutation
+  const deleteHeroImageMutation = useMutation({
+    mutationFn: async (id: string) => {
+      return apiRequest("DELETE", `/api/admin/hero-images/${id}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/hero-images"] });
+      setDeletingHeroImageId(null);
+      toast({
+        title: "Success",
+        description: "Hero image deleted successfully!",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to delete hero image. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  if (isLoading) {
+    return (
+      <Card className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-md border border-white/20">
+        <CardContent className="flex items-center justify-center py-8">
+          <Loading size="lg" variant="spinner" />
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (isError) {
+    return (
+      <Card className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-md border border-white/20">
+        <CardContent className="text-center py-8">
+          <p className="text-red-600 dark:text-red-400">Failed to load hero images</p>
+          <Button onClick={() => refetch()} className="mt-4">
+            Retry
+          </Button>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <Card className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-md border border-white/20">
       <CardHeader>
-        <CardTitle>Hero Image Management</CardTitle>
-        <CardDescription>Manage carousel images and captions</CardDescription>
+        <div className="flex items-center justify-between">
+          <div>
+            <CardTitle className="flex items-center gap-2">
+              <Image className="h-5 w-5" />
+              Hero Images Management
+            </CardTitle>
+            <CardDescription>
+              Manage carousel images and captions for the homepage
+            </CardDescription>
+          </div>
+          <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+            <DialogTrigger asChild>
+              <Button data-testid="button-add-hero-image">
+                <Plus className="h-4 w-4 mr-2" />
+                Add Hero Image
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+              <HeroImageForm
+                onSubmit={(data) => addHeroImageMutation.mutate(data)}
+                isLoading={addHeroImageMutation.isPending}
+              />
+            </DialogContent>
+          </Dialog>
+        </div>
       </CardHeader>
       <CardContent>
-        <div className="text-center py-12">
-          <Image className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
-          <h3 className="text-lg font-semibold mb-2">Hero Image Management</h3>
-          <p className="text-muted-foreground mb-4">Coming soon - manage hero carousel images</p>
-          <Button data-testid="button-add-hero-image" disabled>
-            <Plus className="h-4 w-4 mr-2" />
-            Add Hero Image
-          </Button>
-        </div>
+        {sortedHeroImages.length === 0 ? (
+          <div className="text-center py-8">
+            <Image className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
+            <h3 className="text-lg font-semibold mb-2">No Hero Images</h3>
+            <p className="text-muted-foreground mb-4">
+              Add your first hero image to showcase on the homepage
+            </p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {sortedHeroImages.map((heroImage) => (
+              <div
+                key={heroImage.id}
+                className="group relative bg-white/50 dark:bg-slate-800/50 rounded-lg border border-white/20 p-4 hover:bg-white/70 dark:hover:bg-slate-800/70 transition-all duration-300"
+                data-testid={`hero-image-${heroImage.id}`}
+              >
+                <div className="relative mb-4">
+                  <img
+                    src={heroImage.imageUrl}
+                    alt={heroImage.altText}
+                    className="w-full h-32 object-cover rounded-lg"
+                  />
+                  <div className="absolute top-2 right-2 flex items-center gap-1">
+                    <Badge variant={heroImage.isActive ? "default" : "secondary"} className="text-xs">
+                      {heroImage.isActive ? "Active" : "Inactive"}
+                    </Badge>
+                  </div>
+                </div>
+                
+                <div className="space-y-2">
+                  <h3 className="font-semibold truncate" data-testid={`text-hero-title-${heroImage.id}`}>
+                    {heroImage.title}
+                  </h3>
+                  {heroImage.description && (
+                    <p className="text-sm text-muted-foreground line-clamp-2" data-testid={`text-hero-description-${heroImage.id}`}>
+                      {heroImage.description}
+                    </p>
+                  )}
+                  <p className="text-xs text-muted-foreground">
+                    Display Order: {heroImage.displayOrder ?? 0}
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-2 mt-4">
+                  <Dialog
+                    open={editingHeroImage?.id === heroImage.id}
+                    onOpenChange={(open) =>
+                      setEditingHeroImage(open ? heroImage : null)
+                    }
+                  >
+                    <DialogTrigger asChild>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        data-testid={`button-edit-hero-image-${heroImage.id}`}
+                      >
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+                      <HeroImageForm
+                        heroImage={heroImage}
+                        onSubmit={(data) =>
+                          updateHeroImageMutation.mutate({
+                            id: heroImage.id,
+                            data,
+                          })
+                        }
+                        isLoading={updateHeroImageMutation.isPending}
+                      />
+                    </DialogContent>
+                  </Dialog>
+
+                  <AlertDialog
+                    open={deletingHeroImageId === heroImage.id}
+                    onOpenChange={(open) =>
+                      setDeletingHeroImageId(open ? heroImage.id : null)
+                    }
+                  >
+                    <AlertDialogTrigger asChild>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300"
+                        data-testid={`button-delete-hero-image-${heroImage.id}`}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Delete Hero Image</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Are you sure you want to delete "{heroImage.title}"? This action cannot be undone.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                          onClick={() => deleteHeroImageMutation.mutate(heroImage.id)}
+                          className="bg-red-600 hover:bg-red-700"
+                        >
+                          Delete
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </CardContent>
     </Card>
+  );
+}
+// Hero Image Form Component
+function HeroImageForm({
+  heroImage,
+  onSubmit,
+  isLoading,
+}: {
+  heroImage?: HeroImage;
+  onSubmit: (data: any) => void;
+  isLoading: boolean;
+}) {
+  const [formData, setFormData] = useState({
+    title: heroImage?.title || "",
+    description: heroImage?.description || "",
+    imageUrl: heroImage?.imageUrl || "",
+    altText: heroImage?.altText || "",
+    displayOrder: heroImage?.displayOrder?.toString() || "0",
+    isActive: heroImage?.isActive ?? true,
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onSubmit({
+      ...formData,
+      displayOrder: parseInt(formData.displayOrder) || 0,
+    });
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <DialogHeader>
+        <DialogTitle>
+          {heroImage ? "Edit Hero Image" : "Add Hero Image"}
+        </DialogTitle>
+        <DialogDescription>
+          {heroImage
+            ? "Update the hero image information"
+            : "Add a new hero image to the carousel"}
+        </DialogDescription>
+      </DialogHeader>
+
+      <div className="space-y-4">
+        <div>
+          <Label htmlFor="title">Title *</Label>
+          <Input
+            id="title"
+            value={formData.title}
+            onChange={(e) =>
+              setFormData({ ...formData, title: e.target.value })
+            }
+            placeholder="Hero image title"
+            required
+            data-testid="input-hero-title"
+          />
+        </div>
+
+        <div>
+          <Label htmlFor="description">Description</Label>
+          <Textarea
+            id="description"
+            value={formData.description}
+            onChange={(e) =>
+              setFormData({ ...formData, description: e.target.value })
+            }
+            placeholder="Brief description of the hero image"
+            rows={3}
+            data-testid="input-hero-description"
+          />
+        </div>
+
+        <div>
+          <Label htmlFor="imageUrl">Image URL *</Label>
+          <Input
+            id="imageUrl"
+            value={formData.imageUrl}
+            onChange={(e) =>
+              setFormData({ ...formData, imageUrl: e.target.value })
+            }
+            placeholder="https://example.com/hero-image.jpg"
+            required
+            data-testid="input-hero-image-url"
+          />
+        </div>
+
+        <div>
+          <Label htmlFor="altText">Alt Text *</Label>
+          <Input
+            id="altText"
+            value={formData.altText}
+            onChange={(e) =>
+              setFormData({ ...formData, altText: e.target.value })
+            }
+            placeholder="Descriptive text for accessibility"
+            required
+            data-testid="input-hero-alt-text"
+          />
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <Label htmlFor="displayOrder">Display Order</Label>
+            <Input
+              id="displayOrder"
+              type="number"
+              value={formData.displayOrder}
+              onChange={(e) =>
+                setFormData({ ...formData, displayOrder: e.target.value })
+              }
+              placeholder="0"
+              min="0"
+              data-testid="input-hero-display-order"
+            />
+          </div>
+
+          <div className="flex items-center space-x-2">
+            <input
+              type="checkbox"
+              id="isActive"
+              checked={formData.isActive}
+              onChange={(e) =>
+                setFormData({ ...formData, isActive: e.target.checked })
+              }
+              data-testid="input-hero-active"
+            />
+            <Label htmlFor="isActive">Active</Label>
+          </div>
+        </div>
+
+        {/* Image Preview */}
+        {formData.imageUrl && (
+          <div>
+            <Label>Preview</Label>
+            <div className="mt-2 border rounded-lg p-2 bg-slate-50 dark:bg-slate-800">
+              <img
+                src={formData.imageUrl}
+                alt={formData.altText || "Hero image preview"}
+                className="w-full h-32 object-cover rounded"
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.style.display = 'none';
+                }}
+              />
+            </div>
+          </div>
+        )}
+      </div>
+
+      <DialogFooter>
+        <Button
+          type="submit"
+          disabled={isLoading || !formData.title.trim() || !formData.imageUrl.trim() || !formData.altText.trim()}
+          data-testid="button-submit-hero-image"
+        >
+          {isLoading && <Loading size="sm" variant="spinner" className="mr-2" />}
+          {heroImage ? "Update" : "Create"} Hero Image
+        </Button>
+      </DialogFooter>
+    </form>
   );
 }
