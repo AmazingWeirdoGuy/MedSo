@@ -168,8 +168,288 @@ export default function AdminPage() {
   );
 }
 
+// Member Detail Modal Component
+function MemberDetailModal({
+  member,
+  memberClasses,
+  isOpen,
+  onOpenChange
+}: {
+  member: Member;
+  memberClasses: MemberClass[];
+  isOpen: boolean;
+  onOpenChange: (open: boolean) => void;
+}) {
+  const [formData, setFormData] = useState({
+    name: member.name || "",
+    role: member.role || "",
+    image: member.image || "",
+    email: member.email || "",
+    displayOrder: member.displayOrder || 0,
+    isActive: member.isActive ?? true,
+    memberClassId: member.memberClassId || "",
+  });
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState(member.image || "");
+  const { toast } = useToast();
+
+  // Update member mutation
+  const updateMemberMutation = useMutation({
+    mutationFn: async (data: any) => {
+      return apiRequest("PUT", `/api/admin/members/${member.id}`, data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/members"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/members"] });
+      onOpenChange(false);
+      toast({
+        title: "Success",
+        description: "Member updated successfully!",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to update member. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      setImageFile(file);
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const result = e.target?.result as string;
+        setImagePreview(result);
+        setFormData({ ...formData, image: result });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleSave = () => {
+    const memberClass = memberClasses.find(mc => mc.id === formData.memberClassId);
+    const isActiveMemberClass = memberClass?.name === "Active Member";
+    
+    const dataToSave = { ...formData };
+    if (isActiveMemberClass) {
+      dataToSave.role = "";
+      dataToSave.image = "";
+    }
+    
+    // Validation
+    if (!dataToSave.name.trim()) {
+      toast({
+        title: "Validation Error",
+        description: "Name is required.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!isActiveMemberClass && (!dataToSave.role.trim() || !dataToSave.image.trim())) {
+      toast({
+        title: "Validation Error",
+        description: "Role and image are required for this member class.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    updateMemberMutation.mutate(dataToSave);
+  };
+
+  const selectedClass = memberClasses.find(mc => mc.id === formData.memberClassId);
+  const isActiveMemberClass = selectedClass?.name === "Active Member";
+
+  return (
+    <Dialog open={isOpen} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="text-xl font-semibold">Member Details</DialogTitle>
+          <DialogDescription>
+            Edit detailed information for {member.name}
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="space-y-6">
+          {/* Profile Image Section */}
+          <div className="space-y-4">
+            <Label className="text-sm font-medium">Profile Image</Label>
+            <div className="flex flex-col items-center space-y-4">
+              <div className="relative">
+                <img
+                  src={imagePreview || "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=300"}
+                  alt={formData.name}
+                  className="w-32 h-32 rounded-lg object-cover border-2 border-white/20"
+                  data-testid="img-detail-preview"
+                />
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => document.getElementById('image-upload')?.click()}
+                  data-testid="button-choose-image"
+                >
+                  Choose Image
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => document.getElementById('image-upload')?.click()}
+                  data-testid="button-browse"
+                >
+                  Browse
+                </Button>
+                <input
+                  id="image-upload"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageChange}
+                  className="hidden"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Form Fields */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="detail-name">Name *</Label>
+              <Input
+                id="detail-name"
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                placeholder="Enter full name"
+                data-testid="input-detail-name"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="detail-class">Member Class</Label>
+              <Select
+                value={formData.memberClassId}
+                onValueChange={(value) => setFormData({ ...formData, memberClassId: value })}
+              >
+                <SelectTrigger data-testid="select-detail-class">
+                  <SelectValue placeholder="Select member class" />
+                </SelectTrigger>
+                <SelectContent>
+                  {memberClasses.map((memberClass) => (
+                    <SelectItem key={memberClass.id} value={memberClass.id}>
+                      {memberClass.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {!isActiveMemberClass && (
+              <div className="space-y-2">
+                <Label htmlFor="detail-role">Role *</Label>
+                <Input
+                  id="detail-role"
+                  value={formData.role}
+                  onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+                  placeholder="Enter role/title"
+                  data-testid="input-detail-role"
+                />
+              </div>
+            )}
+
+            <div className="space-y-2">
+              <Label htmlFor="detail-email">Email</Label>
+              <Input
+                id="detail-email"
+                type="email"
+                value={formData.email}
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                placeholder="Enter email address"
+                data-testid="input-detail-email"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="detail-order">Display Order</Label>
+              <Input
+                id="detail-order"
+                type="number"
+                value={formData.displayOrder}
+                onChange={(e) => setFormData({ ...formData, displayOrder: parseInt(e.target.value) || 0 })}
+                placeholder="Display order"
+                data-testid="input-detail-order"
+              />
+            </div>
+          </div>
+
+          {/* Published Status */}
+          <div className="space-y-3">
+            <Label className="text-sm font-medium">Status</Label>
+            <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-2">
+                <input
+                  type="radio"
+                  id="published"
+                  name="status"
+                  checked={formData.isActive}
+                  onChange={() => setFormData({ ...formData, isActive: true })}
+                  data-testid="radio-published"
+                />
+                <Label htmlFor="published" className="text-sm">Published</Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <input
+                  type="radio"
+                  id="unpublished"
+                  name="status"
+                  checked={!formData.isActive}
+                  onChange={() => setFormData({ ...formData, isActive: false })}
+                  data-testid="radio-unpublished"
+                />
+                <Label htmlFor="unpublished" className="text-sm">Unpublished</Label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <DialogFooter className="flex gap-2 pt-6">
+          <Button
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+            disabled={updateMemberMutation.isPending}
+            data-testid="button-detail-cancel"
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={handleSave}
+            disabled={updateMemberMutation.isPending}
+            data-testid="button-detail-save"
+          >
+            {updateMemberMutation.isPending ? (
+              <>
+                <Loading size="sm" variant="spinner" className="mr-2" />
+                Saving...
+              </>
+            ) : (
+              "Save"
+            )}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 // Member Management Component
 function MemberManagement() {
+  const [detailMember, setDetailMember] = useState<Member | null>(null);
   const { toast } = useToast();
 
   // Fetch members and member classes
@@ -255,6 +535,7 @@ function MemberManagement() {
             members={websiteManagers}
             memberClasses={memberClasses}
             className="Website Manager"
+            onMemberDetail={setDetailMember}
           />
           
           <ClassSection
@@ -263,6 +544,7 @@ function MemberManagement() {
             members={officers}
             memberClasses={memberClasses}
             className="Officer"
+            onMemberDetail={setDetailMember}
           />
           
           <ClassSection
@@ -271,6 +553,7 @@ function MemberManagement() {
             members={activeMembers}
             memberClasses={memberClasses}
             className="Active Member"
+            onMemberDetail={setDetailMember}
           />
           
           <ClassSection
@@ -279,8 +562,19 @@ function MemberManagement() {
             members={facultyAdvisors}
             memberClasses={memberClasses}
             className="Faculty Advisors"
+            onMemberDetail={setDetailMember}
           />
         </Accordion>
+        
+        {/* Member Detail Modal */}
+        {detailMember && (
+          <MemberDetailModal
+            member={detailMember}
+            memberClasses={memberClasses || []}
+            isOpen={!!detailMember}
+            onOpenChange={(open) => !open && setDetailMember(null)}
+          />
+        )}
       </CardContent>
     </Card>
   );
@@ -292,13 +586,15 @@ function ClassSection({
   title, 
   members, 
   memberClasses, 
-  className 
+  className,
+  onMemberDetail
 }: {
   value: string;
   title: string;
   members: Member[];
   memberClasses: MemberClass[] | undefined;
   className: string;
+  onMemberDetail?: (member: Member) => void;
 }) {
   const [addingNew, setAddingNew] = useState(false);
   const { toast } = useToast();
@@ -447,6 +743,7 @@ function ClassSection({
                     isActiveMemberClass={isActiveMemberClass}
                     onSave={(data) => updateMemberMutation.mutate({ id: member.id, data })}
                     onDelete={() => deleteMemberMutation.mutate(member.id)}
+                    onDetail={onMemberDetail}
                     isUpdating={updateMemberMutation.isPending}
                     isDeleting={deleteMemberMutation.isPending}
                   />
@@ -476,6 +773,7 @@ function MemberInlineRow({
   isActiveMemberClass,
   onSave,
   onDelete,
+  onDetail,
   isUpdating,
   isDeleting
 }: {
@@ -483,6 +781,7 @@ function MemberInlineRow({
   isActiveMemberClass: boolean;
   onSave: (data: any) => void;
   onDelete: () => void;
+  onDetail?: (member: Member) => void;
   isUpdating: boolean;
   isDeleting: boolean;
 }) {
@@ -653,6 +952,14 @@ function MemberInlineRow({
                 data-testid={`button-edit-${member.id}`}
               >
                 <Edit className="h-3 w-3" />
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => onDetail && onDetail(member)}
+                data-testid={`button-detail-${member.id}`}
+              >
+                Detail
               </Button>
               <AlertDialog>
                 <AlertDialogTrigger asChild>
