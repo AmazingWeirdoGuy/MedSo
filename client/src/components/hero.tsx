@@ -239,15 +239,21 @@ export default function Hero() {
               </p>
             </div>
 
-            {/* Premium CTAs */}
-            <div className="flex flex-col sm:flex-row gap-6 pt-8">
+            {/* Premium CTAs - Enhanced to stand out */}
+            <div 
+              className="flex flex-col sm:flex-row gap-6 pt-8"
+              style={{ 
+                opacity: Math.max(0.85, scrollOpacity) // Always stay highly visible
+              }}
+            >
               <Button 
                 size="lg" 
-                className="border border-blue-300/30 hover:border-blue-300/50 bg-blue-500/15 hover:bg-blue-500/25 text-white hover:text-white/90 backdrop-blur-md px-12 py-6 text-lg font-medium luxury-hover luxury-press rounded-xl"
+                className="border border-blue-400/60 hover:border-blue-300/80 bg-blue-500/25 hover:bg-blue-500/35 text-white hover:text-white backdrop-blur-md px-12 py-6 text-lg font-medium luxury-hover luxury-press rounded-xl"
                 style={{ 
-                  boxShadow: '0 8px 32px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(59, 130, 246, 0.3)',
+                  boxShadow: '0 12px 40px rgba(59, 130, 246, 0.4), 0 4px 16px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(59, 130, 246, 0.5)',
                   minWidth: '200px',
-                  background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(37, 99, 235, 0.25) 100%)'
+                  background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.3) 0%, rgba(37, 99, 235, 0.4) 100%)',
+                  textShadow: '0 2px 4px rgba(0, 0, 0, 0.5)'
                 }}
                 data-testid="hero-cta-primary"
                 onClick={handleJoinClick}
@@ -263,11 +269,12 @@ export default function Hero() {
               <Button 
                 size="lg" 
                 variant="outline" 
-                className="border border-white/30 hover:border-white/50 bg-white/15 hover:bg-white/25 text-white hover:text-white/90 backdrop-blur-md px-12 py-6 text-lg font-medium luxury-hover luxury-press rounded-xl"
+                className="border border-white/50 hover:border-white/70 bg-white/20 hover:bg-white/30 text-white hover:text-white backdrop-blur-md px-12 py-6 text-lg font-medium luxury-hover luxury-press rounded-xl"
                 style={{ 
-                  boxShadow: '0 8px 32px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.3)',
+                  boxShadow: '0 12px 40px rgba(255, 255, 255, 0.2), 0 4px 16px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.4)',
                   minWidth: '200px',
-                  background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.25) 100%)'
+                  background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.3) 100%)',
+                  textShadow: '0 2px 4px rgba(0, 0, 0, 0.5)'
                 }}
                 data-testid="hero-cta-secondary"
                 onClick={handleLearnMoreClick}
