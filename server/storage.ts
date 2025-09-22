@@ -3,6 +3,7 @@ import {
   type Program, type InsertProgram, 
   type News, type InsertNews,
   type Member, type InsertMember,
+  type MemberClass, type InsertMemberClass,
   type AdminUser, type InsertAdminUser,
   type HeroImage, type InsertHeroImage
 } from "@shared/schema";
@@ -18,6 +19,13 @@ export interface IStorage {
   createAdminUser(adminUser: InsertAdminUser): Promise<AdminUser>;
   updateAdminUser(id: string, adminUser: Partial<InsertAdminUser>): Promise<AdminUser>;
   deleteAdminUser(id: string): Promise<void>;
+  
+  // Member class operations
+  getMemberClasses(): Promise<MemberClass[]>;
+  getMemberClass(id: string): Promise<MemberClass | undefined>;
+  createMemberClass(memberClass: InsertMemberClass): Promise<MemberClass>;
+  updateMemberClass(id: string, memberClass: Partial<InsertMemberClass>): Promise<MemberClass>;
+  deleteMemberClass(id: string): Promise<void>;
   
   // Member operations
   getMembers(): Promise<Member[]>;
@@ -52,6 +60,7 @@ export interface IStorage {
 export class MemStorage implements IStorage {
   private users: Map<string, User>;
   private adminUsers: Map<string, AdminUser>;
+  private memberClasses: Map<string, MemberClass>;
   private members: Map<string, Member>;
   private heroImages: Map<string, HeroImage>;
   private programs: Map<string, Program>;
@@ -60,6 +69,7 @@ export class MemStorage implements IStorage {
   constructor() {
     this.users = new Map();
     this.adminUsers = new Map();
+    this.memberClasses = new Map();
     this.members = new Map();
     this.heroImages = new Map();
     this.programs = new Map();
@@ -70,6 +80,48 @@ export class MemStorage implements IStorage {
   }
 
   private initializeDefaultData() {
+    // Default member classes
+    const defaultMemberClasses: MemberClass[] = [
+      {
+        id: "website-manager",
+        name: "Website Manager",
+        description: "Manages the website and digital presence",
+        displayOrder: 1,
+        isActive: true,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      },
+      {
+        id: "officer",
+        name: "Officer",
+        description: "Executive leadership positions",
+        displayOrder: 2,
+        isActive: true,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      },
+      {
+        id: "active-member",
+        name: "Active Member",
+        description: "Regular participating members",
+        displayOrder: 3,
+        isActive: true,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      },
+      {
+        id: "faculty-advisors",
+        name: "Faculty Advisors",
+        description: "Faculty members providing guidance",
+        displayOrder: 4,
+        isActive: true,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      }
+    ];
+
+    defaultMemberClasses.forEach(memberClass => this.memberClasses.set(memberClass.id, memberClass));
+
     // Default programs
     const defaultPrograms: Program[] = [
       {
@@ -114,6 +166,7 @@ export class MemStorage implements IStorage {
         id: "member-1",
         name: "Sarah Johnson",
         role: "President",
+        memberClassId: "officer",
         bio: "Passionate about global health equity and medical education.",
         image: "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=400",
         email: "president@isbmedicalsociety.org",
@@ -128,6 +181,7 @@ export class MemStorage implements IStorage {
         id: "member-2",
         name: "Alex Chen",
         role: "Vice President",
+        memberClassId: "officer",
         bio: "Leading initiatives in medical research and community outreach.",
         image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=400",
         email: "vp@isbmedicalsociety.org",
@@ -270,6 +324,47 @@ export class MemStorage implements IStorage {
     this.adminUsers.delete(id);
   }
 
+  // Member class operations
+  async getMemberClasses(): Promise<MemberClass[]> {
+    return Array.from(this.memberClasses.values()).sort((a, b) => (a.displayOrder ?? 0) - (b.displayOrder ?? 0));
+  }
+
+  async getMemberClass(id: string): Promise<MemberClass | undefined> {
+    return this.memberClasses.get(id);
+  }
+
+  async createMemberClass(insertMemberClass: InsertMemberClass): Promise<MemberClass> {
+    const id = randomUUID();
+    const memberClass: MemberClass = {
+      id,
+      name: insertMemberClass.name,
+      description: insertMemberClass.description ?? null,
+      displayOrder: insertMemberClass.displayOrder ?? 0,
+      isActive: insertMemberClass.isActive ?? true,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    this.memberClasses.set(id, memberClass);
+    return memberClass;
+  }
+
+  async updateMemberClass(id: string, updateData: Partial<InsertMemberClass>): Promise<MemberClass> {
+    const existing = this.memberClasses.get(id);
+    if (!existing) throw new Error("Member class not found");
+    
+    const updated: MemberClass = {
+      ...existing,
+      ...updateData,
+      updatedAt: new Date(),
+    };
+    this.memberClasses.set(id, updated);
+    return updated;
+  }
+
+  async deleteMemberClass(id: string): Promise<void> {
+    this.memberClasses.delete(id);
+  }
+
   // Member operations
   async getMembers(): Promise<Member[]> {
     return Array.from(this.members.values()).sort((a, b) => (a.displayOrder ?? 0) - (b.displayOrder ?? 0));
@@ -285,6 +380,7 @@ export class MemStorage implements IStorage {
       id,
       name: insertMember.name,
       role: insertMember.role,
+      memberClassId: insertMember.memberClassId ?? null,
       bio: insertMember.bio ?? null,
       image: insertMember.image ?? null,
       email: insertMember.email ?? null,

@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertProgramSchema, insertNewsSchema, insertMemberSchema, insertHeroImageSchema, insertAdminUserSchema } from "@shared/schema";
+import { insertProgramSchema, insertNewsSchema, insertMemberSchema, insertMemberClassSchema, insertHeroImageSchema, insertAdminUserSchema } from "@shared/schema";
 import { sendContactEmail } from "./email";
 import { getSession } from "./replitAuth";
 import { z } from "zod";
@@ -141,6 +141,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Member classes routes (public)
+  app.get("/api/member-classes", async (req, res) => {
+    try {
+      const memberClasses = await storage.getMemberClasses();
+      res.json(memberClasses);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch member classes" });
+    }
+  });
+
+  // Members routes (public)
+  app.get("/api/members", async (req, res) => {
+    try {
+      const members = await storage.getMembers();
+      res.json(members);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch members" });
+    }
+  });
+
   // Contact form route
   const contactFormSchema = z.object({
     firstName: z.string().min(1, "First name is required"),
@@ -167,6 +187,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Admin-only routes
+
+  // Member classes management routes
+  app.get("/api/admin/member-classes", isAuthenticated, isAdmin, async (req, res) => {
+    try {
+      const memberClasses = await storage.getMemberClasses();
+      res.json(memberClasses);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch member classes" });
+    }
+  });
+
+  app.post("/api/admin/member-classes", isAuthenticated, isAdmin, async (req, res) => {
+    try {
+      const validatedData = insertMemberClassSchema.parse(req.body);
+      const memberClass = await storage.createMemberClass(validatedData);
+      res.status(201).json(memberClass);
+    } catch (error) {
+      res.status(400).json({ message: "Invalid member class data" });
+    }
+  });
+
+  app.put("/api/admin/member-classes/:id", isAuthenticated, isAdmin, async (req, res) => {
+    try {
+      const validatedData = insertMemberClassSchema.partial().parse(req.body);
+      const memberClass = await storage.updateMemberClass(req.params.id, validatedData);
+      res.json(memberClass);
+    } catch (error) {
+      res.status(400).json({ message: "Failed to update member class" });
+    }
+  });
+
+  app.delete("/api/admin/member-classes/:id", isAuthenticated, isAdmin, async (req, res) => {
+    try {
+      await storage.deleteMemberClass(req.params.id);
+      res.status(204).send();
+    } catch (error) {
+      res.status(500).json({ message: "Failed to delete member class" });
+    }
+  });
 
   // Members management routes
   app.get("/api/admin/members", isAuthenticated, isAdmin, async (req, res) => {

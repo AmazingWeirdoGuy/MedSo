@@ -1,41 +1,172 @@
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { Users, Newspaper, Image, Settings, BarChart3, Eye, Plus, Edit, Trash2, Mail, ExternalLink, GraduationCap } from "lucide-react";
+import { Users, Newspaper, Image, Plus, Edit, Trash2, Mail, ExternalLink, GraduationCap } from "lucide-react";
 import { Loading } from "@/components/ui/loading";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { insertMemberSchema } from "@shared/schema";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { z } from "zod";
-import type { Member, News, HeroImage, AdminUser, InsertMember } from "@shared/schema";
+import type { Member, MemberClass, News, HeroImage, AdminUser } from "@shared/schema";
 
-// Member form schema with extended validation
-const memberFormSchema = insertMemberSchema.extend({
-  name: z.string().min(1, "Name is required").max(100, "Name must be less than 100 characters"),
-  role: z.string().min(1, "Role is required").max(50, "Role must be less than 50 characters"), 
-  bio: z.string().optional(),
-  email: z.string().email("Invalid email address").optional().or(z.literal("")),
-  linkedIn: z.string().url("Invalid LinkedIn URL").optional().or(z.literal("")),
-  year: z.string().optional(),
-  image: z.string().url("Invalid image URL").optional().or(z.literal("")),
-  displayOrder: z.number().min(0).default(0),
-  isActive: z.boolean().default(true),
-});
+export default function AdminPage() {
+  const { toast } = useToast();
+  const { isAuthenticated, isLoading: authLoading, user } = useAuth();
 
-type MemberFormData = z.infer<typeof memberFormSchema>;
+  // Check admin status
+  const { data: adminData, isLoading: adminLoading } = useQuery<{
+    isAdmin: boolean;
+    adminUser: AdminUser | null;
+  }>({
+    queryKey: ["/api/auth/admin"],
+    enabled: isAuthenticated,
+    retry: false,
+  });
 
+  // Redirect to login if not authenticated
+  useEffect(() => {
+    if (!authLoading && !isAuthenticated) {
+      toast({
+        title: "Authentication Required",
+        description: "Please log in to access the admin panel.",
+        variant: "destructive",
+      });
+      setTimeout(() => {
+        window.location.href = "/login";
+      }, 1000);
+      return;
+    }
+  }, [isAuthenticated, authLoading, toast]);
+
+  // Check if user has admin access
+  useEffect(() => {
+    if (!adminLoading && isAuthenticated && !adminData?.isAdmin) {
+      toast({
+        title: "Access Denied",
+        description: "You don't have admin access to this panel.",
+        variant: "destructive",
+      });
+      setTimeout(() => {
+        window.location.href = "/";
+      }, 2000);
+      return;
+    }
+  }, [adminData?.isAdmin, adminLoading, isAuthenticated, toast]);
+
+  if (authLoading || adminLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 dark:from-slate-900 dark:to-blue-900 flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <Loading size="lg" variant="spinner" />
+          <p className="text-muted-foreground">Authenticating...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated || !adminData?.isAdmin) {
+    return null; // Redirecting
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 dark:from-slate-900 dark:to-blue-900">
+      {/* Header */}
+      <header className="border-b border-white/20 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md sticky top-0 z-50">
+        <div className="container mx-auto px-6 py-4">
+          <div className="flex items-center justify-between">
+            <div className="space-y-1">
+              <h1 
+                className="text-3xl font-bold text-slate-900 dark:text-white"
+                style={{ 
+                  fontFamily: 'Beo, serif',
+                  letterSpacing: '0.02em'
+                }}
+                data-testid="admin-title"
+              >
+                Admin Dashboard
+              </h1>
+              <p className="text-muted-foreground">Welcome back, {user?.firstName || 'Admin'}</p>
+            </div>
+            <div className="flex items-center gap-4">
+              <Badge variant="secondary" className="bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300">
+                Admin
+              </Badge>
+              <Button 
+                variant="outline" 
+                onClick={async () => {
+                  try {
+                    await fetch("/api/logout", { method: "POST", credentials: "include" });
+                    window.location.href = "/login";
+                  } catch (error) {
+                    window.location.href = "/login";
+                  }
+                }}
+                data-testid="button-logout"
+              >
+                Logout
+              </Button>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <div className="container mx-auto px-6 py-8">
+        {/* Main Content Tabs */}
+        <Tabs defaultValue="members" className="space-y-6">
+          <TabsList 
+            className="grid w-full grid-cols-4 bg-white/80 dark:bg-slate-800/80 backdrop-blur-md border border-white/20"
+            style={{
+              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
+            }}
+          >
+            <TabsTrigger value="members" data-testid="tab-members">
+              <Users className="h-4 w-4 mr-2" />
+              Members
+            </TabsTrigger>
+            <TabsTrigger value="member-classes" data-testid="tab-member-classes">
+              <GraduationCap className="h-4 w-4 mr-2" />
+              Member Classes
+            </TabsTrigger>
+            <TabsTrigger value="news" data-testid="tab-news">
+              <Newspaper className="h-4 w-4 mr-2" />
+              News
+            </TabsTrigger>
+            <TabsTrigger value="hero" data-testid="tab-hero">
+              <Image className="h-4 w-4 mr-2" />
+              Hero Images
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="members">
+            <MemberManagement />
+          </TabsContent>
+
+          <TabsContent value="member-classes">
+            <MemberClassManagement />
+          </TabsContent>
+
+          <TabsContent value="news">
+            <NewsManagement />
+          </TabsContent>
+
+          <TabsContent value="hero">
+            <HeroImageManagement />
+          </TabsContent>
+        </Tabs>
+      </div>
+    </div>
+  );
+}
+
+// Member Management Component
 function MemberManagement() {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [editingMember, setEditingMember] = useState<Member | null>(null);
@@ -57,7 +188,7 @@ function MemberManagement() {
 
   // Add member mutation
   const addMemberMutation = useMutation({
-    mutationFn: async (data: MemberFormData) => {
+    mutationFn: async (data: any) => {
       return apiRequest("POST", "/api/admin/members", data);
     },
     onSuccess: () => {
@@ -79,7 +210,7 @@ function MemberManagement() {
 
   // Update member mutation
   const updateMemberMutation = useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: Partial<MemberFormData> }) => {
+    mutationFn: async ({ id, data }: { id: string; data: any }) => {
       return apiRequest("PUT", `/api/admin/members/${id}`, data);
     },
     onSuccess: () => {
@@ -341,14 +472,34 @@ function AddMemberDialog({
 }: { 
   isOpen: boolean; 
   onOpenChange: (open: boolean) => void; 
-  onSubmit: (data: MemberFormData) => void;
+  onSubmit: (data: any) => void;
   isLoading: boolean;
 }) {
-  const form = useForm<MemberFormData>({
-    resolver: zodResolver(memberFormSchema),
-    defaultValues: {
+  const [formData, setFormData] = useState({
+    name: "",
+    role: "",
+    memberClassId: "",
+    bio: "",
+    email: "",
+    linkedIn: "",
+    year: "",
+    image: "",
+    displayOrder: 0,
+    isActive: true,
+  });
+
+  // Fetch member classes for selection
+  const { data: memberClasses } = useQuery<MemberClass[]>({
+    queryKey: ["/api/admin/member-classes"],
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onSubmit(formData);
+    setFormData({
       name: "",
       role: "",
+      memberClassId: "",
       bio: "",
       email: "",
       linkedIn: "",
@@ -356,12 +507,7 @@ function AddMemberDialog({
       image: "",
       displayOrder: 0,
       isActive: true,
-    },
-  });
-
-  const handleSubmit = (data: MemberFormData) => {
-    onSubmit(data);
-    form.reset();
+    });
   };
 
   return (
@@ -379,179 +525,154 @@ function AddMemberDialog({
             Add a new member to the ISB Medical Society
           </DialogDescription>
         </DialogHeader>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Name *</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Enter member name" {...field} data-testid="input-member-name" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="role"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Role *</FormLabel>
-                    <FormControl>
-                      <Input placeholder="e.g., President, Vice President" {...field} data-testid="input-member-role" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="name">Name *</Label>
+              <Input
+                id="name"
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                placeholder="Enter member name"
+                required
+                data-testid="input-member-name"
               />
             </div>
+            <div className="space-y-2">
+              <Label htmlFor="role">Role *</Label>
+              <Input
+                id="role"
+                value={formData.role}
+                onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+                placeholder="e.g., President, Vice President"
+                required
+                data-testid="input-member-role"
+              />
+            </div>
+          </div>
 
-            <FormField
-              control={form.control}
-              name="bio"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Bio</FormLabel>
-                  <FormControl>
-                    <Textarea 
-                      placeholder="Brief description of the member's background and interests"
-                      className="min-h-[100px]"
-                      {...field} 
-                      data-testid="input-member-bio"
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
+          <div className="space-y-2">
+            <Label htmlFor="memberClass">Member Class</Label>
+            <Select
+              value={formData.memberClassId}
+              onValueChange={(value) => setFormData({ ...formData, memberClassId: value })}
+            >
+              <SelectTrigger data-testid="select-member-class">
+                <SelectValue placeholder="Select member class" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">No Class Assigned</SelectItem>
+                {memberClasses?.map((memberClass) => (
+                  <SelectItem key={memberClass.id} value={memberClass.id}>
+                    {memberClass.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="bio">Bio</Label>
+            <Textarea
+              id="bio"
+              value={formData.bio}
+              onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
+              placeholder="Brief description of the member's background and interests"
+              className="min-h-[100px]"
+              data-testid="input-member-bio"
             />
+          </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Email</FormLabel>
-                    <FormControl>
-                      <Input type="email" placeholder="member@isbmedicalsociety.org" {...field} data-testid="input-member-email" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="year"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Grade/Year</FormLabel>
-                    <FormControl>
-                      <Input placeholder="e.g., Grade 12, Senior" {...field} data-testid="input-member-year" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                value={formData.email}
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                placeholder="member@isbmedicalsociety.org"
+                data-testid="input-member-email"
               />
             </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="image"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Profile Image URL</FormLabel>
-                    <FormControl>
-                      <Input placeholder="https://example.com/image.jpg" {...field} data-testid="input-member-image" />
-                    </FormControl>
-                    <FormDescription>URL to the member's profile photo</FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="linkedIn"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>LinkedIn Profile</FormLabel>
-                    <FormControl>
-                      <Input placeholder="https://linkedin.com/in/username" {...field} data-testid="input-member-linkedin" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
+            <div className="space-y-2">
+              <Label htmlFor="year">Grade/Year</Label>
+              <Input
+                id="year"
+                value={formData.year}
+                onChange={(e) => setFormData({ ...formData, year: e.target.value })}
+                placeholder="e.g., Grade 12, Senior"
+                data-testid="input-member-year"
               />
             </div>
+          </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="displayOrder"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Display Order</FormLabel>
-                    <FormControl>
-                      <Input 
-                        type="number" 
-                        placeholder="0" 
-                        {...field}
-                        onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
-                        data-testid="input-member-display-order" 
-                      />
-                    </FormControl>
-                    <FormDescription>Lower numbers appear first</FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="isActive"
-                render={({ field }) => (
-                  <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                    <div className="space-y-0.5">
-                      <FormLabel className="text-base">Active Member</FormLabel>
-                      <FormDescription>
-                        Show this member on the public website
-                      </FormDescription>
-                    </div>
-                    <FormControl>
-                      <Switch 
-                        checked={field.value} 
-                        onCheckedChange={field.onChange}
-                        data-testid="switch-member-active"
-                      />
-                    </FormControl>
-                  </FormItem>
-                )}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="image">Profile Image URL</Label>
+              <Input
+                id="image"
+                value={formData.image}
+                onChange={(e) => setFormData({ ...formData, image: e.target.value })}
+                placeholder="https://example.com/image.jpg"
+                data-testid="input-member-image"
               />
             </div>
+            <div className="space-y-2">
+              <Label htmlFor="linkedIn">LinkedIn Profile</Label>
+              <Input
+                id="linkedIn"
+                value={formData.linkedIn}
+                onChange={(e) => setFormData({ ...formData, linkedIn: e.target.value })}
+                placeholder="https://linkedin.com/in/username"
+                data-testid="input-member-linkedin"
+              />
+            </div>
+          </div>
 
-            <DialogFooter>
-              <Button 
-                type="button" 
-                variant="outline" 
-                onClick={() => onOpenChange(false)}
-                disabled={isLoading}
-              >
-                Cancel
-              </Button>
-              <Button 
-                type="submit" 
-                disabled={isLoading}
-                data-testid="button-submit-member"
-              >
-                {isLoading ? <Loading size="sm" variant="spinner" className="mr-2" /> : null}
-                Add Member
-              </Button>
-            </DialogFooter>
-          </form>
-        </Form>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="displayOrder">Display Order</Label>
+              <Input
+                id="displayOrder"
+                type="number"
+                value={formData.displayOrder}
+                onChange={(e) => setFormData({ ...formData, displayOrder: parseInt(e.target.value) || 0 })}
+                placeholder="0"
+                data-testid="input-member-display-order"
+              />
+            </div>
+            <div className="flex items-center space-x-2 pt-8">
+              <input
+                type="checkbox"
+                id="isActive"
+                checked={formData.isActive}
+                onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
+                data-testid="switch-member-active"
+              />
+              <Label htmlFor="isActive">Active Member</Label>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button 
+              type="button" 
+              variant="outline" 
+              onClick={() => onOpenChange(false)}
+              disabled={isLoading}
+            >
+              Cancel
+            </Button>
+            <Button 
+              type="submit" 
+              disabled={isLoading}
+              data-testid="button-submit-member"
+            >
+              {isLoading ? <Loading size="sm" variant="spinner" className="mr-2" /> : null}
+              Add Member
+            </Button>
+          </DialogFooter>
+        </form>
       </DialogContent>
     </Dialog>
   );
@@ -568,26 +689,30 @@ function EditMemberDialog({
   member: Member;
   isOpen: boolean; 
   onOpenChange: (open: boolean) => void; 
-  onSubmit: (data: Partial<MemberFormData>) => void;
+  onSubmit: (data: any) => void;
   isLoading: boolean;
 }) {
-  const form = useForm<MemberFormData>({
-    resolver: zodResolver(memberFormSchema),
-    defaultValues: {
-      name: member.name,
-      role: member.role,
-      bio: member.bio || "",
-      email: member.email || "",
-      linkedIn: member.linkedIn || "",
-      year: member.year || "",
-      image: member.image || "",
-      displayOrder: member.displayOrder || 0,
-      isActive: member.isActive,
-    },
+  const [formData, setFormData] = useState({
+    name: member.name,
+    role: member.role,
+    memberClassId: member.memberClassId || "",
+    bio: member.bio || "",
+    email: member.email || "",
+    linkedIn: member.linkedIn || "",
+    year: member.year || "",
+    image: member.image || "",
+    displayOrder: member.displayOrder || 0,
+    isActive: member.isActive ?? true,
   });
 
-  const handleSubmit = (data: MemberFormData) => {
-    onSubmit(data);
+  // Fetch member classes for selection
+  const { data: memberClasses } = useQuery<MemberClass[]>({
+    queryKey: ["/api/admin/member-classes"],
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onSubmit(formData);
   };
 
   return (
@@ -599,578 +724,556 @@ function EditMemberDialog({
             Update {member.name}'s information
           </DialogDescription>
         </DialogHeader>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Name *</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Enter member name" {...field} data-testid="input-edit-member-name" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="role"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Role *</FormLabel>
-                    <FormControl>
-                      <Input placeholder="e.g., President, Vice President" {...field} data-testid="input-edit-member-role" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="edit-name">Name *</Label>
+              <Input
+                id="edit-name"
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                placeholder="Enter member name"
+                required
+                data-testid="input-edit-member-name"
               />
             </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-role">Role *</Label>
+              <Input
+                id="edit-role"
+                value={formData.role}
+                onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+                placeholder="e.g., President, Vice President"
+                required
+                data-testid="input-edit-member-role"
+              />
+            </div>
+          </div>
 
-            <FormField
-              control={form.control}
-              name="bio"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Bio</FormLabel>
-                  <FormControl>
-                    <Textarea 
-                      placeholder="Brief description of the member's background and interests"
-                      className="min-h-[100px]"
-                      {...field} 
-                      data-testid="input-edit-member-bio"
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
+          <div className="space-y-2">
+            <Label htmlFor="edit-memberClass">Member Class</Label>
+            <Select
+              value={formData.memberClassId}
+              onValueChange={(value) => setFormData({ ...formData, memberClassId: value })}
+            >
+              <SelectTrigger data-testid="select-edit-member-class">
+                <SelectValue placeholder="Select member class" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">No Class Assigned</SelectItem>
+                {memberClasses?.map((memberClass) => (
+                  <SelectItem key={memberClass.id} value={memberClass.id}>
+                    {memberClass.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="edit-bio">Bio</Label>
+            <Textarea
+              id="edit-bio"
+              value={formData.bio}
+              onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
+              placeholder="Brief description of the member's background and interests"
+              className="min-h-[100px]"
+              data-testid="input-edit-member-bio"
             />
+          </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Email</FormLabel>
-                    <FormControl>
-                      <Input type="email" placeholder="member@isbmedicalsociety.org" {...field} data-testid="input-edit-member-email" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="year"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Grade/Year</FormLabel>
-                    <FormControl>
-                      <Input placeholder="e.g., Grade 12, Senior" {...field} data-testid="input-edit-member-year" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="edit-email">Email</Label>
+              <Input
+                id="edit-email"
+                type="email"
+                value={formData.email}
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                placeholder="member@isbmedicalsociety.org"
+                data-testid="input-edit-member-email"
               />
             </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="image"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Profile Image URL</FormLabel>
-                    <FormControl>
-                      <Input placeholder="https://example.com/image.jpg" {...field} data-testid="input-edit-member-image" />
-                    </FormControl>
-                    <FormDescription>URL to the member's profile photo</FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="linkedIn"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>LinkedIn Profile</FormLabel>
-                    <FormControl>
-                      <Input placeholder="https://linkedin.com/in/username" {...field} data-testid="input-edit-member-linkedin" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
+            <div className="space-y-2">
+              <Label htmlFor="edit-year">Grade/Year</Label>
+              <Input
+                id="edit-year"
+                value={formData.year}
+                onChange={(e) => setFormData({ ...formData, year: e.target.value })}
+                placeholder="e.g., Grade 12, Senior"
+                data-testid="input-edit-member-year"
               />
             </div>
+          </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="displayOrder"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Display Order</FormLabel>
-                    <FormControl>
-                      <Input 
-                        type="number" 
-                        placeholder="0" 
-                        {...field}
-                        onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
-                        data-testid="input-edit-member-display-order" 
-                      />
-                    </FormControl>
-                    <FormDescription>Lower numbers appear first</FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="isActive"
-                render={({ field }) => (
-                  <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                    <div className="space-y-0.5">
-                      <FormLabel className="text-base">Active Member</FormLabel>
-                      <FormDescription>
-                        Show this member on the public website
-                      </FormDescription>
-                    </div>
-                    <FormControl>
-                      <Switch 
-                        checked={field.value} 
-                        onCheckedChange={field.onChange}
-                        data-testid="switch-edit-member-active"
-                      />
-                    </FormControl>
-                  </FormItem>
-                )}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="edit-image">Profile Image URL</Label>
+              <Input
+                id="edit-image"
+                value={formData.image}
+                onChange={(e) => setFormData({ ...formData, image: e.target.value })}
+                placeholder="https://example.com/image.jpg"
+                data-testid="input-edit-member-image"
               />
             </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-linkedIn">LinkedIn Profile</Label>
+              <Input
+                id="edit-linkedIn"
+                value={formData.linkedIn}
+                onChange={(e) => setFormData({ ...formData, linkedIn: e.target.value })}
+                placeholder="https://linkedin.com/in/username"
+                data-testid="input-edit-member-linkedin"
+              />
+            </div>
+          </div>
 
-            <DialogFooter>
-              <Button 
-                type="button" 
-                variant="outline" 
-                onClick={() => onOpenChange(false)}
-                disabled={isLoading}
-              >
-                Cancel
-              </Button>
-              <Button 
-                type="submit" 
-                disabled={isLoading}
-                data-testid="button-update-member"
-              >
-                {isLoading ? <Loading size="sm" variant="spinner" className="mr-2" /> : null}
-                Update Member
-              </Button>
-            </DialogFooter>
-          </form>
-        </Form>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="edit-displayOrder">Display Order</Label>
+              <Input
+                id="edit-displayOrder"
+                type="number"
+                value={formData.displayOrder}
+                onChange={(e) => setFormData({ ...formData, displayOrder: parseInt(e.target.value) || 0 })}
+                placeholder="0"
+                data-testid="input-edit-member-display-order"
+              />
+            </div>
+            <div className="flex items-center space-x-2 pt-8">
+              <input
+                type="checkbox"
+                id="edit-isActive"
+                checked={formData.isActive}
+                onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
+                data-testid="switch-edit-member-active"
+              />
+              <Label htmlFor="edit-isActive">Active Member</Label>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button 
+              type="button" 
+              variant="outline" 
+              onClick={() => onOpenChange(false)}
+              disabled={isLoading}
+            >
+              Cancel
+            </Button>
+            <Button 
+              type="submit" 
+              disabled={isLoading}
+              data-testid="button-update-member"
+            >
+              {isLoading ? <Loading size="sm" variant="spinner" className="mr-2" /> : null}
+              Update Member
+            </Button>
+          </DialogFooter>
+        </form>
       </DialogContent>
     </Dialog>
   );
 }
 
-export default function AdminPage() {
-  const { toast } = useToast();
-  const { isAuthenticated, isLoading: authLoading, user } = useAuth();
-
-  // Check admin status
-  const { data: adminData, isLoading: adminLoading } = useQuery<{
-    isAdmin: boolean;
-    adminUser: AdminUser | null;
-  }>({
-    queryKey: ["/api/auth/admin"],
-    enabled: isAuthenticated,
-    retry: false,
-  });
-
-  // Fetch dashboard stats
-  const { data: members } = useQuery<Member[]>({
-    queryKey: ["/api/admin/members"],
-    enabled: adminData?.isAdmin,
-  });
-
-  const { data: news } = useQuery<News[]>({
-    queryKey: ["/api/news"],
-    enabled: adminData?.isAdmin,
-  });
-
-  const { data: heroImages } = useQuery<HeroImage[]>({
-    queryKey: ["/api/admin/hero-images"],
-    enabled: adminData?.isAdmin,
-  });
-
-  // Redirect to login if not authenticated
-  useEffect(() => {
-    if (!authLoading && !isAuthenticated) {
-      toast({
-        title: "Authentication Required",
-        description: "Please log in to access the admin panel.",
-        variant: "destructive",
-      });
-      setTimeout(() => {
-        window.location.href = "/login";
-      }, 1000);
-      return;
-    }
-  }, [isAuthenticated, authLoading, toast]);
-
-  // Check if user has admin access
-  useEffect(() => {
-    if (!adminLoading && isAuthenticated && !adminData?.isAdmin) {
-      toast({
-        title: "Access Denied",
-        description: "You don't have admin access to this panel.",
-        variant: "destructive",
-      });
-      setTimeout(() => {
-        window.location.href = "/";
-      }, 2000);
-      return;
-    }
-  }, [adminData?.isAdmin, adminLoading, isAuthenticated, toast]);
-
-  if (authLoading || adminLoading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 dark:from-slate-900 dark:to-blue-900 flex items-center justify-center">
-        <div className="text-center space-y-4">
-          <Loading size="lg" variant="spinner" />
-          <p className="text-muted-foreground">Authenticating...</p>
+// News Management Component (Placeholder)
+function NewsManagement() {
+  return (
+    <Card className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-md border border-white/20">
+      <CardHeader>
+        <CardTitle>News Management</CardTitle>
+        <CardDescription>Create, edit, and publish news articles</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <div className="text-center py-12">
+          <Newspaper className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
+          <h3 className="text-lg font-semibold mb-2">News Management</h3>
+          <p className="text-muted-foreground mb-4">Coming soon - add and manage news articles</p>
+          <Button data-testid="button-add-news" disabled>
+            <Plus className="h-4 w-4 mr-2" />
+            Add News Article
+          </Button>
         </div>
-      </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+// Member Class Management Component
+function MemberClassManagement() {
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [editingClass, setEditingClass] = useState<MemberClass | null>(null);
+  const [deletingClassId, setDeletingClassId] = useState<string | null>(null);
+  const { toast } = useToast();
+
+  // Fetch member classes
+  const { data: memberClasses, isLoading, isError, refetch } = useQuery<MemberClass[]>({
+    queryKey: ["/api/admin/member-classes"],
+  });
+
+  // Sort member classes by display order
+  const sortedClasses = memberClasses ? [...memberClasses].sort((a, b) => {
+    const orderA = a.displayOrder || 0;
+    const orderB = b.displayOrder || 0;
+    if (orderA !== orderB) return orderA - orderB;
+    return a.name.localeCompare(b.name);
+  }) : [];
+
+  // Add member class mutation
+  const addClassMutation = useMutation({
+    mutationFn: async (data: any) => {
+      return apiRequest("POST", "/api/admin/member-classes", data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/member-classes"] });
+      setIsAddDialogOpen(false);
+      toast({
+        title: "Success",
+        description: "Member class added successfully!",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to add member class. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Update member class mutation
+  const updateClassMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: any }) => {
+      return apiRequest("PUT", `/api/admin/member-classes/${id}`, data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/member-classes"] });
+      setEditingClass(null);
+      toast({
+        title: "Success",
+        description: "Member class updated successfully!",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to update member class. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Delete member class mutation
+  const deleteClassMutation = useMutation({
+    mutationFn: async (id: string) => {
+      return apiRequest("DELETE", `/api/admin/member-classes/${id}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/member-classes"] });
+      setDeletingClassId(null);
+      toast({
+        title: "Success",
+        description: "Member class deleted successfully!",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to delete member class. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  if (isLoading) {
+    return (
+      <Card className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-md border border-white/20">
+        <CardContent className="flex items-center justify-center py-8">
+          <Loading size="lg" variant="spinner" />
+        </CardContent>
+      </Card>
     );
   }
 
-  if (!isAuthenticated || !adminData?.isAdmin) {
-    return null; // Redirecting
+  if (isError) {
+    return (
+      <Card className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-md border border-white/20">
+        <CardContent className="text-center py-8">
+          <p className="text-red-600 dark:text-red-400">Failed to load member classes</p>
+          <Button onClick={() => refetch()} className="mt-4">
+            Retry
+          </Button>
+        </CardContent>
+      </Card>
+    );
   }
 
-  const stats = [
-    {
-      title: "Total Members",
-      value: members?.length || 0,
-      icon: Users,
-      description: "Active society members",
-      trend: "+2 this month"
-    },
-    {
-      title: "News Articles",
-      value: news?.length || 0,
-      icon: Newspaper,
-      description: "Published and draft articles",
-      trend: "+1 this week"
-    },
-    {
-      title: "Hero Images",
-      value: heroImages?.length || 0,
-      icon: Image,
-      description: "Carousel images",
-      trend: "3 active"
-    },
-    {
-      title: "Page Views",
-      value: "2,847",
-      icon: Eye,
-      description: "This month",
-      trend: "+12% from last month"
-    }
-  ];
+  return (
+    <Card className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-md border border-white/20">
+      <CardHeader>
+        <div className="flex items-center justify-between">
+          <div>
+            <CardTitle className="flex items-center gap-2">
+              <GraduationCap className="h-5 w-5" />
+              Member Classes
+            </CardTitle>
+            <CardDescription>
+              Manage member categories and hierarchies
+            </CardDescription>
+          </div>
+          <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+            <DialogTrigger asChild>
+              <Button data-testid="button-add-member-class">
+                <Plus className="h-4 w-4 mr-2" />
+                Add Class
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <MemberClassForm
+                onSubmit={(data) => addClassMutation.mutate(data)}
+                isLoading={addClassMutation.isPending}
+              />
+            </DialogContent>
+          </Dialog>
+        </div>
+      </CardHeader>
+      <CardContent>
+        {sortedClasses.length === 0 ? (
+          <div className="text-center py-8">
+            <GraduationCap className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
+            <h3 className="text-lg font-semibold mb-2">No Member Classes</h3>
+            <p className="text-muted-foreground mb-4">
+              Create your first member class to organize your team
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {sortedClasses.map((memberClass) => (
+              <div
+                key={memberClass.id}
+                className="flex items-center justify-between p-4 rounded-lg border bg-card hover:bg-accent/50 transition-colors"
+                data-testid={`member-class-${memberClass.id}`}
+              >
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <h3 className="font-semibold">{memberClass.name}</h3>
+                    <Badge variant={memberClass.isActive ? "default" : "secondary"}>
+                      {memberClass.isActive ? "Active" : "Inactive"}
+                    </Badge>
+                  </div>
+                  {memberClass.description && (
+                    <p className="text-sm text-muted-foreground">
+                      {memberClass.description}
+                    </p>
+                  )}
+                  <p className="text-xs text-muted-foreground">
+                    Display Order: {memberClass.displayOrder ?? 0}
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Dialog
+                    open={editingClass?.id === memberClass.id}
+                    onOpenChange={(open) =>
+                      setEditingClass(open ? memberClass : null)
+                    }
+                  >
+                    <DialogTrigger asChild>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        data-testid={`button-edit-member-class-${memberClass.id}`}
+                      >
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <MemberClassForm
+                        memberClass={memberClass}
+                        onSubmit={(data) =>
+                          updateClassMutation.mutate({
+                            id: memberClass.id,
+                            data,
+                          })
+                        }
+                        isLoading={updateClassMutation.isPending}
+                      />
+                    </DialogContent>
+                  </Dialog>
+
+                  <AlertDialog
+                    open={deletingClassId === memberClass.id}
+                    onOpenChange={(open) =>
+                      setDeletingClassId(open ? memberClass.id : null)
+                    }
+                  >
+                    <AlertDialogTrigger asChild>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300"
+                        data-testid={`button-delete-member-class-${memberClass.id}`}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Delete Member Class</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Are you sure you want to delete "{memberClass.name}"? This action cannot be undone.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                          onClick={() => deleteClassMutation.mutate(memberClass.id)}
+                          className="bg-red-600 hover:bg-red-700"
+                        >
+                          Delete
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+// Member Class Form Component
+function MemberClassForm({
+  memberClass,
+  onSubmit,
+  isLoading,
+}: {
+  memberClass?: MemberClass;
+  onSubmit: (data: any) => void;
+  isLoading: boolean;
+}) {
+  const [formData, setFormData] = useState({
+    name: memberClass?.name || "",
+    description: memberClass?.description || "",
+    displayOrder: memberClass?.displayOrder?.toString() || "0",
+    isActive: memberClass?.isActive ?? true,
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onSubmit({
+      ...formData,
+      displayOrder: parseInt(formData.displayOrder) || 0,
+    });
+  };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 dark:from-slate-900 dark:to-blue-900">
-      {/* Header */}
-      <header className="border-b border-white/20 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md sticky top-0 z-50">
-        <div className="container mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="space-y-1">
-              <h1 
-                className="text-3xl font-bold text-slate-900 dark:text-white"
-                style={{ 
-                  fontFamily: 'Beo, serif',
-                  letterSpacing: '0.02em'
-                }}
-                data-testid="admin-title"
-              >
-                Admin Dashboard
-              </h1>
-              <p className="text-muted-foreground">Welcome back, {user?.firstName || 'Admin'}</p>
-            </div>
-            <div className="flex items-center gap-4">
-              <Badge variant="secondary" className="bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300">
-                {adminData?.adminUser?.role || 'Admin'}
-              </Badge>
-              <Button 
-                variant="outline" 
-                onClick={async () => {
-                  try {
-                    await fetch("/api/logout", { method: "POST", credentials: "include" });
-                    window.location.href = "/login";
-                  } catch (error) {
-                    window.location.href = "/login";
-                  }
-                }}
-                data-testid="button-logout"
-              >
-                Logout
-              </Button>
-            </div>
-          </div>
-        </div>
-      </header>
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <DialogHeader>
+        <DialogTitle>
+          {memberClass ? "Edit Member Class" : "Add Member Class"}
+        </DialogTitle>
+        <DialogDescription>
+          {memberClass
+            ? "Update the member class information"
+            : "Create a new member class to categorize your team members"}
+        </DialogDescription>
+      </DialogHeader>
 
-      <div className="container mx-auto px-6 py-8">
-        {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          {stats.map((stat, index) => {
-            const Icon = stat.icon;
-            return (
-              <Card 
-                key={index} 
-                className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-md border border-white/20 shadow-lg hover:shadow-xl transition-all duration-300"
-                style={{
-                  boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
-                }}
-                data-testid={`stat-${stat.title.toLowerCase().replace(/\s+/g, '-')}`}
-              >
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">
-                    {stat.title}
-                  </CardTitle>
-                  <Icon className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-3xl font-bold text-slate-900 dark:text-white mb-1" style={{ fontFamily: 'Beo, serif' }}>
-                    {stat.value}
-                  </div>
-                  <p className="text-xs text-muted-foreground mb-1">
-                    {stat.description}
-                  </p>
-                  <p className="text-xs text-green-600 dark:text-green-400">
-                    {stat.trend}
-                  </p>
-                </CardContent>
-              </Card>
-            );
-          })}
+      <div className="space-y-4">
+        <div>
+          <Label htmlFor="name">Class Name *</Label>
+          <Input
+            id="name"
+            value={formData.name}
+            onChange={(e) =>
+              setFormData({ ...formData, name: e.target.value })
+            }
+            placeholder="e.g., Officers, Active Members"
+            required
+            data-testid="input-member-class-name"
+          />
         </div>
 
-        {/* Main Content Tabs */}
-        <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList 
-            className="grid w-full grid-cols-5 bg-white/80 dark:bg-slate-800/80 backdrop-blur-md border border-white/20"
-            style={{
-              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
-            }}
-          >
-            <TabsTrigger value="overview" data-testid="tab-overview">
-              <BarChart3 className="h-4 w-4 mr-2" />
-              Overview
-            </TabsTrigger>
-            <TabsTrigger value="members" data-testid="tab-members">
-              <Users className="h-4 w-4 mr-2" />
-              Members
-            </TabsTrigger>
-            <TabsTrigger value="news" data-testid="tab-news">
-              <Newspaper className="h-4 w-4 mr-2" />
-              News
-            </TabsTrigger>
-            <TabsTrigger value="hero" data-testid="tab-hero">
-              <Image className="h-4 w-4 mr-2" />
-              Hero Images
-            </TabsTrigger>
-            <TabsTrigger value="settings" data-testid="tab-settings">
-              <Settings className="h-4 w-4 mr-2" />
-              Settings
-            </TabsTrigger>
-          </TabsList>
+        <div>
+          <Label htmlFor="description">Description</Label>
+          <Textarea
+            id="description"
+            value={formData.description}
+            onChange={(e) =>
+              setFormData({ ...formData, description: e.target.value })
+            }
+            placeholder="Brief description of this member class"
+            rows={3}
+            data-testid="input-member-class-description"
+          />
+        </div>
 
-          <TabsContent value="overview">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <Card className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-md border border-white/20">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <BarChart3 className="h-5 w-5" />
-                    Recent Activity
-                  </CardTitle>
-                  <CardDescription>Latest changes to your website</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div className="flex items-center gap-3 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                      <Users className="h-4 w-4 text-blue-600" />
-                      <div className="flex-1">
-                        <p className="text-sm font-medium">New member added</p>
-                        <p className="text-xs text-muted-foreground">2 hours ago</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-3 p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
-                      <Newspaper className="h-4 w-4 text-green-600" />
-                      <div className="flex-1">
-                        <p className="text-sm font-medium">News article published</p>
-                        <p className="text-xs text-muted-foreground">1 day ago</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-3 p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
-                      <Image className="h-4 w-4 text-purple-600" />
-                      <div className="flex-1">
-                        <p className="text-sm font-medium">Hero image updated</p>
-                        <p className="text-xs text-muted-foreground">3 days ago</p>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+        <div>
+          <Label htmlFor="displayOrder">Display Order</Label>
+          <Input
+            id="displayOrder"
+            type="number"
+            value={formData.displayOrder}
+            onChange={(e) =>
+              setFormData({ ...formData, displayOrder: e.target.value })
+            }
+            placeholder="0"
+            min="0"
+            data-testid="input-member-class-display-order"
+          />
+        </div>
 
-              <Card className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-md border border-white/20">
-                <CardHeader>
-                  <CardTitle>Quick Actions</CardTitle>
-                  <CardDescription>Common administrative tasks</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-2 gap-4">
-                    <Button 
-                      className="h-20 flex flex-col gap-2 bg-blue-500/10 hover:bg-blue-500/20 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800"
-                      variant="outline"
-                      data-testid="quick-add-member"
-                    >
-                      <Plus className="h-5 w-5" />
-                      Add Member
-                    </Button>
-                    <Button 
-                      className="h-20 flex flex-col gap-2 bg-green-500/10 hover:bg-green-500/20 text-green-700 dark:text-green-300 border border-green-200 dark:border-green-800"
-                      variant="outline"
-                      data-testid="quick-add-news"
-                    >
-                      <Plus className="h-5 w-5" />
-                      Add News
-                    </Button>
-                    <Button 
-                      className="h-20 flex flex-col gap-2 bg-purple-500/10 hover:bg-purple-500/20 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800"
-                      variant="outline"
-                      data-testid="quick-add-hero"
-                    >
-                      <Plus className="h-5 w-5" />
-                      Add Hero Image
-                    </Button>
-                    <Button 
-                      className="h-20 flex flex-col gap-2 bg-orange-500/10 hover:bg-orange-500/20 text-orange-700 dark:text-orange-300 border border-orange-200 dark:border-orange-800"
-                      variant="outline"
-                      onClick={() => window.open("/", "_blank")}
-                      data-testid="quick-view-site"
-                    >
-                      <Eye className="h-5 w-5" />
-                      View Site
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="members">
-            <MemberManagement />
-          </TabsContent>
-
-          <TabsContent value="news">
-            <Card className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-md border border-white/20">
-              <CardHeader>
-                <CardTitle>News Management</CardTitle>
-                <CardDescription>Create, edit, and publish news articles</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center py-12">
-                  <Newspaper className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
-                  <h3 className="text-lg font-semibold mb-2">News Management</h3>
-                  <p className="text-muted-foreground mb-4">This feature will be implemented in the next step</p>
-                  <Button data-testid="button-add-news">
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add New Article
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="hero">
-            <Card className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-md border border-white/20">
-              <CardHeader>
-                <CardTitle>Hero Image Management</CardTitle>
-                <CardDescription>Manage carousel images and captions</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center py-12">
-                  <Image className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
-                  <h3 className="text-lg font-semibold mb-2">Hero Image Management</h3>
-                  <p className="text-muted-foreground mb-4">This feature will be implemented in the next step</p>
-                  <Button data-testid="button-add-hero-image">
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add New Hero Image
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="settings">
-            <Card className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-md border border-white/20">
-              <CardHeader>
-                <CardTitle>Admin Settings</CardTitle>
-                <CardDescription>Manage admin users and permissions</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-6">
-                  <div>
-                    <h4 className="text-sm font-medium mb-2">Your Admin Profile</h4>
-                    <div className="p-4 bg-slate-50 dark:bg-slate-800 rounded-lg">
-                      <div className="flex items-center gap-3">
-                        {user?.profileImageUrl && (
-                          <img 
-                            src={user.profileImageUrl} 
-                            alt="Profile" 
-                            className="w-10 h-10 rounded-full object-cover"
-                          />
-                        )}
-                        <div>
-                          <p className="font-medium">{user?.firstName} {user?.lastName}</p>
-                          <p className="text-sm text-muted-foreground">{user?.email}</p>
-                          <Badge variant="secondary" className="mt-1">
-                            {adminData?.adminUser?.role || 'Admin'}
-                          </Badge>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div>
-                    <h4 className="text-sm font-medium mb-2">Permissions</h4>
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
-                        <span className="text-sm">Manage Members</span>
-                        <Badge variant="secondary" className="bg-green-100 text-green-700">Enabled</Badge>
-                      </div>
-                      <div className="flex items-center justify-between p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
-                        <span className="text-sm">Manage News</span>
-                        <Badge variant="secondary" className="bg-green-100 text-green-700">Enabled</Badge>
-                      </div>
-                      <div className="flex items-center justify-between p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
-                        <span className="text-sm">Manage Hero Images</span>
-                        <Badge variant="secondary" className="bg-green-100 text-green-700">Enabled</Badge>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
+        <div className="flex items-center space-x-2">
+          <input
+            type="checkbox"
+            id="isActive"
+            checked={formData.isActive}
+            onChange={(e) =>
+              setFormData({ ...formData, isActive: e.target.checked })
+            }
+            data-testid="input-member-class-active"
+          />
+          <Label htmlFor="isActive">Active</Label>
+        </div>
       </div>
-    </div>
+
+      <DialogFooter>
+        <Button
+          type="submit"
+          disabled={isLoading || !formData.name.trim()}
+          data-testid="button-submit-member-class"
+        >
+          {isLoading && <Loading size="sm" variant="spinner" className="mr-2" />}
+          {memberClass ? "Update" : "Create"} Member Class
+        </Button>
+      </DialogFooter>
+    </form>
+  );
+}
+
+// Hero Images Management Component (Placeholder)
+function HeroImageManagement() {
+  return (
+    <Card className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-md border border-white/20">
+      <CardHeader>
+        <CardTitle>Hero Image Management</CardTitle>
+        <CardDescription>Manage carousel images and captions</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <div className="text-center py-12">
+          <Image className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
+          <h3 className="text-lg font-semibold mb-2">Hero Image Management</h3>
+          <p className="text-muted-foreground mb-4">Coming soon - manage hero carousel images</p>
+          <Button data-testid="button-add-hero-image" disabled>
+            <Plus className="h-4 w-4 mr-2" />
+            Add Hero Image
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
   );
 }

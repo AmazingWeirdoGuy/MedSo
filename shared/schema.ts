@@ -35,11 +35,23 @@ export const adminUsers = pgTable("admin_users", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+// Member classes table for organizing members
+export const memberClasses = pgTable("member_classes", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  name: text("name").notNull().unique(), // Website Manager, Officer, Active Member, Faculty Advisors
+  description: text("description"),
+  displayOrder: integer("display_order").default(0),
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 // Members table for society members
 export const members = pgTable("members", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   name: text("name").notNull(),
   role: text("role").notNull(), // President, Vice President, Secretary, etc.
+  memberClassId: varchar("member_class_id").references(() => memberClasses.id),
   bio: text("bio"),
   image: text("image"), // Profile image URL
   email: text("email"),
@@ -103,6 +115,13 @@ export const insertAdminUserSchema = createInsertSchema(adminUsers).omit({
   updatedAt: true,
 });
 
+// Member class schemas
+export const insertMemberClassSchema = createInsertSchema(memberClasses).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 // Member schemas
 export const insertMemberSchema = createInsertSchema(members).omit({
   id: true,
@@ -133,6 +152,8 @@ export type UpsertUser = z.infer<typeof upsertUserSchema>;
 export type User = typeof users.$inferSelect;
 export type InsertAdminUser = z.infer<typeof insertAdminUserSchema>;
 export type AdminUser = typeof adminUsers.$inferSelect;
+export type InsertMemberClass = z.infer<typeof insertMemberClassSchema>;
+export type MemberClass = typeof memberClasses.$inferSelect;
 export type InsertMember = z.infer<typeof insertMemberSchema>;
 export type Member = typeof members.$inferSelect;
 export type InsertHeroImage = z.infer<typeof insertHeroImageSchema>;
