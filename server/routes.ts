@@ -306,6 +306,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Admin news management routes
+  app.get("/api/admin/news", isAuthenticated, isAdmin, async (req, res) => {
+    try {
+      const news = await storage.getNews();
+      res.json(news);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch news" });
+    }
+  });
+
+  app.post("/api/admin/news", isAuthenticated, isAdmin, async (req, res) => {
+    try {
+      const validatedData = insertNewsSchema.parse(req.body);
+      const news = await storage.createNews(validatedData);
+      res.status(201).json(news);
+    } catch (error) {
+      res.status(400).json({ message: "Invalid news data" });
+    }
+  });
+
   app.put("/api/admin/news/:id", isAuthenticated, isAdmin, async (req, res) => {
     try {
       const validatedData = insertNewsSchema.partial().parse(req.body);
