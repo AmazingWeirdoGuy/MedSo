@@ -149,89 +149,98 @@ export default function Hero() {
         ))}
       </div>
 
-      {/* Centered content layout */}
-      <div 
-        className="absolute inset-0 flex items-center justify-center p-8 sm:p-12 lg:p-16 transition-opacity duration-300 ease-out"
-        style={{ 
-          opacity: scrollOpacity
-        }}
-      >
-        <div className="max-w-4xl mx-auto text-center space-y-12 luxury-fade-in">
-          
-          {/* Clean, readable typography */}
-          <div className="space-y-8">
-            <h1 
-              className="text-5xl sm:text-6xl lg:text-7xl xl:text-8xl text-white leading-[1.1] tracking-wide"
-              style={{ 
-                fontFamily: 'Beo, serif',
-                letterSpacing: '0.02em',
-                textShadow: '1px 1px 2px rgba(0, 0, 0, 0.5)',
-                fontWeight: '700'
-              }}
-              data-testid="hero-title"
-            >
-              <span className="block font-bold">Advancing</span>
-              <span className="block text-primary font-bold mt-4">Healthcare</span>
-              <span className="block text-white/80 text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold mt-6 tracking-[0.05em]">
-                Education & Equity
-              </span>
-            </h1>
+      {/* Split layout with dedicated text area */}
+      <div className="absolute inset-0 grid lg:grid-cols-2 items-center">
+        
+        {/* Left side - Text content */}
+        <div 
+          className="h-full flex items-center justify-center p-8 sm:p-12 lg:p-16 transition-opacity duration-300 ease-out"
+          style={{ 
+            opacity: scrollOpacity
+          }}
+        >
+          <div className="max-w-2xl space-y-12 luxury-fade-in">
             
-            <p 
-              className="text-base sm:text-lg lg:text-xl text-white/90 leading-loose font-light max-w-3xl mx-auto"
-              style={{ 
-                letterSpacing: '0.025em',
-                textShadow: '1px 1px 2px rgba(0, 0, 0, 0.4)',
-                lineHeight: '1.8'
-              }}
-              data-testid="hero-description"
-            >
-              A student-led organization dedicated to educating our community about health, 
-              advocating for healthcare equity, and supporting medical initiatives worldwide.
-            </p>
-          </div>
+            {/* Clean, readable typography */}
+            <div className="space-y-8">
+              <h1 
+                className="text-5xl sm:text-6xl lg:text-7xl xl:text-8xl text-white leading-[1.1] tracking-wide"
+                style={{ 
+                  fontFamily: 'Beo, serif',
+                  letterSpacing: '0.02em',
+                  textShadow: '1px 1px 2px rgba(0, 0, 0, 0.5)',
+                  fontWeight: '700'
+                }}
+                data-testid="hero-title"
+              >
+                <span className="block font-bold">Advancing</span>
+                <span className="block text-primary font-bold mt-4">Healthcare</span>
+                <span className="block text-white/80 text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold mt-6 tracking-[0.05em]">
+                  Education & Equity
+                </span>
+              </h1>
+              
+              <p 
+                className="text-base sm:text-lg lg:text-xl text-white/90 leading-loose font-light"
+                style={{ 
+                  letterSpacing: '0.025em',
+                  textShadow: '1px 1px 2px rgba(0, 0, 0, 0.4)',
+                  lineHeight: '1.8'
+                }}
+                data-testid="hero-description"
+              >
+                A student-led organization dedicated to educating our community about health, 
+                advocating for healthcare equity, and supporting medical initiatives worldwide.
+              </p>
+            </div>
 
-          {/* Premium CTAs */}
-          <div className="flex flex-col sm:flex-row gap-6 justify-center pt-8">
-            <Button 
-              size="lg" 
-              className="bg-primary/80 hover:bg-primary/90 text-white px-12 py-6 text-lg font-medium luxury-hover luxury-press border border-white/20 rounded-xl backdrop-blur-md"
-              style={{ 
-                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
-                minWidth: '200px',
-                background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.8) 0%, rgba(37, 99, 235, 0.9) 100%)'
-              }}
-              data-testid="hero-cta-primary"
-              onClick={handleJoinClick}
-              disabled={loadingButton === 'join'}
-            >
-              {loadingButton === 'join' ? (
-                <Loading size="sm" variant="dots" />
-              ) : (
-                'Join Our Mission'
-              )}
-            </Button>
-            
-            <Button 
-              size="lg" 
-              variant="outline" 
-              className="border border-white/30 hover:border-white/50 bg-white/15 hover:bg-white/25 text-white hover:text-white/90 backdrop-blur-md px-12 py-6 text-lg font-medium luxury-hover luxury-press rounded-xl"
-              style={{ 
-                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.3)',
-                minWidth: '200px',
-                background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.25) 100%)'
-              }}
-              data-testid="hero-cta-secondary"
-              onClick={handleLearnMoreClick}
-              disabled={loadingButton === 'learn'}
-            >
-              {loadingButton === 'learn' ? (
-                <Loading size="sm" variant="dots" />
-              ) : (
-                'Learn More'
-              )}
-            </Button>
+            {/* Premium CTAs */}
+            <div className="flex flex-col sm:flex-row gap-6 pt-8">
+              <Button 
+                size="lg" 
+                className="bg-primary/80 hover:bg-primary/90 text-white px-12 py-6 text-lg font-medium luxury-hover luxury-press border border-white/20 rounded-xl backdrop-blur-md"
+                style={{ 
+                  boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
+                  minWidth: '200px',
+                  background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.8) 0%, rgba(37, 99, 235, 0.9) 100%)'
+                }}
+                data-testid="hero-cta-primary"
+                onClick={handleJoinClick}
+                disabled={loadingButton === 'join'}
+              >
+                {loadingButton === 'join' ? (
+                  <Loading size="sm" variant="dots" />
+                ) : (
+                  'Join Our Mission'
+                )}
+              </Button>
+              
+              <Button 
+                size="lg" 
+                variant="outline" 
+                className="border border-white/30 hover:border-white/50 bg-white/15 hover:bg-white/25 text-white hover:text-white/90 backdrop-blur-md px-12 py-6 text-lg font-medium luxury-hover luxury-press rounded-xl"
+                style={{ 
+                  boxShadow: '0 8px 32px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.3)',
+                  minWidth: '200px',
+                  background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.25) 100%)'
+                }}
+                data-testid="hero-cta-secondary"
+                onClick={handleLearnMoreClick}
+                disabled={loadingButton === 'learn'}
+              >
+                {loadingButton === 'learn' ? (
+                  <Loading size="sm" variant="dots" />
+                ) : (
+                  'Learn More'
+                )}
+              </Button>
+            </div>
           </div>
+        </div>
+        
+        {/* Right side - Full image display on larger screens, hidden on mobile */}
+        <div className="hidden lg:block h-full relative overflow-hidden">
+          {/* Image shows through naturally here */}
         </div>
       </div>
       
