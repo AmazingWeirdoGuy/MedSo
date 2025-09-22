@@ -164,17 +164,18 @@ export default function Hero() {
             {/* Clean, readable typography */}
             <div className="space-y-8">
               <h1 
-                className="text-5xl sm:text-6xl lg:text-7xl xl:text-8xl font-display text-white leading-[1.1] tracking-wide"
+                className="text-5xl sm:text-6xl lg:text-7xl xl:text-8xl text-white leading-[1.1] tracking-wide"
                 style={{ 
+                  fontFamily: 'Beo, serif',
                   letterSpacing: '0.02em',
                   textShadow: '1px 1px 2px rgba(0, 0, 0, 0.5)',
-                  fontWeight: '200'
+                  fontWeight: '700'
                 }}
                 data-testid="hero-title"
               >
-                <span className="block font-extralight">Advancing</span>
-                <span className="block text-primary font-thin mt-4">Healthcare</span>
-                <span className="block text-white/80 text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-light mt-6 tracking-[0.05em]">
+                <span className="block font-bold">Advancing</span>
+                <span className="block text-primary font-bold mt-4">Healthcare</span>
+                <span className="block text-white/80 text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold mt-6 tracking-[0.05em]">
                   Education & Equity
                 </span>
               </h1>
