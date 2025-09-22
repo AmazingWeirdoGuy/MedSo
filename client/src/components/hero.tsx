@@ -144,43 +144,39 @@ export default function Hero() {
         ))}
       </div>
 
-      {/* Minimal overlay - just for depth */}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent" />
-      
-      {/* Content Container */}
-      <div 
-        className="relative z-10 h-full flex items-center justify-center px-4 sm:px-6 lg:px-8 transition-opacity duration-300 ease-out"
-        style={{ opacity: scrollOpacity }}
-      >
-        <div className="max-w-5xl mx-auto text-center">
-          
-          {/* Main Content with Glass Text Panel */}
-          <div className="space-y-8 luxury-fade-in">
+      {/* Split layout with dedicated text area */}
+      <div className="absolute inset-0 grid lg:grid-cols-2 items-center">
+        
+        {/* Left side - Text content with subtle background */}
+        <div 
+          className="h-full flex items-center justify-center p-8 sm:p-12 lg:p-16 transition-opacity duration-300 ease-out"
+          style={{ 
+            opacity: scrollOpacity,
+            background: 'linear-gradient(135deg, rgba(0, 0, 0, 0.3) 0%, rgba(0, 0, 0, 0.1) 100%)'
+          }}
+        >
+          <div className="max-w-lg space-y-8 luxury-fade-in">
             
-            {/* Text with stroke outline approach */}
-            <div className="space-y-6 max-w-4xl mx-auto">
+            {/* Clean, readable typography */}
+            <div className="space-y-6">
               <h1 
-                className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-display text-white leading-[0.9] tracking-tight font-bold"
+                className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-display text-white leading-tight tracking-tight"
                 style={{ 
-                  WebkitTextStroke: '2px rgba(0, 0, 0, 0.8)',
-                  paintOrder: 'stroke fill',
                   letterSpacing: '-0.02em'
-                } as React.CSSProperties}
+                }}
                 data-testid="hero-title"
               >
                 Advancing Healthcare
-                <span className="block text-primary font-light">
+                <span className="block text-primary font-light mt-2">
                   Education & Equity
                 </span>
               </h1>
               
               <p 
-                className="text-lg sm:text-xl lg:text-2xl text-white leading-relaxed max-w-3xl mx-auto font-medium"
+                className="text-base sm:text-lg lg:text-xl text-white/90 leading-relaxed font-light"
                 style={{ 
-                  WebkitTextStroke: '1px rgba(0, 0, 0, 0.6)',
-                  paintOrder: 'stroke fill',
                   letterSpacing: '0.01em'
-                } as React.CSSProperties}
+                }}
                 data-testid="hero-description"
               >
                 A student-led organization dedicated to educating our community about health, 
@@ -189,7 +185,7 @@ export default function Hero() {
             </div>
 
             {/* Premium CTAs */}
-            <div className="flex flex-col sm:flex-row gap-6 justify-center pt-8">
+            <div className="flex flex-col sm:flex-row gap-4 pt-4">
               <Button 
                 size="lg" 
                 className="bg-primary/80 hover:bg-primary/90 text-white px-12 py-6 text-lg font-medium luxury-hover luxury-press border border-white/20 rounded-xl backdrop-blur-md"
@@ -231,7 +227,15 @@ export default function Hero() {
             </div>
           </div>
         </div>
+        
+        {/* Right side - Full image display on larger screens, hidden on mobile */}
+        <div className="hidden lg:block h-full relative overflow-hidden">
+          {/* Image shows through naturally here */}
+        </div>
       </div>
+      
+      {/* Mobile overlay for better readability on small screens */}
+      <div className="lg:hidden absolute inset-0 bg-gradient-to-t from-black/40 via-black/20 to-transparent" />
 
       {/* Elegant Carousel Indicators */}
       <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-20">
