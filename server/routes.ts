@@ -249,13 +249,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/admin/members", isAuthenticated, isAdmin, async (req, res) => {
     try {
+      console.log("POST /api/admin/members - Request body:", req.body);
       const validatedData = insertMemberSchema.parse(req.body);
+      console.log("POST /api/admin/members - Validated data:", validatedData);
       
       // Get member class to determine validation rules
       const memberClass = await storage.getMemberClass(validatedData.memberClassId!);
       if (!memberClass) {
+        console.log("POST /api/admin/members - Invalid member class:", validatedData.memberClassId);
         return res.status(400).json({ message: "Invalid member class" });
       }
+      console.log("POST /api/admin/members - Member class:", memberClass);
       
       // Apply conditional validation based on member class
       if (memberClass.name === "Active Member") {
@@ -265,38 +269,50 @@ export async function registerRoutes(app: Express): Promise<Server> {
       } else {
         // Other classes need name, role, and image
         if (!validatedData.role?.trim()) {
+          console.log("POST /api/admin/members - Missing role for:", memberClass.name);
           return res.status(400).json({ message: "Role is required for " + memberClass.name });
         }
         if (!validatedData.image?.trim()) {
+          console.log("POST /api/admin/members - Missing image for:", memberClass.name);
           return res.status(400).json({ message: "Image is required for " + memberClass.name });
         }
       }
       
       const member = await storage.createMember(validatedData);
+      console.log("POST /api/admin/members - Created member:", member);
       res.status(201).json(member);
     } catch (error) {
-      res.status(400).json({ message: "Invalid member data" });
+      console.error("POST /api/admin/members - Error:", error);
+      res.status(400).json({ message: "Invalid member data", error: error instanceof Error ? error.message : String(error) });
     }
   });
 
   app.put("/api/admin/members/:id", isAuthenticated, isAdmin, async (req, res) => {
     try {
+      console.log("PUT /api/admin/members/:id - Request ID:", req.params.id);
+      console.log("PUT /api/admin/members/:id - Request body:", req.body);
       const validatedData = insertMemberSchema.partial().parse(req.body);
+      console.log("PUT /api/admin/members/:id - Validated data:", validatedData);
       
       // Get the current member to determine class if not being changed
       const currentMember = await storage.getMember(req.params.id);
       if (!currentMember) {
+        console.log("PUT /api/admin/members/:id - Member not found:", req.params.id);
         return res.status(404).json({ message: "Member not found" });
       }
+      console.log("PUT /api/admin/members/:id - Current member:", currentMember);
       
       // Use provided memberClassId or current member's class
       const targetClassId = validatedData.memberClassId || currentMember.memberClassId;
+      console.log("PUT /api/admin/members/:id - Target class ID:", targetClassId);
       
       if (targetClassId) {
         const memberClass = await storage.getMemberClass(targetClassId);
         if (!memberClass) {
+          console.log("PUT /api/admin/members/:id - Invalid member class:", targetClassId);
           return res.status(400).json({ message: "Invalid member class" });
         }
+        console.log("PUT /api/admin/members/:id - Member class:", memberClass);
         
         if (memberClass.name === "Active Member") {
           // Active Members only need name - force role and image to null
@@ -305,18 +321,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
         } else {
           // Other classes need name, role, and image
           if (validatedData.role !== undefined && !validatedData.role?.trim()) {
+            console.log("PUT /api/admin/members/:id - Missing role for:", memberClass.name);
             return res.status(400).json({ message: "Role is required for " + memberClass.name });
           }
           if (validatedData.image !== undefined && !validatedData.image?.trim()) {
+            console.log("PUT /api/admin/members/:id - Missing image for:", memberClass.name);
             return res.status(400).json({ message: "Image is required for " + memberClass.name });
           }
         }
       }
       
       const member = await storage.updateMember(req.params.id, validatedData);
+      console.log("PUT /api/admin/members/:id - Updated member:", member);
       res.json(member);
     } catch (error) {
-      res.status(400).json({ message: "Failed to update member" });
+      console.error("PUT /api/admin/members/:id - Error:", error);
+      res.status(400).json({ message: "Failed to update member", error: error instanceof Error ? error.message : String(error) });
     }
   });
 
