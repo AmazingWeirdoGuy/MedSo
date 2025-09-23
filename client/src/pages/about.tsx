@@ -183,7 +183,7 @@ export default function About() {
                       <ProfileCard 
                         key={member.id} 
                         person={member}
-                        showImage={false}
+                        showImage={true}
                       />
                     ))}
                   </div>
