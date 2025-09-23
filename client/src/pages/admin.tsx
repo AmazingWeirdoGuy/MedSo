@@ -637,7 +637,7 @@ function ClassSection({
   className: string;
   onMemberDetail?: (member: Member) => void;
 }) {
-  const [addingNew, setAddingNew] = useState(false);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const { toast } = useToast();
 
   // Mutations
@@ -662,27 +662,6 @@ function ClassSection({
     },
   });
 
-  const addMemberMutation = useMutation({
-    mutationFn: async (data: any) => {
-      return apiRequest("POST", "/api/admin/members", data);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/admin/members"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/members"] });
-      setAddingNew(false);
-      toast({
-        title: "Success",
-        description: "Member added successfully!",
-      });
-    },
-    onError: () => {
-      toast({
-        title: "Error",
-        description: "Failed to add member. Please try again.",
-        variant: "destructive",
-      });
-    },
-  });
 
   const deleteMemberMutation = useMutation({
     mutationFn: async (id: string) => {
@@ -745,8 +724,7 @@ function ClassSection({
             </p>
             <Button
               size="sm"
-              onClick={() => setAddingNew(true)}
-              disabled={addingNew}
+              onClick={() => setIsAddModalOpen(true)}
               data-testid={`button-add-${value}`}
             >
               <Plus className="h-4 w-4 mr-2" />
@@ -761,22 +739,12 @@ function ClassSection({
                   <TableHead className="w-[200px]">Name</TableHead>
                   {!isActiveMemberClass && <TableHead className="w-[150px]">Role</TableHead>}
                   {!isActiveMemberClass && <TableHead className="w-[100px]">Image</TableHead>}
-                  <TableHead className="w-[150px]">Email</TableHead>
                   <TableHead className="w-[80px]">Order</TableHead>
                   <TableHead className="w-[80px]">Active</TableHead>
                   <TableHead className="w-[120px]">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {addingNew && (
-                  <NewMemberInlineRow
-                    memberClassId={targetClass?.id || ""}
-                    isActiveMemberClass={isActiveMemberClass}
-                    onSave={(data) => addMemberMutation.mutate(data)}
-                    onCancel={() => setAddingNew(false)}
-                    isLoading={addMemberMutation.isPending}
-                  />
-                )}
                 {members.map((member) => (
                   <MemberInlineRow
                     key={member.id}
@@ -789,10 +757,10 @@ function ClassSection({
                     isDeleting={deleteMemberMutation.isPending}
                   />
                 ))}
-                {members.length === 0 && !addingNew && (
+                {members.length === 0 && (
                   <TableRow>
                     <TableCell 
-                      colSpan={isActiveMemberClass ? 5 : 7} 
+                      colSpan={isActiveMemberClass ? 4 : 6} 
                       className="text-center py-8 text-muted-foreground"
                     >
                       No {title.toLowerCase()} yet. Click "Add {className}" to get started.
@@ -803,6 +771,15 @@ function ClassSection({
             </Table>
           </div>
         </div>
+        
+        {/* Add Member Modal */}
+        <MemberModal
+          memberClasses={memberClasses || []}
+          isOpen={isAddModalOpen}
+          onOpenChange={setIsAddModalOpen}
+          mode="add"
+          defaultMemberClassId={targetClass?.id}
+        />
       </AccordionContent>
     </AccordionItem>
   );
