@@ -794,6 +794,19 @@ function MemberInlineRow({
     displayOrder: member.displayOrder || 0,
     isActive: member.isActive ?? true,
   });
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const result = e.target?.result as string;
+        setFormData({ ...formData, image: result });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   const handleSave = () => {
     const dataToSave = { ...formData };
@@ -855,13 +868,34 @@ function MemberInlineRow({
       {!isActiveMemberClass && (
         <TableCell>
           {isEditing ? (
-            <Input
-              value={formData.image}
-              onChange={(e) => setFormData({ ...formData, image: e.target.value })}
-              placeholder="Image URL"
-              className="h-8"
-              data-testid={`input-edit-image-${member.id}`}
-            />
+            <div className="flex items-center gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => fileInputRef.current?.click()}
+                className="h-8 text-xs"
+                data-testid={`button-edit-image-${member.id}`}
+              >
+                <Upload className="h-3 w-3 mr-1" />
+                {formData.image ? "Change" : "Upload"}
+              </Button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleImageChange}
+                className="hidden"
+              />
+              {formData.image && (
+                <img
+                  src={formData.image}
+                  alt="Preview"
+                  className="w-6 h-6 rounded object-cover"
+                  data-testid={`img-edit-preview-${member.id}`}
+                />
+              )}
+            </div>
           ) : (
             member.image ? (
               <img 
