@@ -168,35 +168,54 @@ export default function AdminPage() {
   );
 }
 
-// Member Detail Modal Component
-function MemberDetailModal({
+// Unified Member Modal Component for both Add and Edit
+function MemberModal({
   member,
   memberClasses,
   isOpen,
-  onOpenChange
+  onOpenChange,
+  mode = "edit",
+  defaultMemberClassId
 }: {
-  member: Member;
+  member?: Member;
   memberClasses: MemberClass[];
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
+  mode?: "add" | "edit";
+  defaultMemberClassId?: string;
 }) {
   const [formData, setFormData] = useState({
-    name: member.name || "",
-    role: member.role || "",
-    image: member.image || "",
-    email: member.email || "",
-    displayOrder: member.displayOrder || 0,
-    isActive: member.isActive ?? true,
-    memberClassId: member.memberClassId || "",
+    name: member?.name || "",
+    role: member?.role || "",
+    image: member?.image || "",
+    displayOrder: member?.displayOrder || 0,
+    isActive: member?.isActive ?? true,
+    memberClassId: member?.memberClassId || defaultMemberClassId || "",
   });
   const [imageFile, setImageFile] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState(member.image || "");
+  const [imagePreview, setImagePreview] = useState(member?.image || "");
   const { toast } = useToast();
+
+  // Reset form when modal opens with different member or mode
+  useEffect(() => {
+    if (isOpen) {
+      setFormData({
+        name: member?.name || "",
+        role: member?.role || "",
+        image: member?.image || "",
+        displayOrder: member?.displayOrder || 0,
+        isActive: member?.isActive ?? true,
+        memberClassId: member?.memberClassId || defaultMemberClassId || "",
+      });
+      setImagePreview(member?.image || "");
+      setImageFile(null);
+    }
+  }, [isOpen, member, defaultMemberClassId]);
 
   // Update member mutation
   const updateMemberMutation = useMutation({
     mutationFn: async (data: any) => {
-      return apiRequest("PUT", `/api/admin/members/${member.id}`, data);
+      return apiRequest("PUT", `/api/admin/members/${member?.id}`, data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/members"] });
@@ -211,6 +230,29 @@ function MemberDetailModal({
       toast({
         title: "Error",
         description: "Failed to update member. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Add member mutation
+  const addMemberMutation = useMutation({
+    mutationFn: async (data: any) => {
+      return apiRequest("POST", "/api/admin/members", data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/members"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/members"] });
+      onOpenChange(false);
+      toast({
+        title: "Success",
+        description: "Member added successfully!",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to add member. Please try again.",
         variant: "destructive",
       });
     },
@@ -259,19 +301,28 @@ function MemberDetailModal({
       return;
     }
 
-    updateMemberMutation.mutate(dataToSave);
+    if (mode === "edit") {
+      updateMemberMutation.mutate(dataToSave);
+    } else {
+      addMemberMutation.mutate(dataToSave);
+    }
   };
 
   const selectedClass = memberClasses.find(mc => mc.id === formData.memberClassId);
   const isActiveMemberClass = selectedClass?.name === "Active Member";
+  const isLoading = updateMemberMutation.isPending || addMemberMutation.isPending;
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-xl font-semibold">Member Details</DialogTitle>
+          <DialogTitle className="text-xl font-semibold">
+            {mode === "add" ? "Add New Member" : "Member Details"}
+          </DialogTitle>
           <DialogDescription>
-            Edit detailed information for {member.name}
+            {mode === "add" 
+              ? "Add a new member to the society" 
+              : `Edit detailed information for ${member?.name}`}
           </DialogDescription>
         </DialogHeader>
 
@@ -363,17 +414,6 @@ function MemberDetailModal({
               </div>
             )}
 
-            <div className="space-y-2">
-              <Label htmlFor="detail-email">Email</Label>
-              <Input
-                id="detail-email"
-                type="email"
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                placeholder="Enter email address"
-                data-testid="input-detail-email"
-              />
-            </div>
 
             <div className="space-y-2">
               <Label htmlFor="detail-order">Display Order</Label>
@@ -422,23 +462,23 @@ function MemberDetailModal({
           <Button
             variant="outline"
             onClick={() => onOpenChange(false)}
-            disabled={updateMemberMutation.isPending}
+            disabled={isLoading}
             data-testid="button-detail-cancel"
           >
             Cancel
           </Button>
           <Button
             onClick={handleSave}
-            disabled={updateMemberMutation.isPending}
+            disabled={isLoading}
             data-testid="button-detail-save"
           >
-            {updateMemberMutation.isPending ? (
+            {isLoading ? (
               <>
                 <Loading size="sm" variant="spinner" className="mr-2" />
-                Saving...
+                {mode === "add" ? "Adding..." : "Saving..."}
               </>
             ) : (
-              "Save"
+              mode === "add" ? "Add Member" : "Save"
             )}
           </Button>
         </DialogFooter>
@@ -568,11 +608,12 @@ function MemberManagement() {
         
         {/* Member Detail Modal */}
         {detailMember && (
-          <MemberDetailModal
+          <MemberModal
             member={detailMember}
             memberClasses={memberClasses || []}
             isOpen={!!detailMember}
-            onOpenChange={(open) => !open && setDetailMember(null)}
+            onOpenChange={(open: boolean) => !open && setDetailMember(null)}
+            mode="edit"
           />
         )}
       </CardContent>
@@ -790,7 +831,6 @@ function MemberInlineRow({
     name: member.name || "",
     role: member.role || "",
     image: member.image || "",
-    email: member.email || "",
     displayOrder: member.displayOrder || 0,
     isActive: member.isActive ?? true,
   });
@@ -826,7 +866,6 @@ function MemberInlineRow({
       name: member.name || "",
       role: member.role || "",
       image: member.image || "",
-      email: member.email || "",
       displayOrder: member.displayOrder || 0,
       isActive: member.isActive ?? true,
     });
@@ -911,19 +950,6 @@ function MemberInlineRow({
         </TableCell>
       )}
 
-      <TableCell>
-        {isEditing ? (
-          <Input
-            value={formData.email}
-            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-            placeholder="Email"
-            className="h-8"
-            data-testid={`input-edit-email-${member.id}`}
-          />
-        ) : (
-          <span data-testid={`text-email-${member.id}`}>{member.email || "—"}</span>
-        )}
-      </TableCell>
 
       <TableCell>
         {isEditing ? (
@@ -1249,16 +1275,6 @@ function MemberCard({
 
       {/* Contact Info */}
       <div className="flex items-center gap-2 mb-4">
-        {member.email && (
-          <a
-            href={`mailto:${member.email}`}
-            className="inline-flex items-center gap-1 text-xs text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
-            data-testid={`link-member-email-${member.id}`}
-          >
-            <Mail className="h-3 w-3" />
-            Email
-          </a>
-        )}
         {member.linkedIn && (
           <a
             href={member.linkedIn}
@@ -1566,7 +1582,6 @@ function EditMemberDialog({
     role: member.role,
     memberClassId: member.memberClassId || "",
     bio: member.bio || "",
-    email: member.email || "",
     linkedIn: member.linkedIn || "",
     year: member.year || "",
     image: member.image || "",
@@ -1658,17 +1673,6 @@ function EditMemberDialog({
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="edit-email">Email</Label>
-              <Input
-                id="edit-email"
-                type="email"
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                placeholder="member@isbmedicalsociety.org"
-                data-testid="input-edit-member-email"
-              />
-            </div>
             <div className="space-y-2">
               <Label htmlFor="edit-year">Grade/Year</Label>
               <Input
