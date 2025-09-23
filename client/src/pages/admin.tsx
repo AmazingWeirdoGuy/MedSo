@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery, useMutation } from "@tanstack/react-query";
@@ -14,7 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Users, Newspaper, Image, Plus, Edit, Trash2, Mail, ExternalLink, GraduationCap, Check, X, Save } from "lucide-react";
+import { Users, Newspaper, Image, Plus, Edit, Trash2, Mail, ExternalLink, GraduationCap, Check, X, Save, Upload } from "lucide-react";
 import { Loading } from "@/components/ui/loading";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import type { Member, MemberClass, News, HeroImage, AdminUser } from "@shared/schema";
@@ -1022,6 +1022,19 @@ function NewMemberInlineRow({
     isActive: true,
     memberClassId: memberClassId,
   });
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const result = e.target?.result as string;
+        setFormData({ ...formData, image: result });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   const handleSave = () => {
     if (!formData.name.trim()) return;
@@ -1066,13 +1079,34 @@ function NewMemberInlineRow({
 
       {!isActiveMemberClass && (
         <TableCell>
-          <Input
-            value={formData.image}
-            onChange={(e) => setFormData({ ...formData, image: e.target.value })}
-            placeholder="Image URL *"
-            className="h-8"
-            data-testid="input-new-image"
-          />
+          <div className="flex items-center gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => fileInputRef.current?.click()}
+              className="h-8 text-xs"
+              data-testid="button-new-image"
+            >
+              <Upload className="h-3 w-3 mr-1" />
+              {formData.image ? "Change" : "Upload"}
+            </Button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleImageChange}
+              className="hidden"
+            />
+            {formData.image && (
+              <img
+                src={formData.image}
+                alt="Preview"
+                className="w-6 h-6 rounded object-cover"
+                data-testid="img-new-preview"
+              />
+            )}
+          </div>
         </TableCell>
       )}
 
@@ -1547,7 +1581,7 @@ function EditMemberDialog({
                 <Label htmlFor="edit-role">Role *</Label>
                 <Input
                   id="edit-role"
-                  value={formData.role}
+                  value={formData.role || ""}
                   onChange={(e) => setFormData({ ...formData, role: e.target.value })}
                   placeholder="e.g., President, Vice President"
                   required
