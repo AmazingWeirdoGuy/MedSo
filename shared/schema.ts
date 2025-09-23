@@ -54,7 +54,6 @@ export const members = pgTable("members", {
   memberClassId: varchar("member_class_id").references(() => memberClasses.id),
   bio: text("bio"),
   image: text("image"), // Profile image URL
-  email: text("email"),
   linkedIn: text("linkedin"),
   year: text("year"), // Graduation year or grade
   isActive: boolean("is_active").default(true),
