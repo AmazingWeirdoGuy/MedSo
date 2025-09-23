@@ -1,0 +1,37 @@
+Update my existing Node.js + Express project so the admin panel fully manages website content:
+Members Management
+Each member has: id, first_name, last_name, email, role, grade, photo_url.
+Add/Edit/Delete members from /admin/index.html.
+Store in SQLite (members table).
+Admin should be able to upload a photo file (jpg/png). The backend should save the file to /uploads and store the relative URL in photo_url.
+Public site (/public/index.html) should display the member list dynamically by fetching /api/members.
+Hero Section Management
+Create a hero table with columns: id INTEGER PRIMARY KEY CHECK (id=1), image_url TEXT, headline TEXT, subheadline TEXT.
+From the admin panel, allow uploading a new hero image (file → /uploads) and updating headline/subheadline text.
+Public homepage should fetch from /api/hero and show the current hero image + text.
+API Endpoints
+/api/members → GET (public), POST/PUT/DELETE (admin only).
+/api/hero → GET (public), POST/PUT (admin only).
+Use multer middleware for image uploads.
+Increase Express payload/file size limit so uploads don’t fail.
+Admin UI (/admin/index.html)
+Add forms for:
+Member: fields for name, role, grade, email, photo upload.
+Hero: file input for image + inputs for headline & subheadline.
+Use fetch() to call APIs and show success/failure.
+Add a table/grid to view and edit existing members.
+General Requirements
+Keep all admin endpoints protected with the existing session login.
+Serve uploaded images from /uploads.
+Make sure to bind to process.env.PORT and host 0.0.0.0 for Replit deployment.
+🔧 Next Steps After Running the Prompt
+Ghostwriter should generate/modify:
+server.js → new endpoints (/api/members, /api/hero) with file upload.
+/uploads/ folder → static file serving.
+DB migrations for members + hero.
+Updated /admin/index.html with forms & JS fetch calls.
+In Replit shell → run a test:
+curl -F "first_name=Test" -F "last_name=User" -F "role=President" -F "photo=@test.jpg" http://localhost:3000/api/members
+to confirm uploads + DB insert work.
+Redeploy → confirm public site now loads members + hero dynamically.
+⚡ Pro tip: If uploads still fail, tell Ghostwriter to add multer file size limit = 5MB and increase Express JSON body limit to 10MB. That usually fixes the base64/image-size issue.
