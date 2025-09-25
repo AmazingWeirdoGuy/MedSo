@@ -19,6 +19,7 @@ import { Loading } from "@/components/ui/loading";
 import Cropper from "react-easy-crop";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import type { Member, MemberClass, News, HeroImage, AdminUser } from "@shared/schema";
+import blankPfpPath from "@assets/blank-pfp.png";
 
 export default function AdminPage() {
   const { toast } = useToast();
@@ -385,10 +386,10 @@ function MemberModal({
       return;
     }
 
-    if (!isActiveMemberClass && (!dataToSave.role.trim() || !dataToSave.image.trim())) {
+    if (!isActiveMemberClass && !dataToSave.role.trim()) {
       toast({
         title: "Validation Error",
-        description: "Role and image are required for this member class.",
+        description: "Role is required for this member class.",
         variant: "destructive",
       });
       return;
@@ -476,8 +477,8 @@ function MemberModal({
               <div className="flex flex-col items-center space-y-4">
                 <div className="relative">
                   <img
-                    src={imagePreview || "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=300"}
-                    alt={formData.name}
+                    src={imagePreview || blankPfpPath}
+                    alt={formData.name || "Profile"}
                     className="w-32 h-32 rounded-lg object-cover border-2 border-white/20"
                     data-testid="img-detail-preview"
                   />
