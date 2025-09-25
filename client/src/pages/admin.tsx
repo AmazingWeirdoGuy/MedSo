@@ -195,7 +195,7 @@ function MemberModal({
     memberClassId: member?.memberClassId || defaultMemberClassId || "",
   });
   const [imageFile, setImageFile] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState(member?.image || "");
+  const [imagePreview, setImagePreview] = useState(member?.thumbnail || member?.image || "");
   const [originalImage, setOriginalImage] = useState<string | null>(null);
   const [showCropper, setShowCropper] = useState(false);
   const [crop, setCrop] = useState({ x: 0, y: 0 });
@@ -214,7 +214,7 @@ function MemberModal({
         isActive: member?.isActive ?? true,
         memberClassId: member?.memberClassId || defaultMemberClassId || "",
       });
-      setImagePreview(member?.image || "");
+      setImagePreview(member?.thumbnail || member?.image || "");
       setImageFile(null);
       setOriginalImage(null);
       setShowCropper(false);
