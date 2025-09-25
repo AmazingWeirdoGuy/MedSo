@@ -8,6 +8,7 @@ import { motion } from "framer-motion";
 import { Loading } from "@/components/ui/loading";
 import { useQuery } from "@tanstack/react-query";
 import type { Member, MemberClass } from "@shared/schema";
+import { OptimizedImage } from "@/components/OptimizedImage";
 
 export default function About() {
   const [openSections, setOpenSections] = useState<{ [key: string]: boolean }>({
@@ -49,9 +50,10 @@ export default function About() {
 
   const ProfileCard = ({ person, showPosition = false, showDepartment = false, showImage = true }: { person: Member, showPosition?: boolean, showDepartment?: boolean, showImage?: boolean }) => (
     <div className="flex items-center space-x-4 p-4 bg-card dark:bg-card border border-border rounded-xl luxury-hover luxury-press" style={{ boxShadow: 'var(--shadow-hairline)' }}>
-      {showImage && person.image && (
-        <img 
-          src={person.image} 
+      {showImage && (person.image || person.thumbnail) && (
+        <OptimizedImage 
+          src={person.image || ''} 
+          thumbnail={person.thumbnail}
           alt={person.name}
           className="w-14 h-14 rounded-full object-cover ring-2 ring-border"
         />
