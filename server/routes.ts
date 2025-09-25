@@ -261,9 +261,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Apply conditional validation based on member class
       if (memberClass.name === "Active Member") {
-        // Active Members only need name - force role and image to null
+        // Active Members only need name - role is optional
         validatedData.role = null;
-        validatedData.image = null;
+        
+        // Process image if provided for Active Members too
+        if (validatedData.image) {
+          const memberId = randomUUID();
+          const processedImages = await processImage(validatedData.image, memberId);
+          
+          // Store the JPG fallback URLs (most compatible)
+          validatedData.image = processedImages.original.jpg;
+          (validatedData as any).thumbnail = processedImages.thumbnail.jpg;
+        }
       } else {
         // Other classes need name, role, and image
         if (!validatedData.role?.trim()) {
@@ -312,10 +321,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
         
         if (memberClass.name === "Active Member") {
-          // Active Members only need name - force role and image to null
+          // Active Members only need name - role is optional
           validatedData.role = null;
-          validatedData.image = null;
-          (validatedData as any).thumbnail = null;
+          
+          // Process new image if provided for Active Members too
+          if (validatedData.image && validatedData.image.startsWith('data:')) {
+            // Clean up old images first
+            if (currentMember.image) {
+              await cleanupOldImages(currentMember.image, currentMember.thumbnail || '');
+            }
+            
+            const processedImages = await processImage(validatedData.image, req.params.id);
+            
+            // Store the JPG fallback URLs (most compatible)
+            validatedData.image = processedImages.original.jpg;
+            (validatedData as any).thumbnail = processedImages.thumbnail.jpg;
+          }
         } else {
           // Other classes need name, role, and image
           if (validatedData.role !== undefined && !validatedData.role?.trim()) {

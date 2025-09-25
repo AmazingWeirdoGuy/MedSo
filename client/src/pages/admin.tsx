@@ -372,7 +372,7 @@ function MemberModal({
     const dataToSave = { ...formData };
     if (isActiveMemberClass) {
       dataToSave.role = "";
-      dataToSave.image = "";
+      // Active Members can now have images, so don't clear the image field
     }
     
     // Validation
