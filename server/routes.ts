@@ -274,12 +274,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
           (validatedData as any).thumbnail = processedImages.thumbnail.jpg;
         }
       } else {
-        // Other classes need name, role, and image
+        // Other classes need name and role (image is optional)
         if (!validatedData.role?.trim()) {
           return res.status(400).json({ message: "Role is required for " + memberClass.name });
-        }
-        if (!validatedData.image?.trim()) {
-          return res.status(400).json({ message: "Image is required for " + memberClass.name });
         }
         
         // Process image if provided
@@ -338,12 +335,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
             (validatedData as any).thumbnail = processedImages.thumbnail.jpg;
           }
         } else {
-          // Other classes need name, role, and image
+          // Other classes need name and role (image is optional)
           if (validatedData.role !== undefined && !validatedData.role?.trim()) {
             return res.status(400).json({ message: "Role is required for " + memberClass.name });
-          }
-          if (validatedData.image !== undefined && !validatedData.image?.trim()) {
-            return res.status(400).json({ message: "Image is required for " + memberClass.name });
           }
           
           // Process new image if provided
