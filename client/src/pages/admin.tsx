@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery, useMutation } from "@tanstack/react-query";
@@ -16,6 +16,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Users, Newspaper, Image, Plus, Edit, Trash2, Mail, ExternalLink, GraduationCap, Check, X, Save, Upload } from "lucide-react";
 import { Loading } from "@/components/ui/loading";
+import Cropper from "react-easy-crop";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import type { Member, MemberClass, News, HeroImage, AdminUser } from "@shared/schema";
 
@@ -194,6 +195,11 @@ function MemberModal({
   });
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState(member?.image || "");
+  const [originalImage, setOriginalImage] = useState<string | null>(null);
+  const [showCropper, setShowCropper] = useState(false);
+  const [crop, setCrop] = useState({ x: 0, y: 0 });
+  const [zoom, setZoom] = useState(1);
+  const [croppedAreaPixels, setCroppedAreaPixels] = useState<any>(null);
   const { toast } = useToast();
 
   // Reset form when modal opens with different member or mode
@@ -209,6 +215,11 @@ function MemberModal({
       });
       setImagePreview(member?.image || "");
       setImageFile(null);
+      setOriginalImage(null);
+      setShowCropper(false);
+      setCrop({ x: 0, y: 0 });
+      setZoom(1);
+      setCroppedAreaPixels(null);
     }
   }, [isOpen, member, defaultMemberClassId]);
 
@@ -258,6 +269,15 @@ function MemberModal({
     },
   });
 
+  // Crop completion callback
+  const onCropComplete = useCallback(
+    (croppedArea: any, croppedAreaPixels: any) => {
+      setCroppedAreaPixels(croppedAreaPixels);
+    },
+    []
+  );
+
+  // Handle initial image selection
   const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
@@ -265,11 +285,84 @@ function MemberModal({
       const reader = new FileReader();
       reader.onload = (e) => {
         const result = e.target?.result as string;
-        setImagePreview(result);
-        setFormData({ ...formData, image: result });
+        setOriginalImage(result);
+        setShowCropper(true);
+        // Reset cropping state
+        setCrop({ x: 0, y: 0 });
+        setZoom(1);
+        setCroppedAreaPixels(null);
       };
       reader.readAsDataURL(file);
     }
+  };
+
+  // Create cropped image
+  const createCroppedImage = useCallback(
+    async (imageSrc: string, pixelCrop: any) => {
+      const image = new window.Image();
+      image.src = imageSrc;
+      
+      return new Promise<string>((resolve) => {
+        image.onload = () => {
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d');
+          
+          if (!ctx || !pixelCrop) {
+            resolve(imageSrc);
+            return;
+          }
+          
+          canvas.width = pixelCrop.width;
+          canvas.height = pixelCrop.height;
+          
+          ctx.drawImage(
+            image,
+            pixelCrop.x,
+            pixelCrop.y,
+            pixelCrop.width,
+            pixelCrop.height,
+            0,
+            0,
+            pixelCrop.width,
+            pixelCrop.height
+          );
+          
+          resolve(canvas.toDataURL('image/png'));
+        };
+      });
+    },
+    []
+  );
+
+  // Apply crop
+  const handleApplyCrop = async () => {
+    if (!originalImage || !croppedAreaPixels) return;
+    
+    try {
+      const croppedImage = await createCroppedImage(originalImage, croppedAreaPixels);
+      setImagePreview(croppedImage);
+      setFormData({ ...formData, image: croppedImage });
+      setShowCropper(false);
+      setOriginalImage(null);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to process cropped image. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Cancel cropping
+  const handleCancelCrop = () => {
+    setShowCropper(false);
+    setOriginalImage(null);
+    setCrop({ x: 0, y: 0 });
+    setZoom(1);
+    setCroppedAreaPixels(null);
+    // Clear the file input
+    const input = document.getElementById('image-upload') as HTMLInputElement;
+    if (input) input.value = '';
   };
 
   const handleSave = () => {
@@ -330,43 +423,94 @@ function MemberModal({
           {/* Profile Image Section */}
           <div className="space-y-4">
             <Label className="text-sm font-medium">Profile Image</Label>
-            <div className="flex flex-col items-center space-y-4">
-              <div className="relative">
-                <img
-                  src={imagePreview || "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=300"}
-                  alt={formData.name}
-                  className="w-32 h-32 rounded-lg object-cover border-2 border-white/20"
-                  data-testid="img-detail-preview"
-                />
+            
+            {showCropper && originalImage ? (
+              <div className="space-y-4">
+                <div className="relative w-full h-96 bg-black rounded-lg overflow-hidden">
+                  <Cropper
+                    image={originalImage}
+                    crop={crop}
+                    zoom={zoom}
+                    aspect={1} // Square aspect ratio
+                    onCropChange={setCrop}
+                    onCropComplete={onCropComplete}
+                    onZoomChange={setZoom}
+                  />
+                </div>
+                <div className="space-y-3">
+                  <div className="flex items-center space-x-2">
+                    <Label className="text-sm">Zoom:</Label>
+                    <input
+                      type="range"
+                      value={zoom}
+                      min={1}
+                      max={3}
+                      step={0.1}
+                      onChange={(e) => setZoom(Number(e.target.value))}
+                      className="flex-1"
+                    />
+                  </div>
+                  <div className="flex gap-2 justify-center">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={handleCancelCrop}
+                      data-testid="button-cancel-crop"
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      type="button"
+                      size="sm"
+                      onClick={handleApplyCrop}
+                      disabled={!croppedAreaPixels}
+                      data-testid="button-apply-crop"
+                    >
+                      Apply Crop
+                    </Button>
+                  </div>
+                </div>
               </div>
-              <div className="flex gap-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => document.getElementById('image-upload')?.click()}
-                  data-testid="button-choose-image"
-                >
-                  Choose Image
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => document.getElementById('image-upload')?.click()}
-                  data-testid="button-browse"
-                >
-                  Browse
-                </Button>
-                <input
-                  id="image-upload"
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageChange}
-                  className="hidden"
-                />
+            ) : (
+              <div className="flex flex-col items-center space-y-4">
+                <div className="relative">
+                  <img
+                    src={imagePreview || "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=300"}
+                    alt={formData.name}
+                    className="w-32 h-32 rounded-lg object-cover border-2 border-white/20"
+                    data-testid="img-detail-preview"
+                  />
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => document.getElementById('image-upload')?.click()}
+                    data-testid="button-choose-image"
+                  >
+                    Choose Image
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => document.getElementById('image-upload')?.click()}
+                    data-testid="button-browse"
+                  >
+                    Browse
+                  </Button>
+                  <input
+                    id="image-upload"
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageChange}
+                    className="hidden"
+                  />
+                </div>
               </div>
-            </div>
+            )}
           </div>
 
           {/* Form Fields */}
