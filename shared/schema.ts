@@ -53,7 +53,8 @@ export const members = pgTable("members", {
   role: text("role"), // President, Vice President, Secretary, etc. (nullable for Active Members)
   memberClassId: varchar("member_class_id").references(() => memberClasses.id),
   bio: text("bio"),
-  image: text("image"), // Profile image URL
+  image: text("image"), // Full resolution profile image URL
+  thumbnail: text("thumbnail"), // Optimized thumbnail URL (256x256)
   linkedIn: text("linkedin"),
   year: text("year"), // Graduation year or grade
   isActive: boolean("is_active").default(true),
