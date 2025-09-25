@@ -1,4 +1,5 @@
 import { useState } from "react";
+import blankPfpPath from "@assets/blank-pfp.png";
 
 interface OptimizedImageProps {
   src: string;
@@ -48,7 +49,7 @@ export function OptimizedImage({
   // Get the final fallback source
   const getFallbackSrc = () => {
     if (imageError) {
-      return fallbackSrc || "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=300";
+      return fallbackSrc || blankPfpPath;
     }
     return displaySrc;
   };
@@ -72,7 +73,11 @@ export function OptimizedImage({
           data-testid={testId}
         />
         {isLoading && (
-          <div className={`${className} bg-gray-200 dark:bg-gray-700 animate-pulse absolute inset-0 rounded-inherit`} />
+          <img 
+            src={blankPfpPath} 
+            alt={alt} 
+            className={`${className} opacity-50 absolute inset-0 rounded-inherit`} 
+          />
         )}
       </picture>
     );
@@ -92,7 +97,11 @@ export function OptimizedImage({
         data-testid={testId}
       />
       {isLoading && (
-        <div className={`${className} bg-gray-200 dark:bg-gray-700 animate-pulse absolute inset-0 rounded-inherit`} />
+        <img 
+          src={blankPfpPath} 
+          alt={alt} 
+          className={`${className} opacity-50 absolute inset-0 rounded-inherit`} 
+        />
       )}
     </div>
   );
