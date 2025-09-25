@@ -2,6 +2,8 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertProgramSchema, insertNewsSchema, insertMemberSchema, insertMemberClassSchema, insertHeroImageSchema, insertAdminUserSchema } from "@shared/schema";
+import { processImage, cleanupOldImages } from "./imageProcessor";
+import { randomUUID } from 'crypto';
 import { sendContactEmail } from "./email";
 import { getSession } from "./replitAuth";
 import { z } from "zod";
@@ -270,11 +272,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (!validatedData.image?.trim()) {
           return res.status(400).json({ message: "Image is required for " + memberClass.name });
         }
+        
+        // Process image if provided
+        if (validatedData.image) {
+          const memberId = randomUUID();
+          const processedImages = await processImage(validatedData.image, memberId);
+          
+          // Store the JPG fallback URLs (most compatible)
+          validatedData.image = processedImages.original.jpg;
+          (validatedData as any).thumbnail = processedImages.thumbnail.jpg;
+        }
       }
       
       const member = await storage.createMember(validatedData);
       res.status(201).json(member);
     } catch (error) {
+      console.error("Member creation error:", error);
       res.status(400).json({ message: "Invalid member data" });
     }
   });
@@ -302,6 +315,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           // Active Members only need name - force role and image to null
           validatedData.role = null;
           validatedData.image = null;
+          (validatedData as any).thumbnail = null;
         } else {
           // Other classes need name, role, and image
           if (validatedData.role !== undefined && !validatedData.role?.trim()) {
@@ -310,12 +324,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
           if (validatedData.image !== undefined && !validatedData.image?.trim()) {
             return res.status(400).json({ message: "Image is required for " + memberClass.name });
           }
+          
+          // Process new image if provided
+          if (validatedData.image && validatedData.image.startsWith('data:')) {
+            // Clean up old images first
+            if (currentMember.image) {
+              await cleanupOldImages(currentMember.image, currentMember.thumbnail || '');
+            }
+            
+            const processedImages = await processImage(validatedData.image, req.params.id);
+            
+            // Store the JPG fallback URLs (most compatible)
+            validatedData.image = processedImages.original.jpg;
+            (validatedData as any).thumbnail = processedImages.thumbnail.jpg;
+          }
         }
       }
+      
       
       const member = await storage.updateMember(req.params.id, validatedData);
       res.json(member);
     } catch (error) {
+      console.error("Member update error:", error);
       res.status(400).json({ message: "Failed to update member" });
     }
   });
