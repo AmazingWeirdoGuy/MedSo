@@ -2,7 +2,7 @@ import { useState } from "react";
 
 interface OptimizedImageProps {
   src: string;
-  thumbnail?: string;
+  thumbnail?: string | null;
   alt: string;
   className?: string;
   fallbackSrc?: string;
