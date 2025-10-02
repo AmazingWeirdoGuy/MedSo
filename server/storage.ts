@@ -7,7 +7,7 @@ import {
   type AdminUser, type InsertAdminUser,
   type HeroImage, type InsertHeroImage,
   users, adminUsers, memberClasses, members, heroImages, programs, news
-} from "@shared/schema";
+} from "../shared/schema";
 import { randomUUID } from "crypto";
 import { db } from "./db";
 import { eq } from "drizzle-orm";
@@ -172,6 +172,7 @@ export class MemStorage implements IStorage {
         memberClassId: "officer",
         bio: "Passionate about global health equity and medical education.",
         image: "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=400",
+        thumbnail: null,
         linkedIn: null,
         year: "Grade 12",
         isActive: true,
@@ -186,6 +187,7 @@ export class MemStorage implements IStorage {
         memberClassId: "officer",
         bio: "Leading initiatives in medical research and community outreach.",
         image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=400",
+        thumbnail: null,
         linkedIn: null,
         year: "Grade 12",
         isActive: true,
@@ -383,7 +385,8 @@ export class MemStorage implements IStorage {
       role: insertMember.role || null,
       memberClassId: insertMember.memberClassId || null,
       bio: insertMember.bio || null,
-      image: insertMember.image,
+      image: insertMember.image ?? null,
+      thumbnail: insertMember.thumbnail ?? null,
       linkedIn: insertMember.linkedIn ?? null,
       year: insertMember.year ?? null,
       isActive: insertMember.isActive ?? true,
@@ -629,6 +632,7 @@ export class DatabaseStorage implements IStorage {
         memberClassId: "officer",
         bio: "Passionate about global health equity and medical education.",
         image: "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=400",
+        thumbnail: null,
         linkedIn: null,
         year: "Grade 12",
         isActive: true,
@@ -641,6 +645,7 @@ export class DatabaseStorage implements IStorage {
         memberClassId: "officer",
         bio: "Leading initiatives in medical research and community outreach.",
         image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=400",
+        thumbnail: null,
         linkedIn: null,
         year: "Grade 12",
         isActive: true,

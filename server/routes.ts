@@ -1,11 +1,13 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertProgramSchema, insertNewsSchema, insertMemberSchema, insertMemberClassSchema, insertHeroImageSchema, insertAdminUserSchema } from "@shared/schema";
+import { insertProgramSchema, insertNewsSchema, insertMemberSchema, insertMemberClassSchema, insertHeroImageSchema, insertAdminUserSchema } from "../shared/schema";
 import { processImage, cleanupOldImages } from "./imageProcessor";
 import { randomUUID } from 'crypto';
 import { sendContactEmail } from "./email";
-import { getSession } from "./replitAuth";
+import session from 'express-session';
+import connectPgSimple from 'connect-pg-simple';
+import { pool } from './db';
 import { z } from "zod";
 
 // Simple authentication middleware
@@ -27,7 +29,19 @@ const isAdmin = (req: any, res: any, next: any) => {
 export async function registerRoutes(app: Express): Promise<Server> {
   // Setup session middleware
   app.set("trust proxy", 1);
-  app.use(getSession());
+  
+  const PgStore = connectPgSimple(session);
+  app.use(session({
+    store: new PgStore({ pool, tableName: 'sessions' }),
+    secret: process.env.SESSION_SECRET || 'dev-secret-change-in-production',
+    resave: false,
+    saveUninitialized: false,
+    cookie: { 
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: 7 * 24 * 60 * 60 * 1000
+    }
+  }));
 
   // Simple login route
   const loginSchema = z.object({

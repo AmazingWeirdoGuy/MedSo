@@ -2,7 +2,9 @@
 
 ## Overview
 
-This is a full-stack web application for the ISB Medical Society, built as a modern React frontend with an Express.js backend. The application serves as a comprehensive platform for a medical student organization, featuring sections for their mission, programs, news, and contact information. The site showcases the society's healthcare education initiatives, advocacy for healthcare equity, and global impact goals.
+This is a full-stack web application for the ISB Medical Society, a student organization focused on healthcare education, medical advocacy, and promoting equity in medicine. The application features a modern React frontend with a Node.js/Express backend, PostgreSQL database, and content management capabilities through an admin panel.
+
+The system provides public-facing pages for showcasing the society's mission, programs, news, and member profiles, while offering authenticated administrators the ability to manage all website content including members, news articles, and hero images.
 
 ## User Preferences
 
@@ -11,65 +13,99 @@ Preferred communication style: Simple, everyday language.
 ## System Architecture
 
 ### Frontend Architecture
-- **Framework**: React 18 with TypeScript using Vite as the build tool
-- **UI Framework**: Shadcn/ui components built on Radix UI primitives for accessible, customizable components
-- **Styling**: Tailwind CSS with custom CSS variables for theming, supporting both light and dark modes
-- **State Management**: TanStack Query (React Query) for server state management and data fetching
-- **Routing**: Wouter for lightweight client-side routing
-- **Form Handling**: React Hook Form with Zod validation through @hookform/resolvers
+
+**Technology Stack:**
+- React 18 with TypeScript for type-safe component development
+- Vite as the build tool for fast development and optimized production builds
+- Wouter for lightweight client-side routing
+- TanStack Query for server state management and data fetching
+- TailwindCSS with Shadcn/ui component library for consistent, accessible UI components
+
+**Design Patterns:**
+- Component-based architecture with reusable UI components
+- Custom hooks for shared logic (authentication, mobile detection, toast notifications)
+- Optimized image loading component with modern format support (AVIF, WebP, JPEG)
+- Responsive design with mobile-first approach
+- Smooth scroll behavior and loading states for enhanced UX
+
+**Key Features:**
+- Public pages: Home, About (member directory), News, Contact
+- Admin dashboard with tabs for managing members, news, and hero images
+- Image cropping functionality for member photos
+- Form validation using React Hook Form with Zod schemas
+- SEO optimization with meta tags and structured data
 
 ### Backend Architecture
-- **Runtime**: Node.js with Express.js framework
-- **Language**: TypeScript with ES modules
-- **API Design**: RESTful API with routes for programs and news management
-- **Data Layer**: In-memory storage implementation with interfaces designed for easy database migration
-- **Validation**: Zod schemas for request/response validation and type safety
 
-### Data Storage Solutions
-- **Current**: In-memory storage using Maps for development and testing
-- **Prepared**: Drizzle ORM configuration ready for PostgreSQL with Neon database integration
-- **Schema**: Well-defined database schemas for users, programs, and news with UUID primary keys
-- **Migration Strategy**: Drizzle Kit configured for schema migrations when moving to persistent storage
+**Technology Stack:**
+- Node.js with Express for the web server
+- TypeScript for type safety across the codebase
+- Drizzle ORM for type-safe database operations
+- PostgreSQL as the primary database
+- Express sessions with PostgreSQL store for authentication
 
-### Development Tooling
-- **Build System**: Vite with hot module replacement and development server
-- **Package Management**: npm with lockfile for reproducible builds
-- **TypeScript**: Strict configuration with path mapping for clean imports
-- **Code Quality**: ESLint and Prettier integration through Vite plugins
-- **Development Experience**: Replit-specific plugins for enhanced development workflow
+**API Design:**
+- RESTful API endpoints under `/api` prefix
+- Session-based authentication (no token-based auth currently)
+- Role-based access control with admin middleware
+- JSON request/response format with appropriate error handling
 
-### UI/UX Design System
-- **Design Tokens**: CSS custom properties for colors, spacing, typography, and shadows
-- **Component Library**: Comprehensive set of accessible components including forms, navigation, data display, and feedback components
-- **Responsive Design**: Mobile-first approach with Tailwind's responsive utilities
-- **Typography**: Inter font family with multiple weights for clean, professional appearance
-- **Color Scheme**: Blue and teal primary colors with neutral grays, designed for medical/healthcare branding
+**Authentication & Authorization:**
+- Simple username/password login system
+- Session management using `express-session` with PostgreSQL store
+- Middleware functions for authentication (`isAuthenticated`) and admin access (`isAdmin`)
+- User and AdminUser tables for managing access levels
+- 7-day session expiration
 
-## External Dependencies
+**Database Schema:**
+- `users` - User authentication data (compatible with Replit Auth structure)
+- `adminUsers` - Admin role and permissions mapping
+- `memberClasses` - Categories for organizing members (Officer, Active Member, etc.)
+- `members` - Society member profiles with photo support
+- `news` - News articles and announcements
+- `heroImages` - Carousel images for homepage hero section
+- `programs` - Educational programs and initiatives
+- `sessions` - Express session storage
 
-### UI and Component Libraries
-- **Radix UI**: Comprehensive collection of accessible, unstyled UI primitives (@radix-ui/react-*)
-- **Lucide React**: Modern icon library for consistent iconography
-- **Class Variance Authority**: Utility for creating variant-based component APIs
-- **Tailwind CSS**: Utility-first CSS framework with PostCSS processing
+**Image Processing:**
+- Sharp library for server-side image optimization
+- Multi-format output (AVIF, WebP, JPEG) for browser compatibility
+- Thumbnail generation for performance
+- Base64 data URL support for client uploads
+- Organized file storage in `public/uploads/members/`
 
-### Data Management
-- **TanStack React Query**: Server state management, caching, and synchronization
-- **Drizzle ORM**: Type-safe database toolkit with PostgreSQL dialect support
-- **Neon Database**: Serverless PostgreSQL service (@neondatabase/serverless)
-- **Zod**: Schema validation and type inference library
+### External Dependencies
 
-### Development and Build Tools
-- **Vite**: Frontend build tool with React plugin and TypeScript support
-- **Wouter**: Lightweight routing library for React applications
-- **React Hook Form**: Performant forms library with minimal re-renders
-- **Date-fns**: Modern JavaScript date utility library
+**Third-Party Services:**
+- **SendGrid** - Email delivery service for contact form submissions
+  - API key required via `SENDGRID_API_KEY` environment variable
+  - Sends emails to `info@isbmedicalsociety.org`
 
-### Backend Infrastructure
-- **Express.js**: Web application framework for Node.js
-- **Connect-pg-simple**: PostgreSQL session store (prepared for future session management)
-- **ESBuild**: Fast JavaScript bundler for production builds
+**Database:**
+- **PostgreSQL** - Primary data store
+  - Connection via `DATABASE_URL` environment variable
+  - Managed through Drizzle ORM
+  - Session store integration for authentication
 
-### Replit Integration
-- **@replit/vite-plugin-runtime-error-modal**: Development error overlay
-- **@replit/vite-plugin-cartographer**: Enhanced debugging and development features
+**Major NPM Packages:**
+- `@radix-ui/*` - Accessible component primitives (20+ packages)
+- `drizzle-orm` & `drizzle-kit` - Database ORM and migrations
+- `@neondatabase/serverless` - PostgreSQL driver
+- `sharp` - Image processing
+- `react-easy-crop` - Image cropping UI
+- `zod` - Schema validation
+- `@sendgrid/mail` - Email service
+- `connect-pg-simple` - PostgreSQL session store
+
+**Development Tools:**
+- `tsx` - TypeScript execution for development
+- `esbuild` - Backend bundling for production
+- `tailwindcss` - Utility-first CSS framework
+- `autoprefixer` & `postcss` - CSS processing
+
+**Environment Variables Required:**
+- `DATABASE_URL` - PostgreSQL connection string
+- `SESSION_SECRET` - Secret key for session encryption
+- `SENDGRID_API_KEY` - SendGrid API key (optional for development)
+- `NODE_ENV` - Environment mode (development/production)
+- `PORT` - Server port (defaults to 5000)
