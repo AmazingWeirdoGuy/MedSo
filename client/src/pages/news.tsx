@@ -1,12 +1,13 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
 import { Button } from "@/components/ui/button";
 import { Calendar, User } from "lucide-react";
 import { Loading } from "@/components/ui/loading";
+import { loadNews } from "@/lib/contentLoader";
 
 export default function News() {
-  const newsArticles: any[] = [];
+  const newsArticles = useMemo(() => loadNews(), []);
   const [loadingMore, setLoadingMore] = useState(false);
 
   return (

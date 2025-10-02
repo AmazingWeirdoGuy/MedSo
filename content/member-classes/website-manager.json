@@ -1,0 +1,7 @@
+{
+  "id": "website-manager",
+  "name": "Website Manager",
+  "description": "Manages the website and digital presence",
+  "displayOrder": 1,
+  "isActive": true
+}

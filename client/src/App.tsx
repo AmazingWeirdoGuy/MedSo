@@ -10,8 +10,6 @@ import News from "@/pages/news";
 import Contact from "@/pages/contact";
 import Terms from "@/pages/terms";
 import Privacy from "@/pages/privacy";
-import AdminPage from "@/pages/admin";
-import LoginPage from "@/pages/login";
 import NotFound from "@/pages/not-found";
 
 // Component to handle scroll to top on route change
@@ -37,8 +35,6 @@ function Router() {
         <Route path="/contact" component={Contact} />
         <Route path="/terms" component={Terms} />
         <Route path="/privacy" component={Privacy} />
-        <Route path="/login" component={LoginPage} />
-        <Route path="/admin" component={AdminPage} />
         <Route component={NotFound} />
       </Switch>
     </>

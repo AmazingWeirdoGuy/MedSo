@@ -1,0 +1,13 @@
+{
+  "id": "member-1",
+  "name": "Sarah Johnson",
+  "role": "President",
+  "memberClassId": "officer",
+  "bio": "Passionate about global health equity and medical education.",
+  "image": "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=400",
+  "thumbnail": null,
+  "linkedIn": null,
+  "year": "Grade 12",
+  "isActive": true,
+  "displayOrder": 1
+}

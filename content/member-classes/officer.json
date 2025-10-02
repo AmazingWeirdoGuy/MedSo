@@ -1,0 +1,7 @@
+{
+  "id": "officer",
+  "name": "Officer",
+  "description": "Executive leadership positions",
+  "displayOrder": 2,
+  "isActive": true
+}
