@@ -9,6 +9,7 @@ import session from 'express-session';
 import connectPgSimple from 'connect-pg-simple';
 import { pool } from './db';
 import { z } from "zod";
+import cors from 'cors';
 
 // Simple authentication middleware
 const isAuthenticated = (req: any, res: any, next: any) => {
@@ -27,6 +28,17 @@ const isAdmin = (req: any, res: any, next: any) => {
 };
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // CORS middleware
+  const allowedOrigins = process.env.FRONTEND_URL ? [process.env.FRONTEND_URL] : [];
+  if (process.env.NODE_ENV === 'development') {
+    allowedOrigins.push('http://localhost:5000', 'http://localhost:5173');
+  }
+
+  app.use(cors({
+    origin: allowedOrigins.length > 0 ? allowedOrigins : true,
+    credentials: true
+  }));
+
   // Setup session middleware
   app.set("trust proxy", 1);
   

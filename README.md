@@ -54,6 +54,10 @@ A modern full-stack web application for the ISB Medical Society featuring a Reac
 
 ## Production Deployment
 
+### Separate Deployment (Vercel + Render)
+
+This application supports separate deployment of frontend and backend for better scalability.
+
 ### Frontend (Vercel)
 
 1. **Connect your GitHub repo to Vercel**
@@ -63,7 +67,11 @@ A modern full-stack web application for the ISB Medical Society featuring a Reac
    - Output Directory: `dist/public`
    - Install Command: `npm install`
 
-3. **Environment Variables:** Not needed for frontend
+3. **Add environment variable:**
+   ```
+   VITE_API_URL=https://your-backend.onrender.com
+   ```
+   Replace with your actual Render backend URL
 
 4. **Deploy:** Vercel will automatically deploy on push to main
 
@@ -81,9 +89,11 @@ A modern full-stack web application for the ISB Medical Society featuring a Reac
    DATABASE_URL=<your-render-postgres-url>
    SESSION_SECRET=<generate-a-secure-secret>
    SENDGRID_API_KEY=<your-sendgrid-key>
+   FRONTEND_URL=https://your-app.vercel.app
    NODE_ENV=production
    PORT=5000
    ```
+   Replace `FRONTEND_URL` with your actual Vercel frontend URL for CORS
 
 4. **Database Setup:**
    - Create a PostgreSQL database on Render
@@ -91,6 +101,17 @@ A modern full-stack web application for the ISB Medical Society featuring a Reac
    - Run migrations: `npm run db:push`
 
 5. **Deploy:** Render will automatically build and deploy
+
+### CORS Configuration
+
+The backend is configured with CORS support to allow requests from the frontend:
+- In production: Only requests from the URL specified in `FRONTEND_URL` are allowed
+- In development: Allows `localhost:5000` and `localhost:5173`
+
+### Important Notes
+
+- **File Uploads**: When deploying separately, file uploads (member images, hero images) are stored on the backend server. For production use, consider using a cloud storage service like AWS S3 or Cloudinary for persistent file storage.
+- **Sessions**: The app uses PostgreSQL-backed sessions with cookies. Ensure `FRONTEND_URL` is correctly set for proper session handling across domains.
 
 ### Admin Access
 
