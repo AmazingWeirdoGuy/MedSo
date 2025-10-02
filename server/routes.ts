@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertProgramSchema, insertNewsSchema, insertMemberSchema, insertMemberClassSchema, insertHeroImageSchema, insertAdminUserSchema } from "../shared/schema";
-import { processImage, cleanupOldImages } from "./imageProcessor";
+import { processImage } from "./imageProcessor";
 import { randomUUID } from 'crypto';
 import { sendContactEmail } from "./email";
 import session from 'express-session';
@@ -302,8 +302,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         // Process image if provided for Active Members too
         if (validatedData.image) {
-          const memberId = randomUUID();
-          const processedImages = await processImage(validatedData.image, memberId);
+          const processedImages = await processImage(validatedData.image);
           
           // Store the base64 data URLs
           validatedData.image = processedImages.original;
@@ -317,8 +316,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         // Process image if provided
         if (validatedData.image) {
-          const memberId = randomUUID();
-          const processedImages = await processImage(validatedData.image, memberId);
+          const processedImages = await processImage(validatedData.image);
           
           // Store the base64 data URLs
           validatedData.image = processedImages.original;
@@ -359,12 +357,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           
           // Process new image if provided for Active Members too
           if (validatedData.image && validatedData.image.startsWith('data:')) {
-            // Clean up old images first (no-op for base64 images)
-            if (currentMember.image) {
-              await cleanupOldImages(currentMember.image, currentMember.thumbnail || '');
-            }
-            
-            const processedImages = await processImage(validatedData.image, req.params.id);
+            const processedImages = await processImage(validatedData.image);
             
             // Store the base64 data URLs
             validatedData.image = processedImages.original;
@@ -378,12 +371,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           
           // Process new image if provided
           if (validatedData.image && validatedData.image.startsWith('data:')) {
-            // Clean up old images first (no-op for base64 images)
-            if (currentMember.image) {
-              await cleanupOldImages(currentMember.image, currentMember.thumbnail || '');
-            }
-            
-            const processedImages = await processImage(validatedData.image, req.params.id);
+            const processedImages = await processImage(validatedData.image);
             
             // Store the base64 data URLs
             validatedData.image = processedImages.original;

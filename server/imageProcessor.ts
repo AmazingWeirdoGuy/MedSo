@@ -22,8 +22,7 @@ function bufferToBase64DataURL(buffer: Buffer, mimeType: string = 'image/jpeg'):
 
 // Process image from base64 data URL or buffer and return base64 data URLs
 export async function processImage(
-  input: string | Buffer, 
-  memberId: string
+  input: string | Buffer
 ): Promise<ProcessedImages> {
   let imageBuffer: Buffer;
   
@@ -60,8 +59,3 @@ export async function processImage(
   };
 }
 
-// No cleanup needed for base64 images - they're stored in database
-export async function cleanupOldImages(imageUrl: string, thumbnailUrl: string) {
-  // Base64 images are stored in the database, no file cleanup needed
-  return;
-}
