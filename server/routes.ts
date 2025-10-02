@@ -305,9 +305,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
           const memberId = randomUUID();
           const processedImages = await processImage(validatedData.image, memberId);
           
-          // Store the JPG fallback URLs (most compatible)
-          validatedData.image = processedImages.original.jpg;
-          (validatedData as any).thumbnail = processedImages.thumbnail.jpg;
+          // Store the base64 data URLs
+          validatedData.image = processedImages.original;
+          (validatedData as any).thumbnail = processedImages.thumbnail;
         }
       } else {
         // Other classes need name and role (image is optional)
@@ -320,9 +320,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
           const memberId = randomUUID();
           const processedImages = await processImage(validatedData.image, memberId);
           
-          // Store the JPG fallback URLs (most compatible)
-          validatedData.image = processedImages.original.jpg;
-          (validatedData as any).thumbnail = processedImages.thumbnail.jpg;
+          // Store the base64 data URLs
+          validatedData.image = processedImages.original;
+          (validatedData as any).thumbnail = processedImages.thumbnail;
         }
       }
       
@@ -359,16 +359,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
           
           // Process new image if provided for Active Members too
           if (validatedData.image && validatedData.image.startsWith('data:')) {
-            // Clean up old images first
+            // Clean up old images first (no-op for base64 images)
             if (currentMember.image) {
               await cleanupOldImages(currentMember.image, currentMember.thumbnail || '');
             }
             
             const processedImages = await processImage(validatedData.image, req.params.id);
             
-            // Store the JPG fallback URLs (most compatible)
-            validatedData.image = processedImages.original.jpg;
-            (validatedData as any).thumbnail = processedImages.thumbnail.jpg;
+            // Store the base64 data URLs
+            validatedData.image = processedImages.original;
+            (validatedData as any).thumbnail = processedImages.thumbnail;
           }
         } else {
           // Other classes need name and role (image is optional)
@@ -378,16 +378,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
           
           // Process new image if provided
           if (validatedData.image && validatedData.image.startsWith('data:')) {
-            // Clean up old images first
+            // Clean up old images first (no-op for base64 images)
             if (currentMember.image) {
               await cleanupOldImages(currentMember.image, currentMember.thumbnail || '');
             }
             
             const processedImages = await processImage(validatedData.image, req.params.id);
             
-            // Store the JPG fallback URLs (most compatible)
-            validatedData.image = processedImages.original.jpg;
-            (validatedData as any).thumbnail = processedImages.thumbnail.jpg;
+            // Store the base64 data URLs
+            validatedData.image = processedImages.original;
+            (validatedData as any).thumbnail = processedImages.thumbnail;
           }
         }
       }
