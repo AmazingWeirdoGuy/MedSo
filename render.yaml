@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: isb-medical-society-backend
+    runtime: node
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: isb-db
+          property: connectionString
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: FRONTEND_URL
+        value: https://your-app.vercel.app
+
+databases:
+  - name: isb-db
+    databaseName: isb_medical_society
+    plan: starter

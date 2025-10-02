@@ -10,6 +10,7 @@ import connectPgSimple from 'connect-pg-simple';
 import { pool } from './db';
 import { z } from "zod";
 import cors from 'cors';
+import helmet from 'helmet';
 
 // Simple authentication middleware
 const isAuthenticated = (req: any, res: any, next: any) => {
@@ -28,6 +29,15 @@ const isAdmin = (req: any, res: any, next: any) => {
 };
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  app.get('/health', (_req, res) => {
+    res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
+  });
+
+  app.use(helmet({
+    contentSecurityPolicy: process.env.NODE_ENV === 'production' ? undefined : false,
+    crossOriginEmbedderPolicy: false
+  }));
+
   // CORS middleware
   const allowedOrigins = process.env.FRONTEND_URL ? [process.env.FRONTEND_URL] : [];
   if (process.env.NODE_ENV === 'development') {
