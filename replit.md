@@ -69,10 +69,10 @@ Preferred communication style: Simple, everyday language.
 
 **Image Processing:**
 - Sharp library for server-side image optimization
-- Multi-format output (AVIF, WebP, JPEG) for browser compatibility
-- Thumbnail generation for performance
-- Base64 data URL support for client uploads
-- Organized file storage in `public/uploads/members/`
+- Images stored as base64 data URLs directly in database (fully portable, no file system dependencies)
+- Automatic thumbnail generation (256x256) for performance
+- Original images resized to max 1200px to optimize storage
+- JPEG format with quality optimization (90% original, 85% thumbnail)
 
 ### External Dependencies
 
