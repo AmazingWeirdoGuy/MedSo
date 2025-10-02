@@ -1,0 +1,40 @@
+Project refactor brief (make portable, clean, deployable)
+Goals
+
+Split into frontend (Vite) and backend (Express) with clean interfaces.
+
+Remove Replit-only bits (auth, envs, files) or make them optional.
+
+Make builds work outside Replit:
+
+Frontend → Vercel (static build to dist/public)
+
+Backend → Render (Node server + Postgres)
+
+Delete unused code/deps, add a tidy README, .env.example, and scripts.
+
+0) Repo hygiene
+
+Delete: .replit, replit.nix, any Replit metadata directories, replit.md.
+
+If there’s a stray .git inside subfolders, remove it.
+
+Add: .nvmrc with LTS (e.g. 20) and "engines": { "node": ">=20" } in package.json.
+
+Add .env.example (see section 6).
+
+Add README.md with build/deploy instructions (see section 10).
+
+1) TypeScript paths & imports
+
+Server build won’t resolve @shared/* by default.
+
+In all files under server/, replace @shared/* with ../shared/* (relative).
+
+Keep client using @/* and @shared/* (Vite handles it).
+
+tsconfig.json can stay as-is.
+
+2) Backend DB adapter (standardize)
+
+Create/overwrite server/db.ts using node-postgres + Drizzle:
