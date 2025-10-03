@@ -1,6 +1,6 @@
 backend:
   name: github
-  repo: your-username/your-repo-name
+  repo: AmazingWeirdoGuy/ISB-Medsociety-Club-Website
   branch: main
   base_url: https://api.netlify.com
   auth_endpoint: auth
