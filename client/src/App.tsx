@@ -35,6 +35,12 @@ function Router() {
         <Route path="/contact" component={Contact} />
         <Route path="/terms" component={Terms} />
         <Route path="/privacy" component={Privacy} />
+        <Route path="/admin">
+          {() => {
+            window.location.href = '/admin/index.html';
+            return null;
+          }}
+        </Route>
         <Route component={NotFound} />
       </Switch>
     </>
