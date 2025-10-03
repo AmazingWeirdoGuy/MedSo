@@ -1,6 +1,6 @@
 backend:
   name: github
-  repo: AmazingWeirdoGuy/ISB-Medsociety-Club-Website
+  repo: AmazingWeirdoGuy/ISB-Medsociety-Club-Website  # UPDATE THIS to your new repo name (username/repo-name)
   branch: main
   base_url: /
   auth_endpoint: api/auth
