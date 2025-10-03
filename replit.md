@@ -2,9 +2,7 @@
 
 ## Overview
 
-This is a full-stack web application for the ISB Medical Society, a student organization focused on healthcare education, medical advocacy, and promoting equity in medicine. The application features a modern React frontend with a Node.js/Express backend, PostgreSQL database, and content management capabilities through an admin panel.
-
-The system provides public-facing pages for showcasing the society's mission, programs, news, and member profiles, while offering authenticated administrators the ability to manage all website content including members, news articles, and hero images.
+A premium, Bang & Olufsen-inspired static website for the ISB Medical Society. This is a frontend-only application with Decap CMS for content management, designed for deployment on Vercel with zero backend dependencies.
 
 ## User Preferences
 
@@ -15,97 +13,90 @@ Preferred communication style: Simple, everyday language.
 ### Frontend Architecture
 
 **Technology Stack:**
-- React 18 with TypeScript for type-safe component development
-- Vite as the build tool for fast development and optimized production builds
-- Wouter for lightweight client-side routing
-- TanStack Query for server state management and data fetching
-- TailwindCSS with Shadcn/ui component library for consistent, accessible UI components
+- React 18 with TypeScript
+- Vite for build tooling
+- Wouter for client-side routing
+- TailwindCSS with Shadcn/ui components
+- Decap CMS for content management
 
-**Design Patterns:**
-- Component-based architecture with reusable UI components
-- Custom hooks for shared logic (authentication, mobile detection, toast notifications)
-- Optimized image loading component with modern format support (AVIF, WebP, JPEG)
-- Responsive design with mobile-first approach
-- Smooth scroll behavior and loading states for enhanced UX
+**Design Pattern:**
+- Pure static site - no backend
+- Content stored as JSON files in `/client/public/content/`
+- All data fetched client-side from JSON files
+- Responsive, mobile-first design
+- Glassmorphism UI with premium aesthetic
 
-**Key Features:**
-- Public pages: Home, About (member directory), News, Contact
-- Admin dashboard with tabs for managing members, news, and hero images
-- Image cropping functionality for member photos
-- Form validation using React Hook Form with Zod schemas
-- SEO optimization with meta tags and structured data
+**Pages:**
+- Home (hero carousel, mission, programs, news preview)
+- About (member directory with profiles)
+- News (articles and announcements)
+- Contact (contact form)
+- Terms & Privacy pages
+- Admin panel at `/admin` (Decap CMS)
 
-### Backend Architecture
+### Content Management
 
-**Technology Stack:**
-- Node.js with Express for the web server
-- TypeScript for type safety across the codebase
-- Drizzle ORM for type-safe database operations
-- PostgreSQL as the primary database
-- Express sessions with PostgreSQL store for authentication
+**Decap CMS Setup:**
+- Admin UI accessible at `/admin`
+- GitHub OAuth authentication via Vercel serverless functions
+- Content stored in: `client/public/content/`
+- Collections: Members, News, Hero Images, Programs, Member Classes
 
-**API Design:**
-- RESTful API endpoints under `/api` prefix
-- Session-based authentication (no token-based auth currently)
-- Role-based access control with admin middleware
-- JSON request/response format with appropriate error handling
+**Content Structure:**
+- JSON-based content files
+- No database required
+- Portable across any static hosting
 
-**Authentication & Authorization:**
-- Simple username/password login system
-- Session management using `express-session` with PostgreSQL store
-- Middleware functions for authentication (`isAuthenticated`) and admin access (`isAdmin`)
-- User and AdminUser tables for managing access levels
-- 7-day session expiration
+### OAuth Authentication
 
-**Database Schema:**
-- `users` - User authentication data (compatible with Replit Auth structure)
-- `adminUsers` - Admin role and permissions mapping
-- `memberClasses` - Categories for organizing members (Officer, Active Member, etc.)
-- `members` - Society member profiles with photo support
-- `news` - News articles and announcements
-- `heroImages` - Carousel images for homepage hero section
-- `programs` - Educational programs and initiatives
-- `sessions` - Express session storage
-
-**Image Processing:**
-- Sharp library for server-side image optimization
-- Images stored as base64 data URLs directly in database (fully portable, no file system dependencies)
-- Automatic thumbnail generation (256x256) for performance
-- Original images resized to max 1200px to optimize storage
-- JPEG format with quality optimization (90% original, 85% thumbnail)
-
-### External Dependencies
-
-**Third-Party Services:**
-- **SendGrid** - Email delivery service for contact form submissions
-  - API key required via `SENDGRID_API_KEY` environment variable
-  - Sends emails to `info@isbmedicalsociety.org`
-
-**Database:**
-- **PostgreSQL** - Primary data store
-  - Connection via `DATABASE_URL` environment variable
-  - Managed through Drizzle ORM
-  - Session store integration for authentication
-
-**Major NPM Packages:**
-- `@radix-ui/*` - Accessible component primitives (20+ packages)
-- `drizzle-orm` & `drizzle-kit` - Database ORM and migrations
-- `@neondatabase/serverless` - PostgreSQL driver
-- `sharp` - Image processing
-- `react-easy-crop` - Image cropping UI
-- `zod` - Schema validation
-- `@sendgrid/mail` - Email service
-- `connect-pg-simple` - PostgreSQL session store
-
-**Development Tools:**
-- `tsx` - TypeScript execution for development
-- `esbuild` - Backend bundling for production
-- `tailwindcss` - Utility-first CSS framework
-- `autoprefixer` & `postcss` - CSS processing
+**Vercel Serverless Functions:**
+- `/api/auth` - Initiates GitHub OAuth flow
+- `/api/callback` - Handles OAuth callback and token exchange
 
 **Environment Variables Required:**
-- `DATABASE_URL` - PostgreSQL connection string
-- `SESSION_SECRET` - Secret key for session encryption
-- `SENDGRID_API_KEY` - SendGrid API key (optional for development)
-- `NODE_ENV` - Environment mode (development/production)
-- `PORT` - Server port (defaults to 5000)
+- `OAUTH_GITHUB_CLIENT_ID` - GitHub OAuth app Client ID
+- `OAUTH_GITHUB_CLIENT_SECRET` - GitHub OAuth app Client Secret
+
+### Deployment
+
+**Platform:** Vercel
+**Build Settings:**
+- Framework: Vite
+- Build Command: `npm run build`
+- Output Directory: `dist/public`
+- Node Version: 18.x
+
+**Key Files:**
+- `vercel.json` - Routing configuration (excludes static assets from SPA rewrites)
+- `api/auth.ts` - OAuth start endpoint
+- `api/callback.ts` - OAuth callback handler
+- `client/public/admin/config.yml` - Decap CMS configuration
+
+### Recent Changes (October 2025)
+
+**Migration to Static Site:**
+- Removed all backend dependencies (Express, PostgreSQL, sessions)
+- Converted to pure frontend static site
+- Implemented Decap CMS for content management
+- Added Vercel serverless OAuth for admin authentication
+- All content now in JSON files (portable, no database)
+
+**OAuth Setup:**
+- Replaced Netlify OAuth with self-hosted Vercel functions
+- GitHub OAuth app callback: `https://[vercel-url]/api/callback`
+- No Netlify dependency required
+
+### Content Workflow
+
+1. User edits content in `/admin` panel
+2. Decap CMS commits changes to GitHub
+3. Vercel auto-detects commit and rebuilds (1-2 minutes)
+4. Updated content appears on live site
+
+### SEO & Performance
+
+- All meta tags (Open Graph, Twitter Cards)
+- JSON-LD structured data
+- Optimized images and lazy loading
+- Responsive design with mobile-first approach
+- Fast build times (~10 seconds)

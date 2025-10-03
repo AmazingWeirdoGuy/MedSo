@@ -39,7 +39,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       <script>
         (function() {
           function receiveMessage(e) {
-            console.log("receiveMessage %o", e);
             window.opener.postMessage(
               'authorization:github:success:${JSON.stringify({
                 token: access_token,
@@ -50,7 +49,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             window.removeEventListener("message", receiveMessage, false);
           }
           window.addEventListener("message", receiveMessage, false);
-          console.log("Posting message to opener");
           window.opener.postMessage("authorizing:github", "*");
         })();
       </script>
