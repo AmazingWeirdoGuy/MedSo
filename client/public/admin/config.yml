@@ -5,13 +5,13 @@ backend:
   base_url: https://api.netlify.com
   auth_endpoint: auth
 
-media_folder: "content/media"
+media_folder: "client/public/content/media"
 public_folder: "/content/media"
 
 collections:
   - name: "member_classes"
     label: "Member Classes"
-    folder: "content/member-classes"
+    folder: "client/public/content/member-classes"
     create: true
     slug: "{{slug}}"
     extension: "json"
@@ -25,7 +25,7 @@ collections:
 
   - name: "members"
     label: "Members"
-    folder: "content/members"
+    folder: "client/public/content/members"
     create: true
     slug: "{{slug}}"
     extension: "json"
@@ -45,7 +45,7 @@ collections:
 
   - name: "hero_images"
     label: "Hero Images"
-    folder: "content/hero-images"
+    folder: "client/public/content/hero-images"
     create: true
     slug: "{{slug}}"
     extension: "json"
@@ -61,7 +61,7 @@ collections:
 
   - name: "news"
     label: "News"
-    folder: "content/news"
+    folder: "client/public/content/news"
     create: true
     slug: "{{slug}}"
     extension: "json"
@@ -78,7 +78,7 @@ collections:
 
   - name: "programs"
     label: "Programs"
-    folder: "content/programs"
+    folder: "client/public/content/programs"
     create: true
     slug: "{{slug}}"
     extension: "json"
