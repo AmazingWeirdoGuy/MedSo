@@ -1,0 +1,51 @@
+19:58:12.806 Running build in Washington, D.C., USA (East) – iad1
+19:58:12.806 Build machine configuration: 2 cores, 8 GB
+19:58:12.842 Cloning github.com/AmazingWeirdoGuy/ISBMedSociety-Website-Source-Code (Branch: main, Commit: 3234f43)
+19:58:12.957 Previous build caches not available
+19:58:18.497 Cloning completed: 5.654s
+19:58:18.906 Running "vercel build"
+19:58:19.282 Vercel CLI 48.1.6
+19:58:19.885 Running "install" command: `npm install`...
+19:58:27.452 
+19:58:27.452 added 332 packages, and audited 333 packages in 7s
+19:58:27.453 
+19:58:27.453 48 packages are looking for funding
+19:58:27.453   run `npm fund` for details
+19:58:27.467 
+19:58:27.467 4 vulnerabilities (1 low, 3 moderate)
+19:58:27.467 
+19:58:27.467 To address all issues, run:
+19:58:27.468   npm audit fix
+19:58:27.468 
+19:58:27.468 Run `npm audit` for details.
+19:58:27.716 
+19:58:27.716 > rest-express@1.0.0 build
+19:58:27.718 > vite build
+19:58:27.718 
+19:58:27.957 [36mvite v5.4.19 [32mbuilding for production...[36m[39m
+19:58:28.014 transforming...
+19:58:28.284 Browserslist: browsers data (caniuse-lite) is 12 months old. Please run:
+19:58:28.285   npx update-browserslist-db@latest
+19:58:28.285   Why you should do it regularly: https://github.com/browserslist/update-db#readme
+19:58:32.653 [32m✓[39m 2024 modules transformed.
+19:58:33.017 rendering chunks...
+19:58:33.042 computing gzip size...
+19:58:33.060 [2m../dist/public/[22m[32mindex.html                                                              [39m[1m[2m    3.97 kB[22m[1m[22m[2m │ gzip:   1.29 kB[22m
+19:58:33.061 [2m../dist/public/[22m[2massets/[22m[32mblank-pfp-BoGwuTTv.png                                           [39m[1m[2m    5.11 kB[22m[1m[22m
+19:58:33.061 [2m../dist/public/[22m[2massets/[22m[32mmedicalminute_1756537744391-BpYvsxbd.png                         [39m[1m[2m  155.39 kB[22m[1m[22m
+19:58:33.061 [2m../dist/public/[22m[2massets/[22m[32me5a0817e-1bad-4a67-bc34-45225337e332_1758466243134-BtszadMv.png  [39m[1m[2m  340.70 kB[22m[1m[22m
+19:58:33.064 [2m../dist/public/[22m[2massets/[22m[32mfirstonthescene_1756537744391-D5XeXZcU.png                       [39m[1m[2m  547.06 kB[22m[1m[22m
+19:58:33.064 [2m../dist/public/[22m[2massets/[22m[32mdonation_1756537744391-8uTxPlxo.jpg                              [39m[1m[2m1,782.03 kB[22m[1m[22m
+19:58:33.065 [2m../dist/public/[22m[2massets/[22m[32mfundraising_1756538236001-BIBrUmPp.jpg                           [39m[1m[2m2,375.68 kB[22m[1m[22m
+19:58:33.065 [2m../dist/public/[22m[2massets/[22m[32m97ccae24-4d7b-48c9-a16e-40476198cbd1_1758466251232-Bk5uuh_Y.png  [39m[1m[2m3,467.85 kB[22m[1m[22m
+19:58:33.065 [2m../dist/public/[22m[2massets/[22m[32m16fd4d4d-d0b8-481f-821d-9d4b8ccae2f6_1758466251232-BsYxMLNZ.png  [39m[1m[2m9,649.12 kB[22m[1m[22m
+19:58:33.065 [2m../dist/public/[22m[2massets/[22m[35mindex-Cva6Z-m2.css                                               [39m[1m[2m   85.24 kB[22m[1m[22m[2m │ gzip:  14.61 kB[22m
+19:58:33.066 [2m../dist/public/[22m[2massets/[22m[36mindex-DC2qREWU.js                                                [39m[1m[2m  445.47 kB[22m[1m[22m[2m │ gzip: 141.02 kB[22m
+19:58:33.066 [32m✓ built in 5.08s[39m
+19:58:33.246 Build Completed in /vercel/output [13s]
+19:58:33.348 Deploying outputs...
+19:58:35.939 Deployment completed
+19:58:36.724 Creating build cache...
+19:58:47.405 Created build cache: 10.681s
+19:58:47.407 Uploading build cache [64.46 MB]
+19:58:48.612 Build cache uploaded: 1.205s

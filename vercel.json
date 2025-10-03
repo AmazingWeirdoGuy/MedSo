@@ -1,20 +1,5 @@
 {
-  "routes": [
-    {
-      "src": "/admin/config.yml",
-      "dest": "/admin/config.yml"
-    },
-    {
-      "src": "/admin/(.*)",
-      "dest": "/admin/$1"
-    },
-    {
-      "src": "/content/(.*)",
-      "dest": "/content/$1"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/index.html"
-    }
+  "rewrites": [
+    { "source": "/((?!assets|admin|content|fonts|favicon.ico|robots.txt|sitemap.xml).*)", "destination": "/index.html" }
   ]
 }
