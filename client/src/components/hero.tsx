@@ -15,12 +15,21 @@ export default function Hero() {
   const [loadingButton, setLoadingButton] = useState<string | null>(null);
   const [isTransitioning, setIsTransitioning] = useState(false);
 
-  // Load hero images from JSON files
-  const heroImagesData = useMemo(() => loadHeroImages(), []);
-  const heroImages = heroImagesData.map(img => ({
-    src: img.imageUrl,
-    alt: img.altText
-  }));
+  // Use imported hero images directly for reliable display
+  const heroImages = useMemo(() => [
+    {
+      src: groupPhotoImage,
+      alt: "ISB Medical Society - First Aid Training Certification Group"
+    },
+    {
+      src: hospitalVisitImage,
+      alt: "ISB Medical Society - Hospital Community Outreach"
+    },
+    {
+      src: educationImage,
+      alt: "ISB Medical Society - Health Education Programs"
+    }
+  ], []);
 
   // Auto-advance carousel with transition effects
   useEffect(() => {
