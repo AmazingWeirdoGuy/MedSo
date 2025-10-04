@@ -32,18 +32,6 @@ export default function News() {
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
         >
-          <motion.div 
-            className="inline-block mb-4"
-            initial={{ opacity: 0, scale: 0.9 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-          >
-            <span className="px-4 py-1.5 bg-gradient-to-r from-blue-500/10 to-teal-500/10 border border-blue-200/30 dark:border-blue-800/30 rounded-full text-sm font-medium text-blue-700 dark:text-blue-300">
-              Stories & Updates
-            </span>
-          </motion.div>
-          
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-display text-foreground mb-6" data-testid="news-title">
             Latest <span className="text-primary">News</span>
           </h2>
