@@ -58,7 +58,7 @@ export default function News() {
               >
                 <div className="aspect-video overflow-hidden">
                   <img 
-                    src={news.image}
+                    src={news.thumbnail || news.image}
                     alt={news.title}
                     className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-500"
                     loading="lazy"
