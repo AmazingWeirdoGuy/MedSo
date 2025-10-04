@@ -31,26 +31,12 @@ export default function News() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
           >
-            <motion.div 
-              className="inline-block mb-4"
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-            >
-              <span className="px-4 py-1.5 bg-gradient-to-r from-blue-500/10 to-teal-500/10 border border-blue-200/30 dark:border-blue-800/30 rounded-full text-sm font-medium text-blue-700 dark:text-blue-300">
-                Stories & Updates
-              </span>
-            </motion.div>
-            
-            <motion.h1 
-              className="text-5xl md:text-6xl lg:text-7xl font-light text-slate-900 dark:text-white mb-6 tracking-tight"
+            <h1 
+              className="text-3xl sm:text-4xl lg:text-5xl font-display text-foreground mb-6"
               data-testid="news-title"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.3 }}
             >
-              Latest <span className="font-semibold bg-gradient-to-r from-blue-600 to-teal-600 bg-clip-text text-transparent">News</span>
-            </motion.h1>
+              Latest <span className="text-primary">News</span>
+            </h1>
             
             <motion.p 
               className="text-xl text-slate-600 dark:text-slate-400 max-w-2xl mx-auto font-light leading-relaxed"
