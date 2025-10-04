@@ -269,14 +269,14 @@ export default function About() {
                 >
                   <motion.div
                     whileHover={{ 
-                      scale: 1.05,
-                      boxShadow: "0 20px 40px -10px rgba(37, 99, 235, 0.3)"
+                      scale: 1.05
                     }}
                     whileTap={{ scale: 0.98 }}
+                    className="inline-block"
                   >
                     <Button 
                       size="lg" 
-                      className="text-white bg-blue-600 hover:bg-blue-700 outline-none focus:outline-none focus-visible:outline-none !ring-0 focus:!ring-0 focus-visible:!ring-0 focus-visible:ring-transparent focus-visible:!ring-offset-0 transition-all duration-300 px-8 py-3 text-lg font-medium rounded-lg"
+                      className="text-white bg-blue-600 hover:bg-blue-700 border-0 shadow-none outline-none focus:outline-none focus-visible:outline-none !ring-0 focus:!ring-0 focus-visible:!ring-0 focus-visible:ring-transparent focus-visible:!ring-offset-0 active:outline-none hover:shadow-lg transition-all duration-300 px-8 py-3 text-lg font-medium rounded-lg"
                       data-testid="button-join-now"
                       onClick={() => {
                         setLoadingJoin(true);
