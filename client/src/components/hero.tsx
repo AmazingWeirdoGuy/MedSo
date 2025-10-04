@@ -191,7 +191,6 @@ export default function Hero() {
                   transform: isTransitioning && isActive ? 'scale(1.02)' : 'scale(1)',
                   transition: 'transform 800ms ease-out'
                 }}
-                onLoad={() => console.log('Image loaded and visible:', image.src, 'slide:', index, 'current:', currentSlide)}
               />
               {/* Heat effect overlay during transitions */}
               {isTransitioning && isActive && (
