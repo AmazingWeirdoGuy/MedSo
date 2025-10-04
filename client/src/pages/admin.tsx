@@ -3555,8 +3555,7 @@ function ProgramManagement() {
                   </Badge>
                 </div>
                 <CardContent className="pt-4">
-                  <h3 className="font-semibold text-lg mb-1">{program.title}</h3>
-                  <p className="text-sm text-muted-foreground mb-2">{program.subtitle}</p>
+                  <h3 className="font-semibold text-lg mb-2">{program.title}</h3>
                   <p className="text-sm line-clamp-2">{program.description}</p>
                   <div className="flex gap-2 mt-4">
                     <Dialog open={editingProgram?.id === program.id} onOpenChange={(open) => !open && setEditingProgram(null)}>
@@ -3635,7 +3634,6 @@ function ProgramForm({ program, onSubmit, isLoading }: {
 }) {
   const [formData, setFormData] = useState({
     title: program?.title || "",
-    subtitle: program?.subtitle || "",
     description: program?.description || "",
     displayOrder: program?.displayOrder?.toString() || "0",
   });
@@ -3718,21 +3716,9 @@ function ProgramForm({ program, onSubmit, isLoading }: {
           id="title"
           value={formData.title}
           onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-          placeholder="Clinical Skills Workshop"
-          required
-          data-testid="input-program-title"
-        />
-      </div>
-
-      <div>
-        <Label htmlFor="subtitle">Subtitle *</Label>
-        <Input
-          id="subtitle"
-          value={formData.subtitle}
-          onChange={(e) => setFormData({ ...formData, subtitle: e.target.value })}
           placeholder="First on the scene"
           required
-          data-testid="input-program-subtitle"
+          data-testid="input-program-title"
         />
       </div>
 
@@ -3831,7 +3817,7 @@ function ProgramForm({ program, onSubmit, isLoading }: {
       <DialogFooter>
         <Button
           type="submit"
-          disabled={isLoading || !formData.title.trim() || !formData.subtitle.trim() || !formData.description.trim() || (!imagePreview && !program?.image)}
+          disabled={isLoading || !formData.title.trim() || !formData.description.trim() || (!imagePreview && !program?.image)}
           data-testid="button-submit-program"
         >
           {isLoading && <Loading size="sm" variant="spinner" className="mr-2" />}
