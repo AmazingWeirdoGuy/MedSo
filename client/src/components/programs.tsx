@@ -1,42 +1,42 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import { Link } from "wouter";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Loading } from "@/components/ui/loading";
-import firstOnTheSceneImage from "@assets/firstonthescene_1756537744391.png";
-import medicalMinuteImage from "@assets/medicalminute_1756537744391.png";
-import fundraisingImage from "@assets/fundraising_1756538236001.jpg";
-import donationImage from "@assets/donation_1756537744391.jpg";
+import type { Program } from "@shared/schema";
 
 export default function Programs() {
   const [loadingProgram, setLoadingProgram] = useState<string | null>(null);
   
-  const programs = [
-    {
-      id: "first-on-the-scene",
-      subtitle: "First on the scene",
-      description: "Hands-on training in basic medical procedures and patient care techniques.",
-      image: firstOnTheSceneImage
-    },
-    {
-      id: "medical-minute",
-      subtitle: "Medical minute",
-      description: "Student-made short videos exploring current medical topics, with the aim to improve public health.",
-      image: medicalMinuteImage
-    },
-    {
-      id: "fundraising-events",
-      subtitle: "Fundraising events",
-      description: "Initiatives to raise funds for hospitals.",
-      image: fundraisingImage
-    },
-    {
-      id: "donation-charity",
-      subtitle: "Donation & charity",
-      description: "Donations to charitable organizations or hospitals.",
-      image: donationImage
-    }
-  ];
+  const { data: programs, isLoading } = useQuery<Program[]>({
+    queryKey: ["/api/programs"],
+  });
+
+  const sortedPrograms = programs ? [...programs].sort((a, b) => {
+    const orderA = a.displayOrder || 0;
+    const orderB = b.displayOrder || 0;
+    return orderA - orderB;
+  }) : [];
+
+  if (isLoading) {
+    return (
+      <section className="py-24 bg-gradient-to-br from-muted/20 via-background to-slate-50/30 dark:from-slate-900/30 dark:via-background dark:to-slate-800/20 relative overflow-hidden" data-testid="activities-section">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-20">
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-display text-foreground mb-6" data-testid="activities-title">
+              Our <span className="text-primary">Activities</span>
+            </h2>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              Discover the initiatives driving our mission forward
+            </p>
+          </div>
+          <div className="flex justify-center">
+            <Loading size="lg" variant="spinner" />
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="py-24 bg-gradient-to-br from-muted/20 via-background to-slate-50/30 dark:from-slate-900/30 dark:via-background dark:to-slate-800/20 relative overflow-hidden" data-testid="activities-section">
@@ -57,7 +57,7 @@ export default function Programs() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-          {programs.map((program, index) => (
+          {sortedPrograms.map((program, index) => (
             <div 
               key={program.id}
               className="group bg-card dark:bg-card border-2 border-border/50 hover:border-border rounded-2xl overflow-hidden luxury-hover luxury-press flex flex-col h-full surface-elevated"
@@ -70,8 +70,8 @@ export default function Programs() {
               <div className="overflow-hidden">
                 <AspectRatio ratio={4 / 3}>
                   <img 
-                    src={program.image}
-                    alt={`${program.subtitle} - ISB Medical Society activity showcasing healthcare education and community engagement`}
+                    src={program.thumbnail || program.image}
+                    alt={`${program.title} - ISB Medical Society activity showcasing healthcare education and community engagement`}
                     className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-500"
                     loading="lazy"
                     data-testid={`img-activity-${program.id}`}
@@ -81,7 +81,7 @@ export default function Programs() {
               
               <div className="p-6 flex flex-col flex-grow space-y-4">
                 <h3 className="text-xl font-display text-primary leading-snug" data-testid={`subtitle-activity-${program.id}`}>
-                  {program.subtitle}
+                  {program.title}
                 </h3>
                 
                 <p className="text-muted-foreground text-sm leading-relaxed flex-grow" data-testid={`text-activity-${program.id}`}>
