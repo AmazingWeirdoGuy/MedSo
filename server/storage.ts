@@ -664,29 +664,29 @@ export class DatabaseStorage implements IStorage {
     const defaultHeroImages = [
       {
         id: "hero-1",
-        title: "First Aid Training Certification",
-        description: "ISB Medical Society members completing their first aid certification",
-        imageUrl: "/assets/97ccae24-4d7b-48c9-a16e-40476198cbd1_1758466251232.png",
-        altText: "ISB Medical Society - First Aid Training Certification Group",
-        displayOrder: 1,
+        title: "Hero Image",
+        description: null,
+        imageUrl: "/attached_assets/97ccae24-4d7b-48c9-a16e-40476198cbd1_1758466251232.png",
+        altText: "ISB Medical Society hero image",
+        displayOrder: 0,
         isActive: true
       },
       {
         id: "hero-2",
-        title: "Hospital Community Outreach",
-        description: "Members visiting local hospitals for community outreach programs",
-        imageUrl: "/assets/e5a0817e-1bad-4a67-bc34-45225337e332_1758466243134.png",
-        altText: "ISB Medical Society - Hospital Community Outreach",
-        displayOrder: 2,
+        title: "Hero Image",
+        description: null,
+        imageUrl: "/attached_assets/e5a0817e-1bad-4a67-bc34-45225337e332_1758466243134.png",
+        altText: "ISB Medical Society hero image",
+        displayOrder: 1,
         isActive: true
       },
       {
         id: "hero-3",
-        title: "Health Education Programs",
-        description: "Educational workshops and health awareness campaigns",
-        imageUrl: "/assets/16fd4d4d-d0b8-481f-821d-9d4b8ccae2f6_1758466251232.png",
-        altText: "ISB Medical Society - Health Education Programs",
-        displayOrder: 3,
+        title: "Hero Image",
+        description: null,
+        imageUrl: "/attached_assets/16fd4d4d-d0b8-481f-821d-9d4b8ccae2f6_1758466251232.png",
+        altText: "ISB Medical Society hero image",
+        displayOrder: 2,
         isActive: true
       }
     ];
