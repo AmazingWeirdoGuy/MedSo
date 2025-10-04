@@ -119,7 +119,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // News routes
+  // News routes - specific routes must come before parameterized routes
+  app.get("/api/news/published", async (req, res) => {
+    try {
+      const news = await storage.getPublishedNews();
+      res.json(news);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch published news" });
+    }
+  });
+
   app.get("/api/news", async (req, res) => {
     try {
       const news = await storage.getNews();
@@ -440,15 +449,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Published news route for public access
-  app.get("/api/news/published", async (req, res) => {
-    try {
-      const news = await storage.getPublishedNews();
-      res.json(news);
-    } catch (error) {
-      res.status(500).json({ message: "Failed to fetch published news" });
-    }
-  });
 
   const httpServer = createServer(app);
   return httpServer;

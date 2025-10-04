@@ -4,9 +4,14 @@ import Footer from "@/components/footer";
 import { Button } from "@/components/ui/button";
 import { Calendar, User } from "lucide-react";
 import { Loading } from "@/components/ui/loading";
+import { useQuery } from "@tanstack/react-query";
+import type { News as NewsType } from "@shared/schema";
+import { format } from "date-fns";
 
 export default function News() {
-  const newsArticles: any[] = [];
+  const { data: newsArticles = [], isLoading } = useQuery<NewsType[]>({
+    queryKey: ["/api/news/published"],
+  });
   const [loadingMore, setLoadingMore] = useState(false);
 
   return (
@@ -26,8 +31,12 @@ export default function News() {
             </p>
           </div>
 
-          {/* Empty State */}
-          {newsArticles.length === 0 ? (
+          {/* Loading State */}
+          {isLoading ? (
+            <div className="text-center py-16">
+              <Loading size="lg" variant="spinner" text="Loading news articles..." />
+            </div>
+          ) : newsArticles.length === 0 ? (
             <div className="text-center py-16" data-testid="news-empty-state">
               <div className="max-w-md mx-auto">
                 <div className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl hover:-translate-y-2 transition-all duration-300 ease-in-out">
@@ -78,15 +87,13 @@ export default function News() {
 
                       {/* Article Excerpt */}
                       <p className="text-gray-600 mb-4 line-clamp-3" data-testid={`excerpt-${article.id}`}>
-                        {article.excerpt}
+                        {article.description}
                       </p>
 
                       {/* Article Meta */}
                       <div className="flex items-center text-sm text-gray-500 mb-4">
-                        <User className="w-4 h-4 mr-1" />
-                        <span className="mr-4">{article.author}</span>
                         <Calendar className="w-4 h-4 mr-1" />
-                        <span>{article.date}</span>
+                        <span>{article.publishDate ? format(new Date(article.publishDate), "MMM dd, yyyy") : format(new Date(article.createdAt!), "MMM dd, yyyy")}</span>
                       </div>
 
                       {/* Read More Button */}
