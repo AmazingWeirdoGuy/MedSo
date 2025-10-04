@@ -2,7 +2,7 @@
 
 ## Overview
 
-A premium, Bang & Olufsen-inspired static website for the ISB Medical Society. This is a frontend-only application with Decap CMS for content management, designed for deployment on Vercel with zero backend dependencies.
+This is a full-stack web application for the ISB Medical Society, built as a modern React frontend with an Express.js backend. The application serves as a comprehensive platform for a medical student organization, featuring sections for their mission, programs, news, and contact information. The site showcases the society's healthcare education initiatives, advocacy for healthcare equity, and global impact goals.
 
 ## User Preferences
 
@@ -11,92 +11,65 @@ Preferred communication style: Simple, everyday language.
 ## System Architecture
 
 ### Frontend Architecture
+- **Framework**: React 18 with TypeScript using Vite as the build tool
+- **UI Framework**: Shadcn/ui components built on Radix UI primitives for accessible, customizable components
+- **Styling**: Tailwind CSS with custom CSS variables for theming, supporting both light and dark modes
+- **State Management**: TanStack Query (React Query) for server state management and data fetching
+- **Routing**: Wouter for lightweight client-side routing
+- **Form Handling**: React Hook Form with Zod validation through @hookform/resolvers
 
-**Technology Stack:**
-- React 18 with TypeScript
-- Vite for build tooling
-- Wouter for client-side routing
-- TailwindCSS with Shadcn/ui components
-- Decap CMS for content management
+### Backend Architecture
+- **Runtime**: Node.js with Express.js framework
+- **Language**: TypeScript with ES modules
+- **API Design**: RESTful API with routes for programs and news management
+- **Data Layer**: In-memory storage implementation with interfaces designed for easy database migration
+- **Validation**: Zod schemas for request/response validation and type safety
 
-**Design Pattern:**
-- Pure static site - no backend
-- Content stored as JSON files in `/client/public/content/`
-- All data fetched client-side from JSON files
-- Responsive, mobile-first design
-- Glassmorphism UI with premium aesthetic
+### Data Storage Solutions
+- **Current**: In-memory storage using Maps for development and testing
+- **Prepared**: Drizzle ORM configuration ready for PostgreSQL with Neon database integration
+- **Schema**: Well-defined database schemas for users, programs, and news with UUID primary keys
+- **Migration Strategy**: Drizzle Kit configured for schema migrations when moving to persistent storage
 
-**Pages:**
-- Home (hero carousel, mission, programs, news preview)
-- About (member directory with profiles)
-- News (articles and announcements)
-- Contact (contact form)
-- Terms & Privacy pages
-- Admin panel at `/admin` (Decap CMS)
+### Development Tooling
+- **Build System**: Vite with hot module replacement and development server
+- **Package Management**: npm with lockfile for reproducible builds
+- **TypeScript**: Strict configuration with path mapping for clean imports
+- **Code Quality**: ESLint and Prettier integration through Vite plugins
+- **Development Experience**: Replit-specific plugins for enhanced development workflow
 
-### Content Management
+### UI/UX Design System
+- **Design Tokens**: CSS custom properties for colors, spacing, typography, and shadows
+- **Component Library**: Comprehensive set of accessible components including forms, navigation, data display, and feedback components
+- **Responsive Design**: Mobile-first approach with Tailwind's responsive utilities
+- **Typography**: Inter font family with multiple weights for clean, professional appearance
+- **Color Scheme**: Blue and teal primary colors with neutral grays, designed for medical/healthcare branding
 
-**Decap CMS Setup:**
-- Admin UI accessible at `/admin`
-- GitHub OAuth authentication via Vercel serverless functions
-- Content stored in: `client/public/content/`
-- Collections: Members, News, Hero Images, Programs, Member Classes
+## External Dependencies
 
-**Content Structure:**
-- JSON-based content files
-- No database required
-- Portable across any static hosting
+### UI and Component Libraries
+- **Radix UI**: Comprehensive collection of accessible, unstyled UI primitives (@radix-ui/react-*)
+- **Lucide React**: Modern icon library for consistent iconography
+- **Class Variance Authority**: Utility for creating variant-based component APIs
+- **Tailwind CSS**: Utility-first CSS framework with PostCSS processing
 
-### OAuth Authentication
+### Data Management
+- **TanStack React Query**: Server state management, caching, and synchronization
+- **Drizzle ORM**: Type-safe database toolkit with PostgreSQL dialect support
+- **Neon Database**: Serverless PostgreSQL service (@neondatabase/serverless)
+- **Zod**: Schema validation and type inference library
 
-**Vercel Serverless Functions:**
-- `/api/auth` - Initiates GitHub OAuth flow
-- `/api/callback` - Handles OAuth callback and token exchange
+### Development and Build Tools
+- **Vite**: Frontend build tool with React plugin and TypeScript support
+- **Wouter**: Lightweight routing library for React applications
+- **React Hook Form**: Performant forms library with minimal re-renders
+- **Date-fns**: Modern JavaScript date utility library
 
-**Environment Variables Required:**
-- `OAUTH_GITHUB_CLIENT_ID` - GitHub OAuth app Client ID
-- `OAUTH_GITHUB_CLIENT_SECRET` - GitHub OAuth app Client Secret
+### Backend Infrastructure
+- **Express.js**: Web application framework for Node.js
+- **Connect-pg-simple**: PostgreSQL session store (prepared for future session management)
+- **ESBuild**: Fast JavaScript bundler for production builds
 
-### Deployment
-
-**Platform:** Vercel
-**Build Settings:**
-- Framework: Vite
-- Build Command: `npm run build`
-- Output Directory: `dist/public`
-- Node Version: 18.x
-
-**Key Files:**
-- `vercel.json` - Routing configuration (excludes static assets from SPA rewrites)
-- `api/auth.ts` - OAuth start endpoint
-- `api/callback.ts` - OAuth callback handler
-- `client/public/admin/config.yml` - Decap CMS configuration
-
-### Recent Changes (October 2025)
-
-**Migration to Static Site:**
-- Removed all backend dependencies (Express, PostgreSQL, sessions)
-- Converted to pure frontend static site
-- Implemented Decap CMS for content management
-- Added Vercel serverless OAuth for admin authentication
-- All content now in JSON files (portable, no database)
-
-**OAuth Setup:**
-- Replaced Netlify OAuth with self-hosted Vercel functions
-- GitHub OAuth app callback: `https://[vercel-url]/api/callback`
-- No Netlify dependency required
-
-### Content Workflow
-
-1. User edits content in `/admin` panel
-2. Decap CMS commits changes to GitHub
-3. Vercel auto-detects commit and rebuilds (1-2 minutes)
-4. Updated content appears on live site
-
-### SEO & Performance
-
-- All meta tags (Open Graph, Twitter Cards)
-- JSON-LD structured data
-- Optimized images and lazy loading
-- Responsive design with mobile-first approach
-- Fast build times (~10 seconds)
+### Replit Integration
+- **@replit/vite-plugin-runtime-error-modal**: Development error overlay
+- **@replit/vite-plugin-cartographer**: Enhanced debugging and development features

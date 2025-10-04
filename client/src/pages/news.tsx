@@ -1,13 +1,12 @@
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
 import { Button } from "@/components/ui/button";
-import { Calendar } from "lucide-react";
+import { Calendar, User } from "lucide-react";
 import { Loading } from "@/components/ui/loading";
-import { loadNews } from "@/lib/contentLoader";
 
 export default function News() {
-  const newsArticles = useMemo(() => loadNews(), []);
+  const newsArticles: any[] = [];
   const [loadingMore, setLoadingMore] = useState(false);
 
   return (
@@ -79,13 +78,15 @@ export default function News() {
 
                       {/* Article Excerpt */}
                       <p className="text-gray-600 mb-4 line-clamp-3" data-testid={`excerpt-${article.id}`}>
-                        {article.description}
+                        {article.excerpt}
                       </p>
 
                       {/* Article Meta */}
                       <div className="flex items-center text-sm text-gray-500 mb-4">
+                        <User className="w-4 h-4 mr-1" />
+                        <span className="mr-4">{article.author}</span>
                         <Calendar className="w-4 h-4 mr-1" />
-                        <span>{article.publishDate ? new Date(article.publishDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : 'No date'}</span>
+                        <span>{article.date}</span>
                       </div>
 
                       {/* Read More Button */}
