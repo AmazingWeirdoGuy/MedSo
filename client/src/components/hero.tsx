@@ -2,11 +2,13 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Link, useLocation } from "wouter";
 import { Loading } from "@/components/ui/loading";
+import { useQuery } from "@tanstack/react-query";
+import type { HeroImage } from "@shared/schema";
 import groupPhotoImage from "@assets/97ccae24-4d7b-48c9-a16e-40476198cbd1_1758466251232.png";
 import hospitalVisitImage from "@assets/e5a0817e-1bad-4a67-bc34-45225337e332_1758466243134.png";
 import educationImage from "@assets/16fd4d4d-d0b8-481f-821d-9d4b8ccae2f6_1758466251232.png";
 
-const heroImages = [
+const fallbackHeroImages = [
   {
     src: groupPhotoImage,
     alt: "ISB Medical Society - First Aid Training Certification Group"
@@ -29,6 +31,23 @@ export default function Hero() {
   const [loadingButton, setLoadingButton] = useState<string | null>(null);
   const [isTransitioning, setIsTransitioning] = useState(false);
 
+  // Fetch hero images from API
+  const { data: dbHeroImages } = useQuery<HeroImage[]>({
+    queryKey: ["/api/hero-images"],
+  });
+
+  // Use database hero images if available, otherwise fall back to hardcoded images
+  const heroImages = (dbHeroImages && dbHeroImages.length > 0)
+    ? dbHeroImages
+        .filter((img) => img.isActive)
+        .sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0))
+        .map((img) => ({
+          src: img.imageUrl,
+          alt: img.altText,
+          title: img.title
+        }))
+    : fallbackHeroImages;
+
   // Auto-advance carousel with transition effects
   useEffect(() => {
     if (!isPlaying) return;
@@ -44,7 +63,7 @@ export default function Hero() {
     }, 6000); // 6 seconds per slide
     
     return () => clearInterval(interval);
-  }, [isPlaying]);
+  }, [isPlaying, heroImages.length]);
 
   // Scroll fade effect
   useEffect(() => {
