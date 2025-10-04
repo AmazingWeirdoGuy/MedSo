@@ -2539,6 +2539,110 @@ function NewsForm({
     isPublished: newsItem?.isPublished ?? false,
     publishDate: newsItem?.publishDate ? new Date(newsItem.publishDate).toISOString().split('T')[0] : "",
   });
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState(newsItem?.image || "");
+  const [originalImage, setOriginalImage] = useState<string | null>(null);
+  const [showCropper, setShowCropper] = useState(false);
+  const [crop, setCrop] = useState({ x: 0, y: 0 });
+  const [zoom, setZoom] = useState(1);
+  const [croppedAreaPixels, setCroppedAreaPixels] = useState<any>(null);
+  const { toast } = useToast();
+
+  // Crop completion callback
+  const onCropComplete = useCallback(
+    (croppedArea: any, croppedAreaPixels: any) => {
+      setCroppedAreaPixels(croppedAreaPixels);
+    },
+    []
+  );
+
+  // Handle initial image selection
+  const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      setImageFile(file);
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const result = e.target?.result as string;
+        setOriginalImage(result);
+        setShowCropper(true);
+        // Reset cropping state
+        setCrop({ x: 0, y: 0 });
+        setZoom(1);
+        setCroppedAreaPixels(null);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  // Create cropped image
+  const createCroppedImage = useCallback(
+    async (imageSrc: string, pixelCrop: any) => {
+      const image = new window.Image();
+      image.src = imageSrc;
+      
+      return new Promise<string>((resolve) => {
+        image.onload = () => {
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d');
+          
+          if (!ctx || !pixelCrop) {
+            resolve(imageSrc);
+            return;
+          }
+          
+          canvas.width = pixelCrop.width;
+          canvas.height = pixelCrop.height;
+          
+          ctx.drawImage(
+            image,
+            pixelCrop.x,
+            pixelCrop.y,
+            pixelCrop.width,
+            pixelCrop.height,
+            0,
+            0,
+            pixelCrop.width,
+            pixelCrop.height
+          );
+          
+          resolve(canvas.toDataURL('image/png'));
+        };
+      });
+    },
+    []
+  );
+
+  // Apply crop
+  const handleApplyCrop = async () => {
+    if (!originalImage || !croppedAreaPixels) return;
+    
+    try {
+      const croppedImage = await createCroppedImage(originalImage, croppedAreaPixels);
+      setImagePreview(croppedImage);
+      setFormData({ ...formData, image: croppedImage });
+      setShowCropper(false);
+      setOriginalImage(null);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to process cropped image. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Cancel cropping
+  const handleCancelCrop = () => {
+    setShowCropper(false);
+    setOriginalImage(null);
+    setCrop({ x: 0, y: 0 });
+    setZoom(1);
+    setCroppedAreaPixels(null);
+    // Clear the file input
+    const input = document.getElementById('news-image-upload') as HTMLInputElement;
+    if (input) input.value = '';
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -2626,19 +2730,85 @@ function NewsForm({
           />
         </div>
 
-        <div>
-          <Label htmlFor="image">Image URL *</Label>
-          <Input
-            id="image"
-            value={formData.image}
-            onChange={(e) =>
-              setFormData({ ...formData, image: e.target.value })
-            }
-            placeholder="https://example.com/image.jpg"
-            required
-            data-testid="input-news-image"
-          />
+        <div className="space-y-2">
+          <Label htmlFor="news-image-upload">Article Image *</Label>
+          <div className="flex items-center gap-4">
+            {imagePreview && (
+              <div className="relative w-24 h-24 rounded-lg overflow-hidden border-2 border-white/20">
+                <img
+                  src={imagePreview}
+                  alt="Preview"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            )}
+            <div className="flex-1">
+              <Input
+                id="news-image-upload"
+                type="file"
+                accept="image/*"
+                onChange={handleImageChange}
+                className="cursor-pointer"
+                data-testid="input-news-image-upload"
+              />
+              <p className="text-sm text-muted-foreground mt-1">
+                Upload an image and crop it to your desired size
+              </p>
+            </div>
+          </div>
         </div>
+
+        {showCropper && originalImage && (
+          <div className="space-y-4 p-4 bg-black/20 rounded-lg border border-white/10">
+            <div className="relative w-full h-64 bg-black/50 rounded-lg overflow-hidden">
+              <Cropper
+                image={originalImage}
+                crop={crop}
+                zoom={zoom}
+                aspect={16 / 9}
+                onCropChange={setCrop}
+                onZoomChange={setZoom}
+                onCropComplete={onCropComplete}
+                style={{
+                  containerStyle: {
+                    background: 'rgba(0, 0, 0, 0.5)',
+                  },
+                }}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Zoom</Label>
+              <input
+                type="range"
+                min={1}
+                max={3}
+                step={0.1}
+                value={zoom}
+                onChange={(e) => setZoom(parseFloat(e.target.value))}
+                className="w-full"
+              />
+            </div>
+            <div className="flex gap-2">
+              <Button
+                type="button"
+                onClick={handleApplyCrop}
+                className="flex-1"
+                data-testid="button-apply-crop-news"
+              >
+                Apply Crop
+              </Button>
+              <Button
+                type="button"
+                onClick={handleCancelCrop}
+                variant="outline"
+                className="flex-1"
+                data-testid="button-cancel-crop-news"
+              >
+                Cancel
+              </Button>
+            </div>
+          </div>
+        )}
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="flex items-center space-x-2">
@@ -2674,7 +2844,7 @@ function NewsForm({
       <DialogFooter>
         <Button
           type="submit"
-          disabled={isLoading || !formData.title.trim() || !formData.category.trim() || !formData.description.trim() || !formData.image.trim()}
+          disabled={isLoading || !formData.title.trim() || !formData.category.trim() || !formData.description.trim() || !imagePreview}
           data-testid="button-submit-news"
         >
           {isLoading && <Loading size="sm" variant="spinner" className="mr-2" />}
