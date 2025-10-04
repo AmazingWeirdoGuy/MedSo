@@ -3124,10 +3124,7 @@ function HeroImageForm({
   isLoading: boolean;
 }) {
   const [formData, setFormData] = useState({
-    title: heroImage?.title || "",
-    description: heroImage?.description || "",
     imageUrl: heroImage?.imageUrl || "",
-    altText: heroImage?.altText || "",
     displayOrder: heroImage?.displayOrder?.toString() || "0",
     isActive: heroImage?.isActive ?? true,
   });
@@ -3238,6 +3235,9 @@ function HeroImageForm({
     e.preventDefault();
     onSubmit({
       ...formData,
+      title: "Hero Image",
+      altText: "ISB Medical Society hero image",
+      description: "",
       displayOrder: parseInt(formData.displayOrder) || 0,
     });
   };
@@ -3256,34 +3256,6 @@ function HeroImageForm({
       </DialogHeader>
 
       <div className="space-y-4">
-        <div>
-          <Label htmlFor="title">Title *</Label>
-          <Input
-            id="title"
-            value={formData.title}
-            onChange={(e) =>
-              setFormData({ ...formData, title: e.target.value })
-            }
-            placeholder="Hero image title"
-            required
-            data-testid="input-hero-title"
-          />
-        </div>
-
-        <div>
-          <Label htmlFor="description">Description</Label>
-          <Textarea
-            id="description"
-            value={formData.description}
-            onChange={(e) =>
-              setFormData({ ...formData, description: e.target.value })
-            }
-            placeholder="Brief description of the hero image"
-            rows={3}
-            data-testid="input-hero-description"
-          />
-        </div>
-
         <div className="space-y-2">
           <Label htmlFor="hero-image-upload">Hero Image *</Label>
           <div className="flex items-center gap-4">
@@ -3364,20 +3336,6 @@ function HeroImageForm({
           </div>
         )}
 
-        <div>
-          <Label htmlFor="altText">Alt Text *</Label>
-          <Input
-            id="altText"
-            value={formData.altText}
-            onChange={(e) =>
-              setFormData({ ...formData, altText: e.target.value })
-            }
-            placeholder="Descriptive text for accessibility"
-            required
-            data-testid="input-hero-alt-text"
-          />
-        </div>
-
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <Label htmlFor="displayOrder">Display Order</Label>
@@ -3407,30 +3365,12 @@ function HeroImageForm({
             <Label htmlFor="isActive">Active</Label>
           </div>
         </div>
-
-        {/* Image Preview */}
-        {formData.imageUrl && (
-          <div>
-            <Label>Preview</Label>
-            <div className="mt-2 border rounded-lg p-2 bg-slate-50 dark:bg-slate-800">
-              <img
-                src={formData.imageUrl}
-                alt={formData.altText || "Hero image preview"}
-                className="w-full h-32 object-cover rounded"
-                onError={(e) => {
-                  const target = e.target as HTMLImageElement;
-                  target.style.display = 'none';
-                }}
-              />
-            </div>
-          </div>
-        )}
       </div>
 
       <DialogFooter>
         <Button
           type="submit"
-          disabled={isLoading || !formData.title.trim() || !imagePreview || !formData.altText.trim()}
+          disabled={isLoading || !imagePreview}
           data-testid="button-submit-hero-image"
         >
           {isLoading && <Loading size="sm" variant="spinner" className="mr-2" />}
