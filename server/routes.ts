@@ -1,11 +1,10 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
+import session from "express-session";
 import { storage } from "./storage";
-import { insertProgramSchema, insertNewsSchema, insertMemberSchema, insertMemberClassSchema, insertHeroImageSchema, insertAdminUserSchema } from "@shared/schema";
+import { insertProgramSchema, insertNewsSchema, insertMemberSchema, insertMemberClassSchema, insertHeroImageSchema } from "@shared/schema";
 import { processImage, cleanupOldImages } from "./imageProcessor";
 import { randomUUID } from 'crypto';
-import { sendContactEmail } from "./email";
-import { getSession } from "./replitAuth";
 import { z } from "zod";
 
 // Simple authentication middleware
@@ -25,9 +24,18 @@ const isAdmin = (req: any, res: any, next: any) => {
 };
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Setup session middleware
+  // Setup simple session middleware with memory store
   app.set("trust proxy", 1);
-  app.use(getSession());
+  app.use(session({
+    secret: process.env.SESSION_SECRET || 'isb-medical-society-secret-key-change-in-production',
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 1 week
+    },
+  }));
 
   // Simple login route
   const loginSchema = z.object({
@@ -173,30 +181,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Contact form route
-  const contactFormSchema = z.object({
-    firstName: z.string().min(1, "First name is required"),
-    lastName: z.string().min(1, "Last name is required"),
-    email: z.string().email("Valid email is required"),
-    grade: z.string().optional(),
-    subject: z.string().min(1, "Subject is required"),
-    message: z.string().min(1, "Message is required"),
-  });
-
-  app.post("/api/contact", async (req, res) => {
-    try {
-      const validatedData = contactFormSchema.parse(req.body);
-      const success = await sendContactEmail(validatedData);
-      
-      if (success) {
-        res.json({ message: "Email sent successfully" });
-      } else {
-        res.status(500).json({ message: "Failed to send email" });
-      }
-    } catch (error) {
-      res.status(400).json({ message: "Invalid form data" });
-    }
-  });
+  // Contact form route removed - email functionality not in use
 
   // Admin-only routes
 
