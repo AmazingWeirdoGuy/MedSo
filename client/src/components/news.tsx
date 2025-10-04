@@ -44,8 +44,8 @@ export default function News() {
             </span>
           </motion.div>
           
-          <h2 className="text-4xl sm:text-5xl lg:text-6xl font-light text-slate-900 dark:text-white mb-6 tracking-tight" data-testid="news-title">
-            Latest <span className="font-semibold bg-gradient-to-r from-blue-600 to-teal-600 bg-clip-text text-transparent">News</span>
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-display text-foreground mb-6" data-testid="news-title">
+            Latest <span className="text-primary">News</span>
           </h2>
           <p className="text-lg lg:text-xl text-slate-600 dark:text-slate-400 max-w-2xl mx-auto font-light leading-relaxed" data-testid="news-description">
             Discover our latest activities and medical initiatives
@@ -112,7 +112,7 @@ export default function News() {
                 {/* Article Content */}
                 <div className="p-8 flex flex-col flex-grow">
                   <h3 
-                    className="text-xl font-light text-slate-900 dark:text-white mb-3 line-clamp-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-300" 
+                    className="text-xl font-light text-slate-900 dark:text-white mb-3 line-clamp-2" 
                     data-testid={`title-news-${news.id}`}
                   >
                     {news.title}
