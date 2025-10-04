@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useLocation } from "wouter";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
 import { Button } from "@/components/ui/button";
@@ -10,6 +11,7 @@ import { format } from "date-fns";
 import { motion } from "framer-motion";
 
 export default function News() {
+  const [, navigate] = useLocation();
   const { data: newsArticles = [], isLoading } = useQuery<NewsType[]>({
     queryKey: ["/api/news/published"],
   });
@@ -92,12 +94,13 @@ export default function News() {
                 {newsArticles.map((article, index) => (
                   <motion.article 
                     key={article.id}
-                    className="group relative bg-white/60 dark:bg-slate-900/60 backdrop-blur-xl rounded-3xl overflow-hidden border border-slate-200/50 dark:border-slate-800/50 shadow-xl shadow-slate-900/5 hover:shadow-2xl hover:shadow-slate-900/10 transition-all duration-500 flex flex-col"
+                    className="group relative bg-white/60 dark:bg-slate-900/60 backdrop-blur-xl rounded-3xl overflow-hidden border border-slate-200/50 dark:border-slate-800/50 shadow-xl shadow-slate-900/5 hover:shadow-2xl hover:shadow-slate-900/10 transition-all duration-500 flex flex-col cursor-pointer"
                     data-testid={`article-${article.id}`}
                     initial={{ opacity: 0, y: 30 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5, delay: index * 0.1 }}
                     whileHover={{ y: -8, transition: { duration: 0.3 } }}
+                    onClick={() => navigate(`/news/${article.id}`)}
                   >
                     {/* Premium Image with Overlay */}
                     <div className="relative h-64 overflow-hidden">
