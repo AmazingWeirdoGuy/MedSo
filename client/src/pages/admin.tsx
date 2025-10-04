@@ -891,7 +891,7 @@ function ClassSection({
                 <TableRow className="bg-white/30 dark:bg-slate-800/30">
                   <TableHead className="w-[200px]">Name</TableHead>
                   {!isActiveMemberClass && <TableHead className="w-[150px]">Role</TableHead>}
-                  {!isActiveMemberClass && <TableHead className="w-[100px]">Image</TableHead>}
+                  <TableHead className="w-[100px]">Image</TableHead>
                   <TableHead className="w-[80px]">Order</TableHead>
                   <TableHead className="w-[80px]">Active</TableHead>
                   <TableHead className="w-[120px]">Actions</TableHead>
@@ -913,7 +913,7 @@ function ClassSection({
                 {members.length === 0 && (
                   <TableRow>
                     <TableCell 
-                      colSpan={isActiveMemberClass ? 4 : 6} 
+                      colSpan={isActiveMemberClass ? 5 : 6} 
                       className="text-center py-8 text-muted-foreground"
                     >
                       No {title.toLowerCase()} yet. Click "Add {className}" to get started.
@@ -982,14 +982,13 @@ function MemberInlineRow({
     const dataToSave = { ...formData };
     if (isActiveMemberClass) {
       dataToSave.role = "";
-      dataToSave.image = "";
     }
     onSave(dataToSave);
     setIsEditing(false);
   };
 
   const canSave = formData.name.trim() && 
-    (isActiveMemberClass || (formData.role.trim() && formData.image.trim()));
+    (isActiveMemberClass || formData.role.trim());
 
   const handleCancel = () => {
     setFormData({
@@ -1034,51 +1033,49 @@ function MemberInlineRow({
         </TableCell>
       )}
 
-      {!isActiveMemberClass && (
-        <TableCell>
-          {isEditing ? (
-            <div className="flex items-center gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => fileInputRef.current?.click()}
-                className="h-8 text-xs"
-                data-testid={`button-edit-image-${member.id}`}
-              >
-                <Upload className="h-3 w-3 mr-1" />
-                {formData.image ? "Change" : "Upload"}
-              </Button>
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                onChange={handleImageChange}
-                className="hidden"
+      <TableCell>
+        {isEditing ? (
+          <div className="flex items-center gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => fileInputRef.current?.click()}
+              className="h-8 text-xs"
+              data-testid={`button-edit-image-${member.id}`}
+            >
+              <Upload className="h-3 w-3 mr-1" />
+              {formData.image ? "Change" : "Upload"}
+            </Button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleImageChange}
+              className="hidden"
+            />
+            {formData.image && (
+              <img
+                src={formData.image}
+                alt="Preview"
+                className="w-6 h-6 rounded object-cover"
+                data-testid={`img-edit-preview-${member.id}`}
               />
-              {formData.image && (
-                <img
-                  src={formData.image}
-                  alt="Preview"
-                  className="w-6 h-6 rounded object-cover"
-                  data-testid={`img-edit-preview-${member.id}`}
-                />
-              )}
-            </div>
+            )}
+          </div>
+        ) : (
+          member.image ? (
+            <img 
+              src={member.image} 
+              alt={member.name}
+              className="w-8 h-8 rounded-full object-cover"
+              data-testid={`img-${member.id}`}
+            />
           ) : (
-            member.image ? (
-              <img 
-                src={member.image} 
-                alt={member.name}
-                className="w-8 h-8 rounded-full object-cover"
-                data-testid={`img-${member.id}`}
-              />
-            ) : (
-              <span className="text-muted-foreground text-sm">No image</span>
-            )
-          )}
-        </TableCell>
-      )}
+            <span className="text-muted-foreground text-sm">No image</span>
+          )
+        )}
+      </TableCell>
 
 
       <TableCell>
@@ -1232,16 +1229,15 @@ function NewMemberInlineRow({
     const dataToSave = { ...formData };
     if (isActiveMemberClass) {
       dataToSave.role = "";
-      dataToSave.image = "";
     } else {
-      if (!dataToSave.role.trim() || !dataToSave.image.trim()) return;
+      if (!dataToSave.role.trim()) return;
     }
     
     onSave(dataToSave);
   };
 
   const canSave = formData.name.trim() && 
-    (isActiveMemberClass || (formData.role.trim() && formData.image.trim()));
+    (isActiveMemberClass || formData.role.trim());
 
   return (
     <TableRow className="bg-blue-50 dark:bg-blue-900/20">
@@ -1267,47 +1263,35 @@ function NewMemberInlineRow({
         </TableCell>
       )}
 
-      {!isActiveMemberClass && (
-        <TableCell>
-          <div className="flex items-center gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => fileInputRef.current?.click()}
-              className="h-8 text-xs"
-              data-testid="button-new-image"
-            >
-              <Upload className="h-3 w-3 mr-1" />
-              {formData.image ? "Change" : "Upload"}
-            </Button>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              onChange={handleImageChange}
-              className="hidden"
-            />
-            {formData.image && (
-              <img
-                src={formData.image}
-                alt="Preview"
-                className="w-6 h-6 rounded object-cover"
-                data-testid="img-new-preview"
-              />
-            )}
-          </div>
-        </TableCell>
-      )}
-
       <TableCell>
-        <Input
-          value={formData.email}
-          onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-          placeholder="Email"
-          className="h-8"
-          data-testid="input-new-email"
-        />
+        <div className="flex items-center gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => fileInputRef.current?.click()}
+            className="h-8 text-xs"
+            data-testid="button-new-image"
+          >
+            <Upload className="h-3 w-3 mr-1" />
+            {formData.image ? "Change" : "Upload"}
+          </Button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            onChange={handleImageChange}
+            className="hidden"
+          />
+          {formData.image && (
+            <img
+              src={formData.image}
+              alt="Preview"
+              className="w-6 h-6 rounded object-cover"
+              data-testid="img-new-preview"
+            />
+          )}
+        </div>
       </TableCell>
 
       <TableCell>
