@@ -1,7 +1,0 @@
-{
-  "id": "active-member",
-  "name": "Active Member",
-  "description": "Regular participating members",
-  "displayOrder": 3,
-  "isActive": true
-}

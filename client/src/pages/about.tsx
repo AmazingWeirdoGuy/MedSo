@@ -6,10 +6,10 @@ import { Link } from "wouter";
 import { ChevronDown, ChevronRight } from "lucide-react";
 import { motion } from "framer-motion";
 import { Loading } from "@/components/ui/loading";
-import type { Member, MemberClass } from "@/types/content";
+import { useQuery } from "@tanstack/react-query";
+import type { Member, MemberClass } from "@shared/schema";
 import { OptimizedImage } from "@/components/OptimizedImage";
 import blankPfpPath from "@assets/blank-pfp.png";
-import { loadMembers, loadMemberClasses } from "@/lib/contentLoader";
 
 export default function About() {
   const [openSections, setOpenSections] = useState<{ [key: string]: boolean }>({
@@ -27,9 +27,14 @@ export default function About() {
     }));
   };
 
-  // Load members and member classes from JSON files
-  const members = loadMembers();
-  const memberClasses = loadMemberClasses();
+  // Fetch members and member classes from API
+  const { data: members = [], isLoading: membersLoading } = useQuery<Member[]>({
+    queryKey: ["/api/members"],
+  });
+
+  const { data: memberClasses = [] } = useQuery<MemberClass[]>({
+    queryKey: ["/api/member-classes"],
+  });
 
   // Group members by class
   const getClassMembers = (className: string) => {

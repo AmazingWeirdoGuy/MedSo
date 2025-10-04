@@ -1,11 +1,9 @@
 
 import { Button } from "@/components/ui/button";
 import { Calendar } from "lucide-react";
-import { loadNews } from "@/lib/contentLoader";
-import { useMemo } from "react";
 
 export default function News() {
-  const newsItems = useMemo(() => loadNews(), []);
+  const newsItems: any[] = [];
 
   return (
     <section className="py-24 bg-gradient-to-br from-muted/30 via-background to-blue-50/20 dark:from-slate-900/40 dark:via-background dark:to-slate-800/20 relative texture-subtle" data-testid="news-section">

@@ -1,10 +1,25 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { useLocation } from "wouter";
+import { Link, useLocation } from "wouter";
 import { Loading } from "@/components/ui/loading";
 import groupPhotoImage from "@assets/97ccae24-4d7b-48c9-a16e-40476198cbd1_1758466251232.png";
 import hospitalVisitImage from "@assets/e5a0817e-1bad-4a67-bc34-45225337e332_1758466243134.png";
 import educationImage from "@assets/16fd4d4d-d0b8-481f-821d-9d4b8ccae2f6_1758466251232.png";
+
+const heroImages = [
+  {
+    src: groupPhotoImage,
+    alt: "ISB Medical Society - First Aid Training Certification Group"
+  },
+  {
+    src: hospitalVisitImage,
+    alt: "ISB Medical Society - Hospital Community Outreach"
+  },
+  {
+    src: educationImage,
+    alt: "ISB Medical Society - Health Education Programs"
+  }
+];
 
 export default function Hero() {
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -14,25 +29,9 @@ export default function Hero() {
   const [loadingButton, setLoadingButton] = useState<string | null>(null);
   const [isTransitioning, setIsTransitioning] = useState(false);
 
-  // Use imported hero images directly for reliable display
-  const heroImages = useMemo(() => [
-    {
-      src: groupPhotoImage,
-      alt: "ISB Medical Society - First Aid Training Certification Group"
-    },
-    {
-      src: hospitalVisitImage,
-      alt: "ISB Medical Society - Hospital Community Outreach"
-    },
-    {
-      src: educationImage,
-      alt: "ISB Medical Society - Health Education Programs"
-    }
-  ], []);
-
   // Auto-advance carousel with transition effects
   useEffect(() => {
-    if (!isPlaying || heroImages.length === 0) return;
+    if (!isPlaying) return;
     
     const interval = setInterval(() => {
       setIsTransitioning(true);
@@ -45,7 +44,7 @@ export default function Hero() {
     }, 6000); // 6 seconds per slide
     
     return () => clearInterval(interval);
-  }, [isPlaying, heroImages.length]);
+  }, [isPlaying]);
 
   // Scroll fade effect
   useEffect(() => {
@@ -173,6 +172,7 @@ export default function Hero() {
                   transform: isTransitioning && isActive ? 'scale(1.02)' : 'scale(1)',
                   transition: 'transform 800ms ease-out'
                 }}
+                onLoad={() => console.log('Image loaded and visible:', image.src, 'slide:', index, 'current:', currentSlide)}
               />
               {/* Heat effect overlay during transitions */}
               {isTransitioning && isActive && (
