@@ -1,9 +1,16 @@
 
 import { Button } from "@/components/ui/button";
 import { Calendar } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import type { News } from "@shared/schema";
 
 export default function News() {
-  const newsItems: any[] = [];
+  const { data: allNews = [] } = useQuery<News[]>({
+    queryKey: ["/api/news/published"],
+  });
+  
+  // Show only the latest 3 news items on home page
+  const newsItems = allNews.slice(0, 3);
 
   return (
     <section className="py-24 bg-gradient-to-br from-muted/30 via-background to-blue-50/20 dark:from-slate-900/40 dark:via-background dark:to-slate-800/20 relative texture-subtle" data-testid="news-section">
