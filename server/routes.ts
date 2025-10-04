@@ -381,6 +381,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/admin/hero-images", isAuthenticated, isAdmin, async (req, res) => {
     try {
       const validatedData = insertHeroImageSchema.parse(req.body);
+      
+      // Process the image if it's a base64 data URL
+      if (validatedData.imageUrl && validatedData.imageUrl.startsWith('data:image/')) {
+        try {
+          const heroId = randomUUID();
+          const processedImages = await processImage(validatedData.imageUrl, `hero-${heroId}`);
+          
+          // Store the JPG fallback URLs (most compatible)
+          validatedData.imageUrl = processedImages.original.jpg;
+          (validatedData as any).thumbnail = processedImages.thumbnail.jpg;
+        } catch (error) {
+          console.error("Image processing error:", error);
+        }
+      }
+      
       const heroImage = await storage.createHeroImage(validatedData);
       res.status(201).json(heroImage);
     } catch (error) {
@@ -391,6 +406,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.put("/api/admin/hero-images/:id", isAuthenticated, isAdmin, async (req, res) => {
     try {
       const validatedData = insertHeroImageSchema.partial().parse(req.body);
+      
+      // Process the image if it's a base64 data URL
+      if (validatedData.imageUrl && validatedData.imageUrl.startsWith('data:image/')) {
+        try {
+          const heroId = randomUUID();
+          const processedImages = await processImage(validatedData.imageUrl, `hero-${heroId}`);
+          
+          // Store the JPG fallback URLs (most compatible)
+          validatedData.imageUrl = processedImages.original.jpg;
+          (validatedData as any).thumbnail = processedImages.thumbnail.jpg;
+        } catch (error) {
+          console.error("Image processing error:", error);
+        }
+      }
+      
       const heroImage = await storage.updateHeroImage(req.params.id, validatedData);
       res.json(heroImage);
     } catch (error) {

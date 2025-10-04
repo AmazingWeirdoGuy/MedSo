@@ -68,7 +68,8 @@ export const heroImages = pgTable("hero_images", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   title: text("title").notNull(),
   description: text("description"),
-  imageUrl: text("image_url").notNull(),
+  imageUrl: text("image_url").notNull(), // Full resolution image
+  thumbnail: text("thumbnail"), // Optimized thumbnail
   altText: text("alt_text").notNull(),
   displayOrder: integer("display_order").default(0),
   isActive: boolean("is_active").default(true),
