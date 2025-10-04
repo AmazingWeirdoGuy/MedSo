@@ -437,6 +437,75 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Admin programs management routes
+  app.get("/api/admin/programs", isAuthenticated, isAdmin, async (req, res) => {
+    try {
+      const programs = await storage.getPrograms();
+      res.json(programs);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch programs" });
+    }
+  });
+
+  app.post("/api/admin/programs", isAuthenticated, isAdmin, async (req, res) => {
+    try {
+      const validatedData = insertProgramSchema.parse(req.body);
+      
+      // Process the image if it's a base64 data URL
+      if (validatedData.image && validatedData.image.startsWith('data:image/')) {
+        try {
+          const programId = randomUUID();
+          const processedImages = await processImage(validatedData.image, `program-${programId}`);
+          
+          // Store the JPG fallback URLs (most compatible)
+          validatedData.image = processedImages.original.jpg;
+          (validatedData as any).thumbnail = processedImages.thumbnail.jpg;
+        } catch (error) {
+          console.error("Image processing error:", error);
+        }
+      }
+      
+      const program = await storage.createProgram(validatedData);
+      res.status(201).json(program);
+    } catch (error) {
+      res.status(400).json({ message: "Invalid program data" });
+    }
+  });
+
+  app.put("/api/admin/programs/:id", isAuthenticated, isAdmin, async (req, res) => {
+    try {
+      const validatedData = insertProgramSchema.partial().parse(req.body);
+      
+      // Process the image if it's a base64 data URL
+      if (validatedData.image && validatedData.image.startsWith('data:image/')) {
+        try {
+          const programId = randomUUID();
+          const processedImages = await processImage(validatedData.image, `program-${programId}`);
+          
+          // Store the JPG fallback URLs (most compatible)
+          validatedData.image = processedImages.original.jpg;
+          (validatedData as any).thumbnail = processedImages.thumbnail.jpg;
+        } catch (error) {
+          console.error("Image processing error:", error);
+        }
+      }
+      
+      const program = await storage.updateProgram(req.params.id, validatedData);
+      res.json(program);
+    } catch (error) {
+      res.status(400).json({ message: "Failed to update program" });
+    }
+  });
+
+  app.delete("/api/admin/programs/:id", isAuthenticated, isAdmin, async (req, res) => {
+    try {
+      await storage.deleteProgram(req.params.id);
+      res.status(204).send();
+    } catch (error) {
+      res.status(500).json({ message: "Failed to delete program" });
+    }
+  });
+
   // Admin news management routes
   app.get("/api/admin/news", isAuthenticated, isAdmin, async (req, res) => {
     try {
