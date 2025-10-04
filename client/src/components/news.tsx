@@ -1,8 +1,9 @@
-
 import { Button } from "@/components/ui/button";
-import { Calendar } from "lucide-react";
+import { Calendar, ArrowRight } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import type { News } from "@shared/schema";
+import { format } from "date-fns";
+import { motion } from "framer-motion";
 
 export default function News() {
   const { data: allNews = [] } = useQuery<News[]>({
@@ -13,83 +14,136 @@ export default function News() {
   const newsItems = allNews.slice(0, 3);
 
   return (
-    <section className="py-24 bg-gradient-to-br from-muted/30 via-background to-blue-50/20 dark:from-slate-900/40 dark:via-background dark:to-slate-800/20 relative texture-subtle" data-testid="news-section">
-      {/* Subtle Decorative Elements */}
-      <div className="absolute inset-0 -z-10 opacity-30">
-        <div className="absolute top-32 right-20 w-48 h-48 bg-primary/8 rounded-full blur-2xl" />
-        <div className="absolute bottom-32 left-20 w-64 h-64 bg-accent/6 rounded-full blur-2xl" />
+    <section className="py-24 lg:py-32 bg-gradient-to-br from-slate-50 via-white to-blue-50/30 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 relative overflow-hidden" data-testid="news-section">
+      {/* Subtle Gradient Orbs */}
+      <div className="absolute inset-0 -z-10 opacity-40">
+        <div className="absolute top-32 right-20 w-96 h-96 bg-gradient-to-br from-blue-500/10 to-transparent rounded-full blur-3xl" />
+        <div className="absolute bottom-32 left-20 w-96 h-96 bg-gradient-to-br from-teal-500/10 to-transparent rounded-full blur-3xl" />
       </div>
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-20 luxury-fade-in">
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-display text-foreground mb-6" data-testid="news-title">
-            Latest <span className="text-primary">News</span>
+        {/* Premium Section Header */}
+        <motion.div 
+          className="text-center mb-16 lg:mb-20"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+        >
+          <motion.div 
+            className="inline-block mb-4"
+            initial={{ opacity: 0, scale: 0.9 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+          >
+            <span className="px-4 py-1.5 bg-gradient-to-r from-blue-500/10 to-teal-500/10 border border-blue-200/30 dark:border-blue-800/30 rounded-full text-sm font-medium text-blue-700 dark:text-blue-300">
+              Stories & Updates
+            </span>
+          </motion.div>
+          
+          <h2 className="text-4xl sm:text-5xl lg:text-6xl font-light text-slate-900 dark:text-white mb-6 tracking-tight" data-testid="news-title">
+            Latest <span className="font-semibold bg-gradient-to-r from-blue-600 to-teal-600 bg-clip-text text-transparent">News</span>
           </h2>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto" data-testid="news-description">
-            Stay updated with our latest activities and medical initiatives
+          <p className="text-lg lg:text-xl text-slate-600 dark:text-slate-400 max-w-2xl mx-auto font-light leading-relaxed" data-testid="news-description">
+            Discover our latest activities and medical initiatives
           </p>
-        </div>
+        </motion.div>
 
         {newsItems.length === 0 ? (
-          <div className="text-center py-16" data-testid="news-empty-state">
+          <motion.div 
+            className="text-center py-16" 
+            data-testid="news-empty-state"
+            initial={{ opacity: 0, scale: 0.95 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5 }}
+          >
             <div className="max-w-md mx-auto">
-              <div className="bg-white dark:bg-card rounded-2xl p-8 shadow-lg hover:shadow-xl hover:-translate-y-2 transition-all duration-300 ease-in-out">
-                <div className="w-16 h-16 bg-gray-100 dark:bg-muted rounded-full flex items-center justify-center mx-auto mb-4 hover:scale-110 transition-transform duration-200 ease-in-out">
-                  <Calendar className="w-8 h-8 text-gray-400 dark:text-muted-foreground" />
+              <div className="bg-white/60 dark:bg-slate-900/60 backdrop-blur-xl rounded-3xl p-12 border border-slate-200/50 dark:border-slate-800/50 shadow-2xl shadow-slate-900/5">
+                <div className="w-20 h-20 bg-gradient-to-br from-blue-500/10 to-teal-500/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <Calendar className="w-10 h-10 text-blue-600 dark:text-blue-400" />
                 </div>
-                <h3 className="text-xl font-semibold text-foreground mb-2 font-display">No News Yet</h3>
-                <p className="text-muted-foreground">
-                  We don't have any news articles at the moment. Check back soon for updates on our latest activities and events!
+                <h3 className="text-2xl font-light text-slate-900 dark:text-white mb-3">No News Yet</h3>
+                <p className="text-slate-600 dark:text-slate-400 leading-relaxed">
+                  We don't have any news articles at the moment. Check back soon for updates!
                 </p>
               </div>
             </div>
-          </div>
+          </motion.div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
             {newsItems.map((news, index) => (
-              <div 
+              <motion.article 
                 key={news.id}
-                className="group bg-card dark:bg-card border border-border rounded-2xl overflow-hidden luxury-hover luxury-press flex flex-col h-full"
-                style={{ 
-                  boxShadow: 'var(--shadow-hairline)',
-                  animationDelay: `${index * 100}ms`
-                }}
+                className="group relative bg-white/60 dark:bg-slate-900/60 backdrop-blur-xl rounded-3xl overflow-hidden border border-slate-200/50 dark:border-slate-800/50 shadow-xl shadow-slate-900/5 hover:shadow-2xl hover:shadow-slate-900/10 transition-all duration-500 flex flex-col"
                 data-testid={`card-news-${news.id}`}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
+                whileHover={{ y: -8, transition: { duration: 0.3 } }}
               >
-                <div className="aspect-video overflow-hidden">
+                {/* Premium Image with Overlay */}
+                <div className="relative aspect-video overflow-hidden">
+                  <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 via-slate-900/20 to-transparent z-10" />
                   <img 
                     src={news.thumbnail || news.image}
                     alt={news.title}
-                    className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-500"
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
                     loading="lazy"
                     data-testid={`img-news-${news.id}`}
                   />
-                </div>
-                <div className="p-6 flex flex-col flex-grow space-y-4">
-                  <div className="space-y-3">
-                    <span className="inline-block px-3 py-1 bg-primary/10 text-primary text-xs font-medium rounded-full" data-testid={`category-news-${news.id}`}>
+                  
+                  {/* Floating Category Badge */}
+                  <div className="absolute top-4 left-4 z-20">
+                    <span 
+                      className="inline-block px-3 py-1.5 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md text-slate-900 dark:text-white text-xs font-medium rounded-full border border-white/20 shadow-lg" 
+                      data-testid={`category-news-${news.id}`}
+                    >
                       {news.category}
                     </span>
-                    <h3 className="text-lg font-display text-foreground leading-snug" data-testid={`title-news-${news.id}`}>
-                      {news.title}
-                    </h3>
                   </div>
+                </div>
+
+                {/* Article Content */}
+                <div className="p-8 flex flex-col flex-grow">
+                  <h3 
+                    className="text-xl font-light text-slate-900 dark:text-white mb-3 line-clamp-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-300" 
+                    data-testid={`title-news-${news.id}`}
+                  >
+                    {news.title}
+                  </h3>
                   
-                  <p className="text-muted-foreground text-sm leading-relaxed flex-grow" data-testid={`text-news-${news.id}`}>
+                  <p 
+                    className="text-slate-600 dark:text-slate-400 leading-relaxed flex-grow line-clamp-3 mb-6" 
+                    data-testid={`text-news-${news.id}`}
+                  >
                     {news.description}
                   </p>
                   
-                  <div className="pt-2">
-                    <Button 
-                      variant="ghost"
-                      className="w-full justify-start p-0 h-auto text-primary hover:text-primary/80 font-medium text-sm luxury-press"
+                  {/* Meta & CTA */}
+                  <div className="flex items-center justify-between pt-4 border-t border-slate-200/50 dark:border-slate-800/50">
+                    <div className="flex items-center text-sm text-slate-500 dark:text-slate-500">
+                      <Calendar className="w-4 h-4 mr-2" />
+                      <span className="font-light">
+                        {news.publishDate ? format(new Date(news.publishDate), "MMM dd") : format(new Date(news.createdAt!), "MMM dd")}
+                      </span>
+                    </div>
+
+                    <button 
+                      className="flex items-center text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors group/btn"
                       data-testid={`button-read-${news.id}`}
                     >
-                      Read more →
-                    </Button>
+                      Read
+                      <ArrowRight className="w-4 h-4 ml-1 group-hover/btn:translate-x-1 transition-transform duration-300" />
+                    </button>
                   </div>
                 </div>
-              </div>
+
+                {/* Subtle Gradient Border on Hover */}
+                <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-blue-500/0 via-teal-500/0 to-blue-500/0 group-hover:from-blue-500/10 group-hover:via-teal-500/5 group-hover:to-blue-500/10 transition-all duration-500 pointer-events-none" />
+              </motion.article>
             ))}
           </div>
         )}
