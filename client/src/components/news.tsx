@@ -1,11 +1,13 @@
 import { Button } from "@/components/ui/button";
 import { Calendar, ArrowRight } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
+import { useLocation } from "wouter";
 import type { News } from "@shared/schema";
 import { format } from "date-fns";
 import { motion } from "framer-motion";
 
 export default function News() {
+  const [, navigate] = useLocation();
   const { data: allNews = [] } = useQuery<News[]>({
     queryKey: ["/api/news/published"],
   });
@@ -76,13 +78,14 @@ export default function News() {
             {newsItems.map((news, index) => (
               <motion.article 
                 key={news.id}
-                className="group relative bg-white/60 dark:bg-slate-900/60 backdrop-blur-xl rounded-3xl overflow-hidden border border-slate-200/50 dark:border-slate-800/50 shadow-xl shadow-slate-900/5 hover:shadow-2xl hover:shadow-slate-900/10 transition-all duration-500 flex flex-col"
+                className="group relative bg-white/60 dark:bg-slate-900/60 backdrop-blur-xl rounded-3xl overflow-hidden border border-slate-200/50 dark:border-slate-800/50 shadow-xl shadow-slate-900/5 hover:shadow-2xl hover:shadow-slate-900/10 transition-all duration-500 flex flex-col cursor-pointer"
                 data-testid={`card-news-${news.id}`}
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
                 whileHover={{ y: -8, transition: { duration: 0.3 } }}
+                onClick={() => navigate(`/news/${news.id}`)}
               >
                 {/* Premium Image with Overlay */}
                 <div className="relative aspect-video overflow-hidden">
