@@ -133,7 +133,10 @@ export class MemStorage implements IStorage {
         subtitle: "First on the scene",
         description: "Hands-on training in basic medical procedures and patient care techniques.",
         image: "https://images.unsplash.com/photo-1559757148-5c350d0d3c56?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=250",
-        createdAt: new Date()
+        thumbnail: null,
+        displayOrder: 0,
+        createdAt: new Date(),
+        updatedAt: new Date()
       },
       {
         id: "disease-awareness",
@@ -141,7 +144,10 @@ export class MemStorage implements IStorage {
         subtitle: "Fundraising events",
         description: "Initiatives to raise funds for hospitals.",
         image: "https://images.unsplash.com/photo-1559757175-0eb30cd8c063?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=250",
-        createdAt: new Date()
+        thumbnail: null,
+        displayOrder: 1,
+        createdAt: new Date(),
+        updatedAt: new Date()
       },
       {
         id: "hospital-volunteering",
@@ -149,7 +155,10 @@ export class MemStorage implements IStorage {
         subtitle: "Donation & charity",
         description: "Donations to charitable organizations or hospitals.",
         image: "https://images.unsplash.com/photo-1576091160550-2173dba999ef?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=250",
-        createdAt: new Date()
+        thumbnail: null,
+        displayOrder: 2,
+        createdAt: new Date(),
+        updatedAt: new Date()
       },
       {
         id: "medical-research",
@@ -157,7 +166,10 @@ export class MemStorage implements IStorage {
         subtitle: "Social media page",
         description: "Student-made short videos exploring current medical topics, with the aim to improve public health.",
         image: "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=250",
-        createdAt: new Date()
+        thumbnail: null,
+        displayOrder: 3,
+        createdAt: new Date(),
+        updatedAt: new Date()
       }
     ];
 
@@ -475,9 +487,15 @@ export class MemStorage implements IStorage {
   async createProgram(insertProgram: InsertProgram): Promise<Program> {
     const id = randomUUID();
     const program: Program = { 
-      ...insertProgram, 
-      id, 
-      createdAt: new Date() 
+      id,
+      title: insertProgram.title,
+      subtitle: insertProgram.subtitle,
+      description: insertProgram.description,
+      image: insertProgram.image,
+      thumbnail: insertProgram.thumbnail ?? null,
+      displayOrder: insertProgram.displayOrder ?? 0,
+      createdAt: new Date(),
+      updatedAt: new Date()
     };
     this.programs.set(id, program);
     return program;
@@ -490,6 +508,7 @@ export class MemStorage implements IStorage {
     const updated: Program = {
       ...existing,
       ...updateData,
+      updatedAt: new Date(),
     };
     this.programs.set(id, updated);
     return updated;
@@ -603,28 +622,32 @@ export class DatabaseStorage implements IStorage {
         title: "Clinical Skills Workshop",
         subtitle: "First on the scene",
         description: "Hands-on training in basic medical procedures and patient care techniques.",
-        image: "https://images.unsplash.com/photo-1559757148-5c350d0d3c56?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=250"
+        image: "https://images.unsplash.com/photo-1559757148-5c350d0d3c56?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=250",
+        displayOrder: 0
       },
       {
         id: "disease-awareness",
         title: "Disease Awareness Campaigns",
         subtitle: "Fundraising events",
         description: "Initiatives to raise funds for hospitals.",
-        image: "https://images.unsplash.com/photo-1559757175-0eb30cd8c063?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=250"
+        image: "https://images.unsplash.com/photo-1559757175-0eb30cd8c063?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=250",
+        displayOrder: 1
       },
       {
         id: "hospital-volunteering",
         title: "Hospital Volunteering",
         subtitle: "Donation & charity",
         description: "Donations to charitable organizations or hospitals.",
-        image: "https://images.unsplash.com/photo-1576091160550-2173dba999ef?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=250"
+        image: "https://images.unsplash.com/photo-1576091160550-2173dba999ef?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=250",
+        displayOrder: 2
       },
       {
         id: "medical-research",
         title: "Medical Research Projects",
         subtitle: "Social media page",
         description: "Student-made short videos exploring current medical topics, with the aim to improve public health.",
-        image: "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=250"
+        image: "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=250",
+        displayOrder: 3
       }
     ];
 
