@@ -14,11 +14,11 @@ import { Badge } from "@/components/ui/badge";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Users, Newspaper, Image, Plus, Edit, Trash2, Mail, ExternalLink, GraduationCap, Check, X, Save, Upload } from "lucide-react";
+import { Users, Newspaper, Image, Plus, Edit, Trash2, Mail, ExternalLink, GraduationCap, Check, X, Save, Upload, Activity } from "lucide-react";
 import { Loading } from "@/components/ui/loading";
 import Cropper from "react-easy-crop";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import type { Member, MemberClass, News, HeroImage, AdminUser } from "@shared/schema";
+import type { Member, MemberClass, News, HeroImage, AdminUser, Program } from "@shared/schema";
 import blankPfpPath from "@assets/blank-pfp.png";
 
 export default function AdminPage() {
@@ -126,7 +126,7 @@ export default function AdminPage() {
         {/* Main Content Tabs */}
         <Tabs defaultValue="members" className="space-y-6">
           <TabsList 
-            className="grid w-full grid-cols-4 bg-white/80 dark:bg-slate-800/80 backdrop-blur-md border border-white/20"
+            className="grid w-full grid-cols-5 bg-white/80 dark:bg-slate-800/80 backdrop-blur-md border border-white/20"
             style={{
               boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
             }}
@@ -138,6 +138,10 @@ export default function AdminPage() {
             <TabsTrigger value="member-classes" data-testid="tab-member-classes">
               <GraduationCap className="h-4 w-4 mr-2" />
               Member Classes
+            </TabsTrigger>
+            <TabsTrigger value="programs" data-testid="tab-programs">
+              <Activity className="h-4 w-4 mr-2" />
+              Activities
             </TabsTrigger>
             <TabsTrigger value="news" data-testid="tab-news">
               <Newspaper className="h-4 w-4 mr-2" />
@@ -155,6 +159,10 @@ export default function AdminPage() {
 
           <TabsContent value="member-classes">
             <MemberClassManagement />
+          </TabsContent>
+
+          <TabsContent value="programs">
+            <ProgramManagement />
           </TabsContent>
 
           <TabsContent value="news">
@@ -3375,6 +3383,459 @@ function HeroImageForm({
         >
           {isLoading && <Loading size="sm" variant="spinner" className="mr-2" />}
           {heroImage ? "Update" : "Create"} Hero Image
+        </Button>
+      </DialogFooter>
+    </form>
+  );
+}
+
+// Programs/Activities Management Component
+function ProgramManagement() {
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [editingProgram, setEditingProgram] = useState<Program | null>(null);
+  const [deletingProgramId, setDeletingProgramId] = useState<string | null>(null);
+  const { toast } = useToast();
+
+  const { data: programs, isLoading, isError } = useQuery<Program[]>({
+    queryKey: ["/api/admin/programs"],
+  });
+
+  const sortedPrograms = programs ? [...programs].sort((a, b) => {
+    const orderA = a.displayOrder || 0;
+    const orderB = b.displayOrder || 0;
+    return orderA - orderB;
+  }) : [];
+
+  const addProgramMutation = useMutation({
+    mutationFn: async (data: any) => {
+      return apiRequest("POST", "/api/admin/programs", data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/programs"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/programs"] });
+      setIsAddDialogOpen(false);
+      toast({
+        title: "Success",
+        description: "Activity created successfully",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to create activity",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const updateProgramMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: any }) => {
+      return apiRequest("PUT", `/api/admin/programs/${id}`, data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/programs"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/programs"] });
+      setEditingProgram(null);
+      toast({
+        title: "Success",
+        description: "Activity updated successfully",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to update activity",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const deleteProgramMutation = useMutation({
+    mutationFn: async (id: string) => {
+      return apiRequest("DELETE", `/api/admin/programs/${id}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/programs"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/programs"] });
+      setDeletingProgramId(null);
+      toast({
+        title: "Success",
+        description: "Activity deleted successfully",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to delete activity",
+        variant: "destructive",
+      });
+    },
+  });
+
+  if (isLoading) return <Loading />;
+  if (isError) {
+    return (
+      <Card>
+        <CardContent className="pt-6">
+          <p className="text-destructive">Failed to load activities</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  const canAddMore = (sortedPrograms?.length || 0) < 4;
+
+  return (
+    <Card className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-md border border-white/20">
+      <CardHeader>
+        <div className="flex justify-between items-center">
+          <div>
+            <CardTitle className="flex items-center gap-2">
+              <Activity className="h-5 w-5" />
+              Our Activities Management
+            </CardTitle>
+            <CardDescription>
+              Manage the 4 activities shown on the homepage (limit: 4 activities)
+            </CardDescription>
+          </div>
+          <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+            <DialogTrigger asChild>
+              <Button
+                disabled={!canAddMore}
+                data-testid="button-add-program"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Add Activity
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle>Add New Activity</DialogTitle>
+                <DialogDescription>
+                  Create a new activity to display on the homepage
+                </DialogDescription>
+              </DialogHeader>
+              <ProgramForm
+                onSubmit={(data) => addProgramMutation.mutate(data)}
+                isLoading={addProgramMutation.isPending}
+              />
+            </DialogContent>
+          </Dialog>
+        </div>
+      </CardHeader>
+      <CardContent>
+        {!canAddMore && (
+          <div className="mb-4 p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-md">
+            <p className="text-sm text-yellow-800 dark:text-yellow-200">
+              Maximum of 4 activities reached. Delete an activity to add a new one.
+            </p>
+          </div>
+        )}
+
+        {sortedPrograms.length === 0 ? (
+          <div className="text-center py-8">
+            <Activity className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
+            <h3 className="text-lg font-semibold mb-2">No Activities</h3>
+            <p className="text-muted-foreground mb-4">
+              Add your first activity to showcase on the homepage
+            </p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {sortedPrograms.map((program) => (
+              <Card key={program.id} className="overflow-hidden">
+                <div className="relative h-48">
+                  <img
+                    src={program.thumbnail || program.image}
+                    alt={program.title}
+                    className="w-full h-full object-cover"
+                  />
+                  <Badge className="absolute top-2 left-2">
+                    Order: {program.displayOrder ?? 0}
+                  </Badge>
+                </div>
+                <CardContent className="pt-4">
+                  <h3 className="font-semibold text-lg mb-1">{program.title}</h3>
+                  <p className="text-sm text-muted-foreground mb-2">{program.subtitle}</p>
+                  <p className="text-sm line-clamp-2">{program.description}</p>
+                  <div className="flex gap-2 mt-4">
+                    <Dialog open={editingProgram?.id === program.id} onOpenChange={(open) => !open && setEditingProgram(null)}>
+                      <DialogTrigger asChild>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setEditingProgram(program)}
+                          data-testid={`button-edit-program-${program.id}`}
+                        >
+                          <Edit className="h-4 w-4 mr-2" />
+                          Edit
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+                        <DialogHeader>
+                          <DialogTitle>Edit Activity</DialogTitle>
+                          <DialogDescription>
+                            Update this activity's information
+                          </DialogDescription>
+                        </DialogHeader>
+                        <ProgramForm
+                          program={program}
+                          onSubmit={(data) => updateProgramMutation.mutate({ id: program.id, data })}
+                          isLoading={updateProgramMutation.isPending}
+                        />
+                      </DialogContent>
+                    </Dialog>
+
+                    <AlertDialog open={deletingProgramId === program.id} onOpenChange={(open) => !open && setDeletingProgramId(null)}>
+                      <AlertDialogTrigger asChild>
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => setDeletingProgramId(program.id)}
+                          data-testid={`button-delete-program-${program.id}`}
+                        >
+                          <Trash2 className="h-4 w-4 mr-2" />
+                          Delete
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Delete Activity</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Are you sure you want to delete "{program.title}"? This action cannot be undone.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel data-testid="button-cancel-delete-program">Cancel</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={() => deleteProgramMutation.mutate(program.id)}
+                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                            data-testid="button-confirm-delete-program"
+                          >
+                            Delete
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+function ProgramForm({ program, onSubmit, isLoading }: {
+  program?: Program;
+  onSubmit: (data: any) => void;
+  isLoading: boolean;
+}) {
+  const [formData, setFormData] = useState({
+    title: program?.title || "",
+    subtitle: program?.subtitle || "",
+    description: program?.description || "",
+    displayOrder: program?.displayOrder?.toString() || "0",
+  });
+  const [imagePreview, setImagePreview] = useState<string | null>(program?.image || null);
+  const [crop, setCrop] = useState({ x: 0, y: 0 });
+  const [zoom, setZoom] = useState(1);
+  const [croppedAreaPixels, setCroppedAreaPixels] = useState<any>(null);
+  const [originalImage, setOriginalImage] = useState<string | null>(null);
+
+  const onCropComplete = useCallback((croppedArea: any, croppedAreaPixels: any) => {
+    setCroppedAreaPixels(croppedAreaPixels);
+  }, []);
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setOriginalImage(reader.result as string);
+        setImagePreview(null);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const getCroppedImage = async (): Promise<string> => {
+    if (!originalImage || !croppedAreaPixels) return originalImage!;
+
+    const image = await createImage(originalImage);
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+
+    canvas.width = croppedAreaPixels.width;
+    canvas.height = croppedAreaPixels.height;
+
+    ctx?.drawImage(
+      image,
+      croppedAreaPixels.x,
+      croppedAreaPixels.y,
+      croppedAreaPixels.width,
+      croppedAreaPixels.height,
+      0,
+      0,
+      croppedAreaPixels.width,
+      croppedAreaPixels.height
+    );
+
+    return canvas.toDataURL('image/jpeg', 0.9);
+  };
+
+  const createImage = (url: string): Promise<HTMLImageElement> => 
+    new Promise((resolve, reject) => {
+      const image = new window.Image();
+      image.addEventListener('load', () => resolve(image));
+      image.addEventListener('error', (error) => reject(error));
+      image.src = url;
+    });
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    let finalImage = imagePreview;
+    if (originalImage && croppedAreaPixels) {
+      finalImage = await getCroppedImage();
+      setImagePreview(finalImage);
+    }
+
+    onSubmit({
+      ...formData,
+      displayOrder: parseInt(formData.displayOrder) || 0,
+      image: finalImage || program?.image,
+    });
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div>
+        <Label htmlFor="title">Title *</Label>
+        <Input
+          id="title"
+          value={formData.title}
+          onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+          placeholder="Clinical Skills Workshop"
+          required
+          data-testid="input-program-title"
+        />
+      </div>
+
+      <div>
+        <Label htmlFor="subtitle">Subtitle *</Label>
+        <Input
+          id="subtitle"
+          value={formData.subtitle}
+          onChange={(e) => setFormData({ ...formData, subtitle: e.target.value })}
+          placeholder="First on the scene"
+          required
+          data-testid="input-program-subtitle"
+        />
+      </div>
+
+      <div>
+        <Label htmlFor="description">Description *</Label>
+        <Textarea
+          id="description"
+          value={formData.description}
+          onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+          placeholder="Hands-on training in basic medical procedures..."
+          required
+          rows={3}
+          data-testid="input-program-description"
+        />
+      </div>
+
+      <div>
+        <Label htmlFor="image">Activity Image *</Label>
+        <Input
+          id="image"
+          type="file"
+          accept="image/*"
+          onChange={handleImageUpload}
+          data-testid="input-program-image"
+        />
+        {originalImage && !imagePreview && (
+          <div className="mt-4">
+            <div className="relative h-64 bg-gray-100 dark:bg-gray-800 rounded-md overflow-hidden">
+              <Cropper
+                image={originalImage}
+                crop={crop}
+                zoom={zoom}
+                aspect={4 / 3}
+                onCropChange={setCrop}
+                onZoomChange={setZoom}
+                onCropComplete={onCropComplete}
+              />
+            </div>
+            <div className="mt-2">
+              <Label>Zoom</Label>
+              <input
+                type="range"
+                min={1}
+                max={3}
+                step={0.1}
+                value={zoom}
+                onChange={(e) => setZoom(Number(e.target.value))}
+                className="w-full"
+              />
+            </div>
+            <Button
+              type="button"
+              onClick={async () => {
+                const cropped = await getCroppedImage();
+                setImagePreview(cropped);
+                setOriginalImage(null);
+              }}
+              className="mt-2"
+            >
+              Apply Crop
+            </Button>
+          </div>
+        )}
+        {imagePreview && (
+          <div className="mt-4">
+            <img src={imagePreview} alt="Preview" className="w-full h-48 object-cover rounded-md" />
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                setImagePreview(null);
+                setOriginalImage(null);
+              }}
+              className="mt-2"
+            >
+              Change Image
+            </Button>
+          </div>
+        )}
+      </div>
+
+      <div>
+        <Label htmlFor="displayOrder">Display Order</Label>
+        <Input
+          id="displayOrder"
+          type="number"
+          value={formData.displayOrder}
+          onChange={(e) => setFormData({ ...formData, displayOrder: e.target.value })}
+          placeholder="0"
+          min="0"
+          data-testid="input-program-display-order"
+        />
+      </div>
+
+      <DialogFooter>
+        <Button
+          type="submit"
+          disabled={isLoading || !formData.title.trim() || !formData.subtitle.trim() || !formData.description.trim() || (!imagePreview && !program?.image)}
+          data-testid="button-submit-program"
+        >
+          {isLoading && <Loading size="sm" variant="spinner" className="mr-2" />}
+          {program ? "Update" : "Create"} Activity
         </Button>
       </DialogFooter>
     </form>
