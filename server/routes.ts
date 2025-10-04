@@ -419,10 +419,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/admin/news", isAuthenticated, isAdmin, async (req, res) => {
     try {
-      console.log("Received news data:", req.body);
       const validatedData = insertNewsSchema.parse(req.body);
-      console.log("Validated news data:", validatedData);
+      
+      // Process the image if it's a base64 data URL
+      if (validatedData.image && validatedData.image.startsWith('data:image/')) {
+        try {
+          const newsId = randomUUID();
+          const processedImages = await processImage(validatedData.image, newsId);
+          
+          // Store the JPG fallback URLs (most compatible)
+          validatedData.image = processedImages.original.jpg;
+          (validatedData as any).thumbnail = processedImages.thumbnail.jpg;
+        } catch (error) {
+          console.error("Image processing error:", error);
+        }
+      }
+      
       const news = await storage.createNews(validatedData);
+      
       res.status(201).json(news);
     } catch (error) {
       console.error("News validation error:", error);
@@ -433,6 +447,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.put("/api/admin/news/:id", isAuthenticated, isAdmin, async (req, res) => {
     try {
       const validatedData = insertNewsSchema.partial().parse(req.body);
+      
+      // Process the image if it's a base64 data URL
+      if (validatedData.image && validatedData.image.startsWith('data:image/')) {
+        try {
+          const newsId = randomUUID();
+          const processedImages = await processImage(validatedData.image, newsId);
+          
+          // Store the JPG fallback URLs (most compatible)
+          validatedData.image = processedImages.original.jpg;
+          (validatedData as any).thumbnail = processedImages.thumbnail.jpg;
+        } catch (error) {
+          console.error("Image processing error:", error);
+        }
+      }
+      
       const news = await storage.updateNews(req.params.id, validatedData);
       res.json(news);
     } catch (error) {

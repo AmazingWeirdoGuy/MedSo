@@ -91,7 +91,8 @@ export const news = pgTable("news", {
   title: text("title").notNull(),
   description: text("description").notNull(),
   content: text("content"), // Full article content
-  image: text("image").notNull(),
+  image: text("image").notNull(), // Full resolution image
+  thumbnail: text("thumbnail"), // Optimized thumbnail (256x256)
   isPublished: boolean("is_published").default(false),
   publishDate: timestamp("publish_date"),
   authorId: varchar("author_id").references(() => users.id),

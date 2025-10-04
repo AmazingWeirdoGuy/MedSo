@@ -63,7 +63,7 @@ export default function News() {
                     {/* Article Image */}
                     <div className="h-48 overflow-hidden">
                       <img 
-                        src={article.image}
+                        src={article.thumbnail || article.image}
                         alt={article.title}
                         className="w-full h-full object-cover hover:scale-110 transition-transform duration-300"
                         data-testid={`img-article-${article.id}`}
