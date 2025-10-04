@@ -82,8 +82,11 @@ export const programs = pgTable("programs", {
   title: text("title").notNull(),
   subtitle: text("subtitle").notNull(),
   description: text("description").notNull(),
-  image: text("image").notNull(),
+  image: text("image").notNull(), // Full resolution image
+  thumbnail: text("thumbnail"), // Optimized thumbnail
+  displayOrder: integer("display_order").default(0),
   createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
 });
 
 export const news = pgTable("news", {
@@ -141,6 +144,7 @@ export const insertHeroImageSchema = createInsertSchema(heroImages).omit({
 export const insertProgramSchema = createInsertSchema(programs).omit({
   id: true,
   createdAt: true,
+  updatedAt: true,
 });
 
 export const insertNewsSchema = createInsertSchema(news).omit({
