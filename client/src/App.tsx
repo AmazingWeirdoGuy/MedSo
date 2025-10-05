@@ -28,6 +28,8 @@ function ScrollToTop() {
 }
 
 function Router() {
+  const isDev = import.meta.env.DEV;
+  
   return (
     <>
       <ScrollToTop />
@@ -39,8 +41,8 @@ function Router() {
         <Route path="/contact" component={Contact} />
         <Route path="/terms" component={Terms} />
         <Route path="/privacy" component={Privacy} />
-        <Route path="/login" component={LoginPage} />
-        <Route path="/admin" component={AdminPage} />
+        {isDev && <Route path="/login" component={LoginPage} />}
+        {isDev && <Route path="/admin" component={AdminPage} />}
         <Route component={NotFound} />
       </Switch>
     </>
