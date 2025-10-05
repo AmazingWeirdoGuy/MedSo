@@ -606,30 +606,109 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put("/api/admin/member-images", isAuthenticated, isAdmin, async (req, res) => {
-    if (!req.body.imageURL) {
-      return res.status(400).json({ error: "imageURL is required" });
-    }
+  // Disabled - will be replaced by dev upload endpoint
+  // app.put("/api/admin/member-images", isAuthenticated, isAdmin, async (req, res) => {
+  //   if (!req.body.imageURL) {
+  //     return res.status(400).json({ error: "imageURL is required" });
+  //   }
 
-    const userId = (req.session as any).user?.id;
+  //   const userId = (req.session as any).user?.id;
 
-    try {
-      const objectStorageService = new ObjectStorageService();
-      const ObjectAclPolicy = (await import('./objectAcl')).ObjectAclPolicy;
-      const objectPath = await objectStorageService.trySetObjectEntityAclPolicy(
-        req.body.imageURL,
-        {
-          owner: userId,
-          visibility: "public",
+  //   try {
+  //     const objectStorageService = new ObjectStorageService();
+  //     const ObjectAclPolicy = (await import('./objectAcl')).ObjectAclPolicy;
+  //     const objectPath = await objectStorageService.trySetObjectEntityAclPolicy(
+  //       req.body.imageURL,
+  //       {
+  //         owner: userId,
+  //         visibility: "public",
+  //       }
+  //     );
+
+  //     res.status(200).json({ objectPath });
+  //   } catch (error) {
+  //     console.error("Error setting member image:", error);
+  //     res.status(500).json({ error: "Internal server error" });
+  //   }
+  // });
+
+  // Dev-only JSON save endpoint (for editing content on Replit)
+  if (process.env.NODE_ENV === "development") {
+    const fs = await import("fs/promises");
+    const path = await import("path");
+    const multer = (await import("multer")).default;
+    
+    const DATA_DIR = path.resolve(process.cwd(), "client", "src", "data");
+    const UPLOAD_DIR = path.resolve(process.cwd(), "client", "public", "uploads");
+    
+    // Ensure directories exist
+    await fs.mkdir(DATA_DIR, { recursive: true });
+    await fs.mkdir(UPLOAD_DIR, { recursive: true });
+
+    const TOKEN = process.env.LOCAL_ADMIN_TOKEN;
+    
+    const requireDevToken = (req: any, res: any, next: any) => {
+      if (!TOKEN || req.header("x-admin-token") !== TOKEN) {
+        return res.status(401).json({ error: "unauthorized" });
+      }
+      next();
+    };
+
+    // Save JSON endpoint
+    app.post("/dev/save-json", requireDevToken, async (req, res) => {
+      try {
+        const { file, content } = req.body as { file: string; content: any };
+        
+        if (!file?.endsWith(".json") || file.includes("..") || file.includes("/")) {
+          return res.status(400).json({ error: "invalid file" });
         }
-      );
+        
+        JSON.parse(JSON.stringify(content));
+        
+        const abs = path.join(DATA_DIR, file);
+        await fs.writeFile(abs, JSON.stringify(content, null, 2), "utf8");
+        
+        console.log(`[dev-api] Saved ${file}`);
+        res.json({ ok: true });
+      } catch (e: any) {
+        console.error("[dev-api] Error saving JSON:", e);
+        res.status(500).json({ error: e.message });
+      }
+    });
 
-      res.status(200).json({ objectPath });
-    } catch (error) {
-      console.error("Error setting member image:", error);
-      res.status(500).json({ error: "Internal server error" });
-    }
-  });
+    // Image upload endpoint
+    const upload = multer({ 
+      dest: UPLOAD_DIR,
+      limits: { fileSize: 10 * 1024 * 1024 }
+    });
+
+    app.post("/dev/upload", requireDevToken, upload.single("file"), async (req, res) => {
+      try {
+        if (!req.file) {
+          return res.status(400).json({ error: "no file" });
+        }
+        
+        const ext = path.extname(req.file.originalname);
+        const basename = path.basename(req.file.originalname, ext);
+        const timestamp = Date.now();
+        const newFilename = `${basename}-${timestamp}${ext}`;
+        const newPath = path.join(UPLOAD_DIR, newFilename);
+        
+        await fs.rename(req.file.path, newPath);
+        
+        const publicPath = `/uploads/${newFilename}`;
+        console.log(`[dev-api] Uploaded ${publicPath}`);
+        
+        res.json({ ok: true, publicPath });
+      } catch (e: any) {
+        console.error("[dev-api] Error uploading file:", e);
+        res.status(500).json({ error: e.message });
+      }
+    });
+
+    console.log("[dev-api] Dev-only endpoints enabled (/dev/save-json, /dev/upload)");
+    console.log(`[dev-api] Auth token ${TOKEN ? "configured" : "NOT SET - set LOCAL_ADMIN_TOKEN"}`);
+  }
 
   const httpServer = createServer(app);
   return httpServer;
