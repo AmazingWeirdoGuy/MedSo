@@ -28,7 +28,7 @@ export async function saveToJson<T>(filename: string, data: T[]): Promise<void> 
   return response.json();
 }
 
-export async function uploadImage(file: File): Promise<string> {
+export async function uploadImage(file: File, category: 'members' | 'news' | 'hero' | 'programs' | 'misc' = 'misc'): Promise<string> {
   if (!import.meta.env.DEV) {
     throw new Error("Dev API only available in development mode");
   }
@@ -36,7 +36,7 @@ export async function uploadImage(file: File): Promise<string> {
   const formData = new FormData();
   formData.append("file", file);
 
-  const response = await fetch("/dev/upload", {
+  const response = await fetch(`/dev/upload?category=${category}`, {
     method: "POST",
     headers: {
       "x-admin-token": DEV_TOKEN || "",
@@ -51,6 +51,26 @@ export async function uploadImage(file: File): Promise<string> {
 
   const result = await response.json();
   return result.publicPath;
+}
+
+export async function deleteUpload(filePath: string): Promise<void> {
+  if (!import.meta.env.DEV) {
+    throw new Error("Dev API only available in development mode");
+  }
+
+  const response = await fetch("/dev/upload", {
+    method: "DELETE",
+    headers: {
+      "Content-Type": "application/json",
+      "x-admin-token": DEV_TOKEN || "",
+    },
+    body: JSON.stringify({ path: filePath }),
+  });
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ error: "Unknown error" }));
+    throw new Error(error.error || "Failed to delete file");
+  }
 }
 
 // Helper to load JSON data from static files
