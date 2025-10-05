@@ -8,8 +8,10 @@ node_modules
 .env.development
 *.log
 
-# Development endpoints (not needed in production)
-dev-api
+# Backend/API (not needed for static deployment)
+server/
+api/
+dev-api/
 
 # Replit-specific
 replit.nix
@@ -35,6 +37,10 @@ scripts
 .git
 .gitignore
 
-# Public uploads (will use object storage on Vercel)
+# Database (not needed for static deployment)
+drizzle.config.ts
+shared/schema.ts
+
+# User uploads (not included in static site)
 client/public/uploads
 public/uploads
