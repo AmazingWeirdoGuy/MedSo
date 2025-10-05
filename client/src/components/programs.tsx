@@ -9,7 +9,12 @@ export default function Programs() {
   const [loadingProgram, setLoadingProgram] = useState<string | null>(null);
   
   const { data: programs, isLoading } = useQuery<Program[]>({
-    queryKey: ["/api/programs"],
+    queryKey: ["/data/programs.json"],
+    queryFn: async () => {
+      const res = await fetch("/data/programs.json");
+      if (!res.ok) throw new Error("Failed to load data");
+      return res.json();
+    },
   });
 
   const sortedPrograms = programs ? [...programs].sort((a, b) => {

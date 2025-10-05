@@ -31,9 +31,14 @@ export default function Hero() {
   const [loadingButton, setLoadingButton] = useState<string | null>(null);
   const [isTransitioning, setIsTransitioning] = useState(false);
 
-  // Fetch hero images from API
+  // Fetch hero images from JSON
   const { data: dbHeroImages } = useQuery<HeroImage[]>({
-    queryKey: ["/api/hero-images"],
+    queryKey: ["/data/heroImages.json"],
+    queryFn: async () => {
+      const res = await fetch("/data/heroImages.json");
+      if (!res.ok) throw new Error("Failed to load data");
+      return res.json();
+    },
   });
 
   // Use database hero images if available, otherwise fall back to hardcoded images

@@ -1,0 +1,46 @@
+[
+  {
+    "id": "hospital-volunteering",
+    "title": "Fundraising events",
+    "subtitle": "Fundraising events",
+    "description": "Initiatives to raise funds for hospitals.",
+    "image": "/attached_assets/fundraising_1756538236001.jpg",
+    "thumbnail": null,
+    "displayOrder": 2,
+    "createdAt": "2025-09-23T17:36:22.282Z",
+    "updatedAt": "2025-10-04T07:22:35.177Z"
+  },
+  {
+    "id": "medical-research",
+    "title": "Donation & charity",
+    "subtitle": "Donation & charity",
+    "description": "Donations to charitable organizations or hospitals.",
+    "image": "/attached_assets/donation_1756537744391.jpg",
+    "thumbnail": null,
+    "displayOrder": 3,
+    "createdAt": "2025-09-23T17:36:22.282Z",
+    "updatedAt": "2025-10-04T07:22:35.177Z"
+  },
+  {
+    "id": "clinical-skills",
+    "title": "First on the scene",
+    "subtitle": "First on the scene",
+    "description": "Hands-on training in basic medical procedures and patient care techniques.",
+    "image": "/attached_assets/firstonthescene_1756537744391.png",
+    "thumbnail": null,
+    "displayOrder": 0,
+    "createdAt": "2025-09-23T17:36:22.282Z",
+    "updatedAt": "2025-10-04T07:22:35.177Z"
+  },
+  {
+    "id": "disease-awareness",
+    "title": "Educational Videos",
+    "subtitle": "Medical minute",
+    "description": "Student-made short videos exploring current medical topics, with the aim to improve public health.",
+    "image": "/uploads/members/program-15562571-f922-404c-beb9-7469e2c891b2_1759564380076_original.jpg",
+    "thumbnail": "/uploads/members/program-15562571-f922-404c-beb9-7469e2c891b2_1759564380076_thumb.jpg",
+    "displayOrder": 1,
+    "createdAt": "2025-09-23T17:36:22.282Z",
+    "updatedAt": "2025-10-04T07:22:35.177Z"
+  }
+]
