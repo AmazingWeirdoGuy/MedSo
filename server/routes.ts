@@ -577,6 +577,59 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Object Storage routes
+  const ObjectStorageService = (await import('./objectStorage')).ObjectStorageService;
+  
+  app.post("/api/objects/upload", isAuthenticated, isAdmin, async (req, res) => {
+    try {
+      const objectStorageService = new ObjectStorageService();
+      const uploadURL = await objectStorageService.getObjectEntityUploadURL();
+      res.json({ uploadURL });
+    } catch (error) {
+      console.error("Error getting upload URL:", error);
+      res.status(500).json({ error: "Failed to get upload URL" });
+    }
+  });
+
+  app.get("/objects/:objectPath(*)", async (req, res) => {
+    try {
+      const objectStorageService = new ObjectStorageService();
+      const objectFile = await objectStorageService.getObjectEntityFile(req.path);
+      await objectStorageService.downloadObject(objectFile, res);
+    } catch (error) {
+      console.error("Error accessing object:", error);
+      const ObjectNotFoundError = (await import('./objectStorage')).ObjectNotFoundError;
+      if (error instanceof ObjectNotFoundError) {
+        return res.sendStatus(404);
+      }
+      return res.sendStatus(500);
+    }
+  });
+
+  app.put("/api/admin/member-images", isAuthenticated, isAdmin, async (req, res) => {
+    if (!req.body.imageURL) {
+      return res.status(400).json({ error: "imageURL is required" });
+    }
+
+    const userId = (req.session as any).user?.id;
+
+    try {
+      const objectStorageService = new ObjectStorageService();
+      const ObjectAclPolicy = (await import('./objectAcl')).ObjectAclPolicy;
+      const objectPath = await objectStorageService.trySetObjectEntityAclPolicy(
+        req.body.imageURL,
+        {
+          owner: userId,
+          visibility: "public",
+        }
+      );
+
+      res.status(200).json({ objectPath });
+    } catch (error) {
+      console.error("Error setting member image:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
 
   const httpServer = createServer(app);
   return httpServer;
