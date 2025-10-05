@@ -35,9 +35,6 @@ scripts
 .git
 .gitignore
 
-# Attached assets (if not needed in production)
-attached_assets
-
 # Public uploads (will use object storage on Vercel)
 client/public/uploads
 public/uploads
