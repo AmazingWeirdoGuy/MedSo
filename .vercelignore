@@ -1,0 +1,43 @@
+# Development files
+node_modules
+.replit
+.upm
+.config
+.cache
+.env.local
+.env.development
+*.log
+
+# Development endpoints (not needed in production)
+dev-api
+
+# Replit-specific
+replit.nix
+.replit.modules
+
+# Build files (will be rebuilt)
+dist/index.js
+
+# Test files
+*.test.ts
+*.test.tsx
+*.spec.ts
+*.spec.tsx
+
+# Documentation
+README.md
+replit.md
+
+# Scripts
+scripts
+
+# Git
+.git
+.gitignore
+
+# Attached assets (if not needed in production)
+attached_assets
+
+# Public uploads (will use object storage on Vercel)
+client/public/uploads
+public/uploads
