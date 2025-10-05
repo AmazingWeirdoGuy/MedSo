@@ -5,31 +5,63 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Users, Newspaper, Image, Plus, Edit, Trash2, Mail, ExternalLink, GraduationCap, Check, X, Save, Upload, Activity } from "lucide-react";
+import { Users, Newspaper, Image as ImageIcon, Plus, Edit, Trash2, GraduationCap, Check, X, Save, Upload, Activity, GripVertical, AlertCircle, FileImage } from "lucide-react";
 import { Loading } from "@/components/ui/loading";
-import Cropper from "react-easy-crop";
+import { Progress } from "@/components/ui/progress";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { saveToJson, uploadImage, loadJsonData } from "@/lib/devApi";
 import type { Member, MemberClass, News, HeroImage, AdminUser, Program } from "@shared/schema";
 import blankPfpPath from "@assets/blank-pfp.png";
 
-// Browser-compatible ID generator
+// DnD Kit imports
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+
 const generateId = () => `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+const ALLOWED_FILE_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'];
+
+// File validation helper
+function validateImageFile(file: File): { valid: boolean; error?: string } {
+  if (file.size > MAX_FILE_SIZE) {
+    return { valid: false, error: `File size must be less than 5MB. Current size: ${(file.size / 1024 / 1024).toFixed(2)}MB` };
+  }
+  if (!ALLOWED_FILE_TYPES.includes(file.type)) {
+    return { valid: false, error: `Invalid file type. Allowed: JPEG, PNG, WebP, GIF` };
+  }
+  return { valid: true };
+}
 
 export default function AdminPage() {
   const { toast } = useToast();
   const { isAuthenticated, isLoading: authLoading, user } = useAuth();
+  const [activeTab, setActiveTab] = useState("members");
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState<Record<string, boolean>>({});
 
-  // Check admin status
   const { data: adminData, isLoading: adminLoading } = useQuery<{
     isAdmin: boolean;
     adminUser: AdminUser | null;
@@ -39,7 +71,6 @@ export default function AdminPage() {
     retry: false,
   });
 
-  // Redirect to login if not authenticated
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
       toast({
@@ -54,7 +85,6 @@ export default function AdminPage() {
     }
   }, [isAuthenticated, authLoading, toast]);
 
-  // Check if user has admin access
   useEffect(() => {
     if (!adminLoading && isAuthenticated && !adminData?.isAdmin) {
       toast({
@@ -69,6 +99,33 @@ export default function AdminPage() {
     }
   }, [adminData?.isAdmin, adminLoading, isAuthenticated, toast]);
 
+  // Unsaved changes guard
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (Object.values(hasUnsavedChanges).some(v => v)) {
+        e.preventDefault();
+        e.returnValue = '';
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [hasUnsavedChanges]);
+
+  // Keyboard shortcut handler
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+        e.preventDefault();
+        const saveEvent = new CustomEvent('admin-save', { detail: { tab: activeTab } });
+        window.dispatchEvent(saveEvent);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [activeTab]);
+
   if (authLoading || adminLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 dark:from-slate-900 dark:to-blue-900 flex items-center justify-center">
@@ -81,12 +138,11 @@ export default function AdminPage() {
   }
 
   if (!isAuthenticated || !adminData?.isAdmin) {
-    return null; // Redirecting
+    return null;
   }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 dark:from-slate-900 dark:to-blue-900">
-      {/* Header */}
       <header className="border-b border-white/20 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md sticky top-0 z-50">
         <div className="container mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
@@ -104,6 +160,11 @@ export default function AdminPage() {
               <p className="text-muted-foreground">Welcome back, {user?.firstName || 'Admin'}</p>
             </div>
             <div className="flex items-center gap-4">
+              {Object.values(hasUnsavedChanges).some(v => v) && (
+                <Badge variant="outline" className="bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300">
+                  Unsaved Changes
+                </Badge>
+              )}
               <Badge variant="secondary" className="bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300">
                 Admin
               </Badge>
@@ -127,8 +188,7 @@ export default function AdminPage() {
       </header>
 
       <div className="container mx-auto px-6 py-8">
-        {/* Main Content Tabs */}
-        <Tabs defaultValue="members" className="space-y-6">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <TabsList 
             className="grid w-full grid-cols-5 bg-white/80 dark:bg-slate-800/80 backdrop-blur-md border border-white/20"
             style={{
@@ -152,29 +212,44 @@ export default function AdminPage() {
               News
             </TabsTrigger>
             <TabsTrigger value="hero" data-testid="tab-hero">
-              <Image className="h-4 w-4 mr-2" />
+              <ImageIcon className="h-4 w-4 mr-2" />
               Hero Images
             </TabsTrigger>
           </TabsList>
 
           <TabsContent value="members">
-            <MemberManagement />
+            <MemberManagement 
+              hasUnsavedChanges={hasUnsavedChanges} 
+              setHasUnsavedChanges={setHasUnsavedChanges} 
+            />
           </TabsContent>
 
           <TabsContent value="member-classes">
-            <MemberClassManagement />
+            <MemberClassManagement 
+              hasUnsavedChanges={hasUnsavedChanges} 
+              setHasUnsavedChanges={setHasUnsavedChanges} 
+            />
           </TabsContent>
 
           <TabsContent value="programs">
-            <ProgramManagement />
+            <ProgramManagement 
+              hasUnsavedChanges={hasUnsavedChanges} 
+              setHasUnsavedChanges={setHasUnsavedChanges} 
+            />
           </TabsContent>
 
           <TabsContent value="news">
-            <NewsManagement />
+            <NewsManagement 
+              hasUnsavedChanges={hasUnsavedChanges} 
+              setHasUnsavedChanges={setHasUnsavedChanges} 
+            />
           </TabsContent>
 
           <TabsContent value="hero">
-            <HeroImageManagement />
+            <HeroImageManagement 
+              hasUnsavedChanges={hasUnsavedChanges} 
+              setHasUnsavedChanges={setHasUnsavedChanges} 
+            />
           </TabsContent>
         </Tabs>
       </div>
@@ -182,487 +257,204 @@ export default function AdminPage() {
   );
 }
 
-// Unified Member Modal Component for both Add and Edit
-function MemberModal({
-  member,
-  memberClasses,
-  isOpen,
-  onOpenChange,
-  mode = "edit",
-  defaultMemberClassId
+// Image Upload Component with validation and progress
+function ImageUploadField({
+  value,
+  onChange,
+  category,
+  label = "Image",
+  required = false,
+  currentImage,
 }: {
-  member?: Member;
-  memberClasses: MemberClass[];
-  isOpen: boolean;
-  onOpenChange: (open: boolean) => void;
-  mode?: "add" | "edit";
-  defaultMemberClassId?: string;
+  value: string;
+  onChange: (url: string) => void;
+  category: 'members' | 'news' | 'hero' | 'programs';
+  label?: string;
+  required?: boolean;
+  currentImage?: string;
 }) {
-  const [formData, setFormData] = useState({
-    name: member?.name || "",
-    role: member?.role || "",
-    image: member?.image || "",
-    displayOrder: member?.displayOrder || 0,
-    isActive: member?.isActive ?? true,
-    memberClassId: member?.memberClassId || defaultMemberClassId || "",
-  });
-  const [imageFile, setImageFile] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState(member?.thumbnail || member?.image || "");
-  const [originalImage, setOriginalImage] = useState<string | null>(null);
-  const [showCropper, setShowCropper] = useState(false);
-  const [crop, setCrop] = useState({ x: 0, y: 0 });
-  const [zoom, setZoom] = useState(1);
-  const [croppedAreaPixels, setCroppedAreaPixels] = useState<any>(null);
+  const [uploading, setUploading] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [preview, setPreview] = useState(currentImage || value);
+  const [error, setError] = useState<string>();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
-  // Reset form when modal opens with different member or mode
-  useEffect(() => {
-    if (isOpen) {
-      setFormData({
-        name: member?.name || "",
-        role: member?.role || "",
-        image: member?.image || "",
-        displayOrder: member?.displayOrder || 0,
-        isActive: member?.isActive ?? true,
-        memberClassId: member?.memberClassId || defaultMemberClassId || "",
-      });
-      setImagePreview(member?.thumbnail || member?.image || "");
-      setImageFile(null);
-      setOriginalImage(null);
-      setShowCropper(false);
-      setCrop({ x: 0, y: 0 });
-      setZoom(1);
-      setCroppedAreaPixels(null);
-    }
-  }, [isOpen, member, defaultMemberClassId]);
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
 
-  // Update member mutation
-  const updateMemberMutation = useMutation({
-    mutationFn: async (data: any) => {
-      const members = await loadJsonData<Member>("members.json");
-      const index = members.findIndex(m => m.id === member?.id);
-      if (index === -1) throw new Error("Member not found");
-      members[index] = { ...members[index], ...data, updatedAt: new Date() };
-      await saveToJson("members.json", members);
-      return members[index];
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/data/members.json"] });
-      onOpenChange(false);
+    const validation = validateImageFile(file);
+    if (!validation.valid) {
+      setError(validation.error);
       toast({
-        title: "Success",
-        description: "Member updated successfully!",
-      });
-    },
-    onError: () => {
-      toast({
-        title: "Error",
-        description: "Failed to update member. Please try again.",
+        title: "Invalid File",
+        description: validation.error,
         variant: "destructive",
       });
-    },
-  });
-
-  // Add member mutation
-  const addMemberMutation = useMutation({
-    mutationFn: async (data: any) => {
-      const members = await loadJsonData<Member>("members.json");
-      const newMember = { 
-        ...data, 
-        id: generateId(), 
-        createdAt: new Date(), 
-        updatedAt: new Date() 
-      };
-      members.push(newMember);
-      await saveToJson("members.json", members);
-      return newMember;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/data/members.json"] });
-      onOpenChange(false);
-      toast({
-        title: "Success",
-        description: "Member added successfully!",
-      });
-    },
-    onError: () => {
-      toast({
-        title: "Error",
-        description: "Failed to add member. Please try again.",
-        variant: "destructive",
-      });
-    },
-  });
-
-  // Crop completion callback
-  const onCropComplete = useCallback(
-    (croppedArea: any, croppedAreaPixels: any) => {
-      setCroppedAreaPixels(croppedAreaPixels);
-    },
-    []
-  );
-
-  // Handle initial image selection
-  const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      setImageFile(file);
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const result = e.target?.result as string;
-        setOriginalImage(result);
-        setShowCropper(true);
-        // Reset cropping state
-        setCrop({ x: 0, y: 0 });
-        setZoom(1);
-        setCroppedAreaPixels(null);
-      };
-      reader.readAsDataURL(file);
+      return;
     }
-  };
 
-  // Create cropped image
-  const createCroppedImage = useCallback(
-    async (imageSrc: string, pixelCrop: any) => {
-      const image = new window.Image();
-      image.src = imageSrc;
-      
-      return new Promise<string>((resolve) => {
-        image.onload = () => {
-          const canvas = document.createElement('canvas');
-          const ctx = canvas.getContext('2d');
-          
-          if (!ctx || !pixelCrop) {
-            resolve(imageSrc);
-            return;
-          }
-          
-          canvas.width = pixelCrop.width;
-          canvas.height = pixelCrop.height;
-          
-          ctx.drawImage(
-            image,
-            pixelCrop.x,
-            pixelCrop.y,
-            pixelCrop.width,
-            pixelCrop.height,
-            0,
-            0,
-            pixelCrop.width,
-            pixelCrop.height
-          );
-          
-          resolve(canvas.toDataURL('image/png'));
-        };
-      });
-    },
-    []
-  );
+    setError(undefined);
+    setPreview(URL.createObjectURL(file));
+    setUploading(true);
+    setProgress(10);
 
-  // Apply crop
-  const handleApplyCrop = async () => {
-    if (!originalImage || !croppedAreaPixels) return;
-    
     try {
-      const croppedImage = await createCroppedImage(originalImage, croppedAreaPixels);
-      setImagePreview(croppedImage);
-      setFormData({ ...formData, image: croppedImage });
-      setShowCropper(false);
-      setOriginalImage(null);
-    } catch (error) {
+      setProgress(50);
+      const url = await uploadImage(file, category);
+      setProgress(100);
+      onChange(url);
       toast({
-        title: "Error",
-        description: "Failed to process cropped image. Please try again.",
+        title: "Upload Successful",
+        description: "Image uploaded successfully!",
+      });
+    } catch (err: any) {
+      setError(err.message || "Upload failed");
+      toast({
+        title: "Upload Failed",
+        description: err.message || "Failed to upload image",
         variant: "destructive",
       });
+    } finally {
+      setUploading(false);
+      setProgress(0);
     }
   };
-
-  // Cancel cropping
-  const handleCancelCrop = () => {
-    setShowCropper(false);
-    setOriginalImage(null);
-    setCrop({ x: 0, y: 0 });
-    setZoom(1);
-    setCroppedAreaPixels(null);
-    // Clear the file input
-    const input = document.getElementById('image-upload') as HTMLInputElement;
-    if (input) input.value = '';
-  };
-
-  const handleSave = () => {
-    const memberClass = memberClasses.find(mc => mc.id === formData.memberClassId);
-    const isActiveMemberClass = memberClass?.name === "Active Member";
-    
-    const dataToSave = { ...formData };
-    if (isActiveMemberClass) {
-      dataToSave.role = "";
-      // Active Members can now have images, so don't clear the image field
-    }
-    
-    // Validation
-    if (!dataToSave.name.trim()) {
-      toast({
-        title: "Validation Error",
-        description: "Name is required.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (!isActiveMemberClass && !dataToSave.role.trim()) {
-      toast({
-        title: "Validation Error",
-        description: "Role is required for this member class.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (mode === "edit") {
-      updateMemberMutation.mutate(dataToSave);
-    } else {
-      addMemberMutation.mutate(dataToSave);
-    }
-  };
-
-  const selectedClass = memberClasses.find(mc => mc.id === formData.memberClassId);
-  const isActiveMemberClass = selectedClass?.name === "Active Member";
-  const isLoading = updateMemberMutation.isPending || addMemberMutation.isPending;
 
   return (
-    <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="text-xl font-semibold">
-            {mode === "add" ? "Add New Member" : "Member Details"}
-          </DialogTitle>
-          <DialogDescription>
-            {mode === "add" 
-              ? "Add a new member to the society" 
-              : `Edit detailed information for ${member?.name}`}
-          </DialogDescription>
-        </DialogHeader>
-
-        <div className="space-y-6">
-          {/* Profile Image Section */}
-          <div className="space-y-4">
-            <Label className="text-sm font-medium">Profile Image</Label>
-            
-            {showCropper && originalImage ? (
-              <div className="space-y-4">
-                <div className="relative w-full h-96 bg-black rounded-lg overflow-hidden">
-                  <Cropper
-                    image={originalImage}
-                    crop={crop}
-                    zoom={zoom}
-                    aspect={1} // Square aspect ratio
-                    onCropChange={setCrop}
-                    onCropComplete={onCropComplete}
-                    onZoomChange={setZoom}
-                  />
-                </div>
-                <div className="space-y-3">
-                  <div className="flex items-center space-x-2">
-                    <Label className="text-sm">Zoom:</Label>
-                    <input
-                      type="range"
-                      value={zoom}
-                      min={1}
-                      max={3}
-                      step={0.1}
-                      onChange={(e) => setZoom(Number(e.target.value))}
-                      className="flex-1"
-                    />
-                  </div>
-                  <div className="flex gap-2 justify-center">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={handleCancelCrop}
-                      data-testid="button-cancel-crop"
-                    >
-                      Cancel
-                    </Button>
-                    <Button
-                      type="button"
-                      size="sm"
-                      onClick={handleApplyCrop}
-                      disabled={!croppedAreaPixels}
-                      data-testid="button-apply-crop"
-                    >
-                      Apply Crop
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            ) : (
-              <div className="flex flex-col items-center space-y-4">
-                <div className="relative">
-                  <img
-                    src={imagePreview || blankPfpPath}
-                    alt={formData.name || "Profile"}
-                    className="w-32 h-32 rounded-lg object-cover border-2 border-white/20"
-                    data-testid="img-detail-preview"
-                  />
-                </div>
-                <div className="flex gap-2">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => document.getElementById('image-upload')?.click()}
-                    data-testid="button-choose-image"
-                  >
-                    Choose Image
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => document.getElementById('image-upload')?.click()}
-                    data-testid="button-browse"
-                  >
-                    Browse
-                  </Button>
-                  <input
-                    id="image-upload"
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageChange}
-                    className="hidden"
-                  />
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Form Fields */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="detail-name">Name *</Label>
-              <Input
-                id="detail-name"
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                placeholder="Enter full name"
-                data-testid="input-detail-name"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="detail-class">Member Class</Label>
-              <Select
-                value={formData.memberClassId}
-                onValueChange={(value) => setFormData({ ...formData, memberClassId: value })}
-              >
-                <SelectTrigger data-testid="select-detail-class">
-                  <SelectValue placeholder="Select member class" />
-                </SelectTrigger>
-                <SelectContent>
-                  {memberClasses.map((memberClass) => (
-                    <SelectItem key={memberClass.id} value={memberClass.id}>
-                      {memberClass.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            {!isActiveMemberClass && (
-              <div className="space-y-2">
-                <Label htmlFor="detail-role">Role *</Label>
-                <Input
-                  id="detail-role"
-                  value={formData.role}
-                  onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-                  placeholder="Enter role/title"
-                  data-testid="input-detail-role"
-                />
-              </div>
-            )}
-
-
-            <div className="space-y-2">
-              <Label htmlFor="detail-order">Display Order</Label>
-              <Input
-                id="detail-order"
-                type="number"
-                value={formData.displayOrder}
-                onChange={(e) => setFormData({ ...formData, displayOrder: parseInt(e.target.value) || 0 })}
-                placeholder="Display order"
-                data-testid="input-detail-order"
-              />
-            </div>
-          </div>
-
-          {/* Published Status */}
-          <div className="space-y-3">
-            <Label className="text-sm font-medium">Status</Label>
-            <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-2">
-                <input
-                  type="radio"
-                  id="published"
-                  name="status"
-                  checked={formData.isActive}
-                  onChange={() => setFormData({ ...formData, isActive: true })}
-                  data-testid="radio-published"
-                />
-                <Label htmlFor="published" className="text-sm">Published</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <input
-                  type="radio"
-                  id="unpublished"
-                  name="status"
-                  checked={!formData.isActive}
-                  onChange={() => setFormData({ ...formData, isActive: false })}
-                  data-testid="radio-unpublished"
-                />
-                <Label htmlFor="unpublished" className="text-sm">Unpublished</Label>
-              </div>
-            </div>
-          </div>
+    <div className="space-y-3">
+      <Label>
+        {label} {required && <span className="text-red-500">*</span>}
+      </Label>
+      
+      {preview && (
+        <div className="relative inline-block">
+          <img
+            src={preview}
+            alt="Preview"
+            className="w-32 h-32 object-cover rounded-lg border-2 border-white/20"
+          />
+          {currentImage && value !== currentImage && (
+            <Badge className="absolute -top-2 -right-2 bg-blue-500">New</Badge>
+          )}
         </div>
+      )}
 
-        <DialogFooter className="flex gap-2 pt-6">
-          <Button
-            variant="outline"
-            onClick={() => onOpenChange(false)}
-            disabled={isLoading}
-            data-testid="button-detail-cancel"
-          >
-            Cancel
-          </Button>
-          <Button
-            onClick={handleSave}
-            disabled={isLoading}
-            data-testid="button-detail-save"
-          >
-            {isLoading ? (
-              <>
-                <Loading size="sm" variant="spinner" className="mr-2" />
-                {mode === "add" ? "Adding..." : "Saving..."}
-              </>
-            ) : (
-              mode === "add" ? "Add Member" : "Save"
-            )}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+      <div className="flex gap-2">
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={() => fileInputRef.current?.click()}
+          disabled={uploading}
+        >
+          <Upload className="h-4 w-4 mr-2" />
+          {preview ? 'Replace Image' : 'Upload Image'}
+        </Button>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept={ALLOWED_FILE_TYPES.join(',')}
+          onChange={handleFileChange}
+          className="hidden"
+        />
+      </div>
+
+      {uploading && (
+        <div className="space-y-2">
+          <Progress value={progress} className="h-2" />
+          <p className="text-sm text-muted-foreground">Uploading... {progress}%</p>
+        </div>
+      )}
+
+      {error && (
+        <div className="flex items-center gap-2 text-sm text-red-600">
+          <AlertCircle className="h-4 w-4" />
+          {error}
+        </div>
+      )}
+
+      <p className="text-xs text-muted-foreground">
+        Max size: 5MB. Formats: JPEG, PNG, WebP, GIF
+      </p>
+    </div>
+  );
+}
+
+// Sortable Item Component
+function SortableItem({ id, children }: { id: string; children: React.ReactNode }) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  return (
+    <div ref={setNodeRef} style={style} className="flex items-center gap-2">
+      <button
+        className="cursor-grab active:cursor-grabbing p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded"
+        {...attributes}
+        {...listeners}
+      >
+        <GripVertical className="h-4 w-4 text-muted-foreground" />
+      </button>
+      {children}
+    </div>
+  );
+}
+
+// Empty State Component
+function EmptyState({ 
+  title, 
+  description, 
+  action 
+}: { 
+  title: string; 
+  description: string; 
+  action: React.ReactNode;
+}) {
+  return (
+    <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
+      <FileImage className="h-16 w-16 text-muted-foreground/50 mb-4" />
+      <h3 className="text-lg font-semibold mb-2">{title}</h3>
+      <p className="text-muted-foreground mb-6 max-w-md">{description}</p>
+      {action}
+    </div>
   );
 }
 
 // Member Management Component
-function MemberManagement() {
-  const [detailMember, setDetailMember] = useState<Member | null>(null);
+function MemberManagement({
+  hasUnsavedChanges,
+  setHasUnsavedChanges,
+}: {
+  hasUnsavedChanges: Record<string, boolean>;
+  setHasUnsavedChanges: (value: Record<string, boolean>) => void;
+}) {
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [editingMember, setEditingMember] = useState<Member | null>(null);
+  const [reorderedMembers, setReorderedMembers] = useState<Member[]>([]);
+  const [hasReordered, setHasReordered] = useState(false);
   const { toast } = useToast();
 
-  // Fetch members and member classes
-  const { data: members, isLoading: membersLoading, isError: membersError } = useQuery<Member[]>({
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  const { data: members, isLoading: membersLoading } = useQuery<Member[]>({
     queryKey: ["/data/members.json"],
     queryFn: async () => {
       const res = await fetch("/data/members.json");
@@ -671,845 +463,6 @@ function MemberManagement() {
     },
   });
 
-  const { data: memberClasses, isLoading: classesLoading } = useQuery<MemberClass[]>({
-    queryKey: ["/data/memberClasses.json"],
-    queryFn: async () => {
-      const res = await fetch("/data/memberClasses.json");
-      if (!res.ok) throw new Error("Failed to load member classes");
-      return res.json();
-    },
-  });
-
-  // Group members by class
-  const getClassMembers = (className: string) => {
-    if (!members || !memberClasses) return [];
-    const memberClass = memberClasses.find(mc => mc.name === className);
-    if (!memberClass) return [];
-    return members
-      .filter(member => member.memberClassId === memberClass.id && member.isActive)
-      .sort((a, b) => {
-        const orderA = a.displayOrder || 0;
-        const orderB = b.displayOrder || 0;
-        if (orderA !== orderB) return orderA - orderB;
-        return a.name.localeCompare(b.name);
-      });
-  };
-
-  const websiteManagers = getClassMembers("Website Manager");
-  const officers = getClassMembers("Officer");
-  const activeMembers = getClassMembers("Active Member");
-  const facultyAdvisors = getClassMembers("Faculty Advisors");
-
-
-
-
-  if (membersLoading || classesLoading) {
-    return (
-      <div className="flex items-center justify-center p-8">
-        <Loading variant="spinner" size="lg" />
-      </div>
-    );
-  }
-
-  if (membersError) {
-    return (
-      <Card>
-        <CardContent className="p-6">
-          <div className="text-center text-red-600">
-            <p>Failed to load members. Please try again.</p>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  return (
-    <Card 
-      className="bg-white/70 dark:bg-slate-800/70 backdrop-blur-md border-white/20"
-      style={{
-        boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
-      }}
-    >
-      <CardHeader className="border-b border-white/10">
-        <CardTitle 
-          className="text-2xl text-slate-900 dark:text-white"
-          style={{ 
-            fontFamily: 'Beo, serif',
-            letterSpacing: '0.02em'
-          }}
-          data-testid="members-title"
-        >
-          Members Management
-        </CardTitle>
-        <CardDescription>
-          Manage members by their roles and classifications
-        </CardDescription>
-      </CardHeader>
-
-      <CardContent className="p-6">
-        <Accordion type="multiple" defaultValue={["website-manager", "officer"]}>
-          <ClassSection
-            value="website-manager"
-            title="Website Manager"
-            members={websiteManagers}
-            memberClasses={memberClasses}
-            className="Website Manager"
-            onMemberDetail={setDetailMember}
-          />
-          
-          <ClassSection
-            value="officer"
-            title="Officers"
-            members={officers}
-            memberClasses={memberClasses}
-            className="Officer"
-            onMemberDetail={setDetailMember}
-          />
-          
-          <ClassSection
-            value="active-member"
-            title="Active Members"
-            members={activeMembers}
-            memberClasses={memberClasses}
-            className="Active Member"
-            onMemberDetail={setDetailMember}
-          />
-          
-          <ClassSection
-            value="faculty-advisor"
-            title="Faculty Advisors"
-            members={facultyAdvisors}
-            memberClasses={memberClasses}
-            className="Faculty Advisors"
-            onMemberDetail={setDetailMember}
-          />
-        </Accordion>
-        
-        {/* Member Detail Modal */}
-        {detailMember && (
-          <MemberModal
-            member={detailMember}
-            memberClasses={memberClasses || []}
-            isOpen={!!detailMember}
-            onOpenChange={(open: boolean) => !open && setDetailMember(null)}
-            mode="edit"
-          />
-        )}
-      </CardContent>
-    </Card>
-  );
-}
-
-// Class Section Component for Accordion
-function ClassSection({ 
-  value, 
-  title, 
-  members, 
-  memberClasses, 
-  className,
-  onMemberDetail
-}: {
-  value: string;
-  title: string;
-  members: Member[];
-  memberClasses: MemberClass[] | undefined;
-  className: string;
-  onMemberDetail?: (member: Member) => void;
-}) {
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const { toast } = useToast();
-
-  // Mutations
-  const updateMemberMutation = useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: any }) => {
-      const members = await loadJsonData<Member>("members.json");
-      const index = members.findIndex(m => m.id === id);
-      if (index === -1) throw new Error("Member not found");
-      members[index] = { ...members[index], ...data, updatedAt: new Date() };
-      await saveToJson("members.json", members);
-      return members[index];
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/data/members.json"] });
-      toast({
-        title: "Success",
-        description: "Member updated successfully!",
-      });
-    },
-    onError: () => {
-      toast({
-        title: "Error",
-        description: "Failed to update member. Please try again.",
-        variant: "destructive",
-      });
-    },
-  });
-
-
-  const deleteMemberMutation = useMutation({
-    mutationFn: async (id: string) => {
-      const members = await loadJsonData<Member>("members.json");
-      const filtered = members.filter(m => m.id !== id);
-      await saveToJson("members.json", filtered);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/data/members.json"] });
-      toast({
-        title: "Success",
-        description: "Member deleted successfully!",
-      });
-    },
-    onError: () => {
-      toast({
-        title: "Error",
-        description: "Failed to delete member. Please try again.",
-        variant: "destructive",
-      });
-    },
-  });
-
-  const targetClass = memberClasses?.find(mc => mc.name === className);
-  const isActiveMemberClass = className === "Active Member";
-
-  // Handle missing member class
-  if (memberClasses && !targetClass) {
-    return (
-      <AccordionItem value={value} className="border border-red-200 rounded-lg mb-4">
-        <AccordionTrigger className="px-6 py-4 text-red-600">
-          <span>{title} (Class Not Found)</span>
-        </AccordionTrigger>
-        <AccordionContent className="px-6 pb-6">
-          <p className="text-red-600 text-sm">
-            Member class "{className}" not found in database. Please check member class configuration.
-          </p>
-        </AccordionContent>
-      </AccordionItem>
-    );
-  }
-
-  return (
-    <AccordionItem value={value} className="border border-white/20 rounded-lg mb-4">
-      <AccordionTrigger 
-        className="px-6 py-4 hover:bg-white/50 dark:hover:bg-slate-800/50 rounded-t-lg"
-        data-testid={`accordion-${value}`}
-      >
-        <div className="flex items-center justify-between w-full mr-4">
-          <span className="text-lg font-medium">{title}</span>
-          <Badge variant="outline" className="ml-2">
-            {members.length} {members.length === 1 ? 'member' : 'members'}
-          </Badge>
-        </div>
-      </AccordionTrigger>
-      <AccordionContent className="px-6 pb-6">
-        <div className="space-y-4">
-          <div className="flex justify-between items-center">
-            <p className="text-sm text-muted-foreground">
-              Manage {title.toLowerCase()} for the medical society
-            </p>
-            <Button
-              size="sm"
-              onClick={() => setIsAddModalOpen(true)}
-              data-testid={`button-add-${value}`}
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              Add {className}
-            </Button>
-          </div>
-
-          <div className="border border-white/20 rounded-lg overflow-hidden">
-            <Table>
-              <TableHeader>
-                <TableRow className="bg-white/30 dark:bg-slate-800/30">
-                  <TableHead className="w-[200px]">Name</TableHead>
-                  {!isActiveMemberClass && <TableHead className="w-[150px]">Role</TableHead>}
-                  <TableHead className="w-[100px]">Image</TableHead>
-                  <TableHead className="w-[80px]">Order</TableHead>
-                  <TableHead className="w-[80px]">Active</TableHead>
-                  <TableHead className="w-[120px]">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {members.map((member) => (
-                  <MemberInlineRow
-                    key={member.id}
-                    member={member}
-                    isActiveMemberClass={isActiveMemberClass}
-                    onSave={(data) => updateMemberMutation.mutate({ id: member.id, data })}
-                    onDelete={() => deleteMemberMutation.mutate(member.id)}
-                    onDetail={onMemberDetail}
-                    isUpdating={updateMemberMutation.isPending}
-                    isDeleting={deleteMemberMutation.isPending}
-                  />
-                ))}
-                {members.length === 0 && (
-                  <TableRow>
-                    <TableCell 
-                      colSpan={isActiveMemberClass ? 5 : 6} 
-                      className="text-center py-8 text-muted-foreground"
-                    >
-                      No {title.toLowerCase()} yet. Click "Add {className}" to get started.
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </div>
-        </div>
-        
-        {/* Add Member Modal */}
-        <MemberModal
-          memberClasses={memberClasses || []}
-          isOpen={isAddModalOpen}
-          onOpenChange={setIsAddModalOpen}
-          mode="add"
-          defaultMemberClassId={targetClass?.id}
-        />
-      </AccordionContent>
-    </AccordionItem>
-  );
-}
-
-// Member Inline Row Component for editing
-function MemberInlineRow({
-  member,
-  isActiveMemberClass,
-  onSave,
-  onDelete,
-  onDetail,
-  isUpdating,
-  isDeleting
-}: {
-  member: Member;
-  isActiveMemberClass: boolean;
-  onSave: (data: any) => void;
-  onDelete: () => void;
-  onDetail?: (member: Member) => void;
-  isUpdating: boolean;
-  isDeleting: boolean;
-}) {
-  const [isEditing, setIsEditing] = useState(false);
-  const [formData, setFormData] = useState({
-    name: member.name || "",
-    role: member.role || "",
-    image: member.image || "",
-    displayOrder: member.displayOrder || 0,
-    isActive: member.isActive ?? true,
-  });
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const result = e.target?.result as string;
-        setFormData({ ...formData, image: result });
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const handleSave = () => {
-    const dataToSave = { ...formData };
-    if (isActiveMemberClass) {
-      dataToSave.role = "";
-    }
-    onSave(dataToSave);
-    setIsEditing(false);
-  };
-
-  const canSave = formData.name.trim() && 
-    (isActiveMemberClass || formData.role.trim());
-
-  const handleCancel = () => {
-    setFormData({
-      name: member.name || "",
-      role: member.role || "",
-      image: member.image || "",
-      displayOrder: member.displayOrder || 0,
-      isActive: member.isActive ?? true,
-    });
-    setIsEditing(false);
-  };
-
-  return (
-    <TableRow className="hover:bg-white/20 dark:hover:bg-slate-800/20">
-      <TableCell>
-        {isEditing ? (
-          <Input
-            value={formData.name}
-            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-            placeholder="Enter name"
-            className="h-8"
-            data-testid={`input-edit-name-${member.id}`}
-          />
-        ) : (
-          <span data-testid={`text-name-${member.id}`}>{member.name}</span>
-        )}
-      </TableCell>
-      
-      {!isActiveMemberClass && (
-        <TableCell>
-          {isEditing ? (
-            <Input
-              value={formData.role}
-              onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-              placeholder="Enter role"
-              className="h-8"
-              data-testid={`input-edit-role-${member.id}`}
-            />
-          ) : (
-            <span data-testid={`text-role-${member.id}`}>{member.role}</span>
-          )}
-        </TableCell>
-      )}
-
-      <TableCell>
-        {isEditing ? (
-          <div className="flex items-center gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => fileInputRef.current?.click()}
-              className="h-8 text-xs"
-              data-testid={`button-edit-image-${member.id}`}
-            >
-              <Upload className="h-3 w-3 mr-1" />
-              {formData.image ? "Change" : "Upload"}
-            </Button>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              onChange={handleImageChange}
-              className="hidden"
-            />
-            {formData.image && (
-              <img
-                src={formData.image}
-                alt="Preview"
-                className="w-6 h-6 rounded object-cover"
-                data-testid={`img-edit-preview-${member.id}`}
-              />
-            )}
-          </div>
-        ) : (
-          member.image ? (
-            <img 
-              src={member.image} 
-              alt={member.name}
-              className="w-8 h-8 rounded-full object-cover"
-              data-testid={`img-${member.id}`}
-            />
-          ) : (
-            <span className="text-muted-foreground text-sm">No image</span>
-          )
-        )}
-      </TableCell>
-
-
-      <TableCell>
-        {isEditing ? (
-          <Input
-            type="number"
-            value={formData.displayOrder}
-            onChange={(e) => setFormData({ ...formData, displayOrder: parseInt(e.target.value) || 0 })}
-            className="h-8 w-16"
-            data-testid={`input-edit-order-${member.id}`}
-          />
-        ) : (
-          <span data-testid={`text-order-${member.id}`}>{member.displayOrder || 0}</span>
-        )}
-      </TableCell>
-
-      <TableCell>
-        {isEditing ? (
-          <input
-            type="checkbox"
-            checked={formData.isActive}
-            onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
-            data-testid={`checkbox-edit-active-${member.id}`}
-          />
-        ) : (
-          <Badge variant={member.isActive ? "default" : "secondary"} data-testid={`badge-active-${member.id}`}>
-            {member.isActive ? "Active" : "Inactive"}
-          </Badge>
-        )}
-      </TableCell>
-
-      <TableCell>
-        <div className="flex items-center gap-2">
-          {isEditing ? (
-            <>
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={handleSave}
-                disabled={isUpdating || !canSave}
-                data-testid={`button-save-${member.id}`}
-              >
-                {isUpdating ? <Loading size="sm" variant="spinner" /> : <Check className="h-3 w-3" />}
-              </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={handleCancel}
-                disabled={isUpdating}
-                data-testid={`button-cancel-${member.id}`}
-              >
-                <X className="h-3 w-3" />
-              </Button>
-            </>
-          ) : (
-            <>
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => setIsEditing(true)}
-                data-testid={`button-edit-${member.id}`}
-              >
-                <Edit className="h-3 w-3" />
-              </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => onDetail && onDetail(member)}
-                data-testid={`button-detail-${member.id}`}
-              >
-                Detail
-              </Button>
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="text-red-600 hover:text-red-700"
-                    disabled={isDeleting}
-                    data-testid={`button-delete-${member.id}`}
-                  >
-                    {isDeleting ? <Loading size="sm" variant="spinner" /> : <Trash2 className="h-3 w-3" />}
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Delete Member</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      Are you sure you want to delete {member.name}? This action cannot be undone.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction
-                      onClick={onDelete}
-                      className="bg-red-600 hover:bg-red-700"
-                    >
-                      Delete
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-            </>
-          )}
-        </div>
-      </TableCell>
-    </TableRow>
-  );
-}
-
-// New Member Inline Row Component
-function NewMemberInlineRow({
-  memberClassId,
-  isActiveMemberClass,
-  onSave,
-  onCancel,
-  isLoading
-}: {
-  memberClassId: string;
-  isActiveMemberClass: boolean;
-  onSave: (data: any) => void;
-  onCancel: () => void;
-  isLoading: boolean;
-}) {
-  const [formData, setFormData] = useState({
-    name: "",
-    role: "",
-    image: "",
-    email: "",
-    displayOrder: 0,
-    isActive: true,
-    memberClassId: memberClassId,
-  });
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const result = e.target?.result as string;
-        setFormData({ ...formData, image: result });
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const handleSave = () => {
-    if (!formData.name.trim()) return;
-    
-    const dataToSave = { ...formData };
-    if (isActiveMemberClass) {
-      dataToSave.role = "";
-    } else {
-      if (!dataToSave.role.trim()) return;
-    }
-    
-    onSave(dataToSave);
-  };
-
-  const canSave = formData.name.trim() && 
-    (isActiveMemberClass || formData.role.trim());
-
-  return (
-    <TableRow className="bg-blue-50 dark:bg-blue-900/20">
-      <TableCell>
-        <Input
-          value={formData.name}
-          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-          placeholder="Enter name *"
-          className="h-8"
-          data-testid="input-new-name"
-        />
-      </TableCell>
-      
-      {!isActiveMemberClass && (
-        <TableCell>
-          <Input
-            value={formData.role}
-            onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-            placeholder="Enter role *"
-            className="h-8"
-            data-testid="input-new-role"
-          />
-        </TableCell>
-      )}
-
-      <TableCell>
-        <div className="flex items-center gap-2">
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() => fileInputRef.current?.click()}
-            className="h-8 text-xs"
-            data-testid="button-new-image"
-          >
-            <Upload className="h-3 w-3 mr-1" />
-            {formData.image ? "Change" : "Upload"}
-          </Button>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            onChange={handleImageChange}
-            className="hidden"
-          />
-          {formData.image && (
-            <img
-              src={formData.image}
-              alt="Preview"
-              className="w-6 h-6 rounded object-cover"
-              data-testid="img-new-preview"
-            />
-          )}
-        </div>
-      </TableCell>
-
-      <TableCell>
-        <Input
-          type="number"
-          value={formData.displayOrder}
-          onChange={(e) => setFormData({ ...formData, displayOrder: parseInt(e.target.value) || 0 })}
-          className="h-8 w-16"
-          data-testid="input-new-order"
-        />
-      </TableCell>
-
-      <TableCell>
-        <input
-          type="checkbox"
-          checked={formData.isActive}
-          onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
-          data-testid="checkbox-new-active"
-        />
-      </TableCell>
-
-      <TableCell>
-        <div className="flex items-center gap-2">
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={handleSave}
-            disabled={isLoading || !canSave}
-            data-testid="button-save-new"
-          >
-            {isLoading ? <Loading size="sm" variant="spinner" /> : <Check className="h-3 w-3" />}
-          </Button>
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={onCancel}
-            disabled={isLoading}
-            data-testid="button-cancel-new"
-          >
-            <X className="h-3 w-3" />
-          </Button>
-        </div>
-      </TableCell>
-    </TableRow>
-  );
-}
-
-// Member Card Component
-function MemberCard({ 
-  member, 
-  onEdit, 
-  onDelete, 
-  isDeleting 
-}: { 
-  member: Member; 
-  onEdit: (member: Member) => void; 
-  onDelete: (id: string) => void;
-  isDeleting: boolean;
-}) {
-  return (
-    <div className="group relative bg-white/50 dark:bg-slate-800/50 rounded-lg border border-white/20 p-6 hover:bg-white/70 dark:hover:bg-slate-800/70 transition-all duration-300">
-      {/* Member Photo */}
-      <div className="flex items-start gap-4 mb-4">
-        <div className="relative">
-          <img
-            src={member.image || "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&h=150"}
-            alt={member.name}
-            className="w-16 h-16 rounded-full object-cover border-2 border-white/20"
-            data-testid={`img-member-${member.id}`}
-          />
-          <div className={`absolute -bottom-1 -right-1 w-5 h-5 rounded-full border-2 border-white ${member.isActive ? 'bg-green-500' : 'bg-gray-400'}`} />
-        </div>
-        <div className="flex-1 min-w-0">
-          <h3 className="font-semibold text-slate-900 dark:text-white truncate" data-testid={`text-member-name-${member.id}`}>
-            {member.name}
-          </h3>
-          <p className="text-blue-600 dark:text-blue-400 text-sm font-medium" data-testid={`text-member-role-${member.id}`}>
-            {member.role}
-          </p>
-          {member.year && (
-            <p className="text-muted-foreground text-xs flex items-center gap-1">
-              <GraduationCap className="h-3 w-3" />
-              {member.year}
-            </p>
-          )}
-        </div>
-      </div>
-
-      {/* Member Bio */}
-      {member.bio && (
-        <p className="text-sm text-muted-foreground mb-4 line-clamp-3" data-testid={`text-member-bio-${member.id}`}>
-          {member.bio}
-        </p>
-      )}
-
-      {/* Contact Info */}
-      <div className="flex items-center gap-2 mb-4">
-        {member.linkedIn && (
-          <a
-            href={member.linkedIn}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1 text-xs text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
-            data-testid={`link-member-linkedin-${member.id}`}
-          >
-            <ExternalLink className="h-3 w-3" />
-            LinkedIn
-          </a>
-        )}
-      </div>
-
-      {/* Action Buttons */}
-      <div className="flex items-center justify-between">
-        <Badge variant={member.isActive ? "default" : "secondary"} data-testid={`badge-member-status-${member.id}`}>
-          {member.isActive ? "Active" : "Inactive"}
-        </Badge>
-        <div className="flex items-center gap-2">
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => onEdit(member)}
-            data-testid={`button-edit-member-${member.id}`}
-          >
-            <Edit className="h-3 w-3" />
-          </Button>
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button
-                size="sm"
-                variant="outline"
-                className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20"
-                disabled={isDeleting}
-                data-testid={`button-delete-member-${member.id}`}
-              >
-                {isDeleting ? <Loading size="sm" variant="spinner" /> : <Trash2 className="h-3 w-3" />}
-              </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Delete Member</AlertDialogTitle>
-                <AlertDialogDescription>
-                  Are you sure you want to delete {member.name}? This action cannot be undone.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction
-                  onClick={() => onDelete(member.id)}
-                  className="bg-red-600 hover:bg-red-700"
-                >
-                  Delete
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// Add Member Dialog Component
-function AddMemberDialog({ 
-  isOpen, 
-  onOpenChange, 
-  onSubmit, 
-  isLoading 
-}: { 
-  isOpen: boolean; 
-  onOpenChange: (open: boolean) => void; 
-  onSubmit: (data: any) => void;
-  isLoading: boolean;
-}) {
-  const [formData, setFormData] = useState({
-    name: "",
-    role: "",
-    memberClassId: "",
-    bio: "",
-    email: "",
-    linkedIn: "",
-    year: "",
-    image: "",
-    displayOrder: 0,
-    isActive: true,
-  });
-
-  // Fetch member classes for selection
   const { data: memberClasses } = useQuery<MemberClass[]>({
     queryKey: ["/data/memberClasses.json"],
     queryFn: async () => {
@@ -1519,192 +472,421 @@ function AddMemberDialog({
     },
   });
 
-  // Determine if selected class is Active Member
-  const selectedMemberClass = memberClasses?.find(mc => mc.id === formData.memberClassId);
-  const isActiveMember = selectedMemberClass?.name === "Active Member";
+  const deleteMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const currentMembers = await loadJsonData<Member>("members.json");
+      const filtered = currentMembers.filter(m => m.id !== id);
+      await saveToJson("members.json", filtered);
+      return filtered;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/data/members.json"] });
+      toast({
+        title: "Success",
+        description: "Member deleted successfully",
+      });
+    },
+  });
+
+  const saveOrderMutation = useMutation({
+    mutationFn: async (orderedMembers: Member[]) => {
+      const updatedMembers = orderedMembers.map((member, index) => ({
+        ...member,
+        displayOrder: index,
+      }));
+      await saveToJson("members.json", updatedMembers);
+      return updatedMembers;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/data/members.json"] });
+      setHasReordered(false);
+      setHasUnsavedChanges({ ...hasUnsavedChanges, members: false });
+      toast({
+        title: "Success",
+        description: "Member order saved successfully",
+      });
+    },
+  });
+
+  const handleDragEnd = (event: DragEndEvent, classMembers: Member[]) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+
+    const oldIndex = classMembers.findIndex(m => m.id === active.id);
+    const newIndex = classMembers.findIndex(m => m.id === over.id);
+
+    const newOrder = arrayMove(classMembers, oldIndex, newIndex);
+    setReorderedMembers(newOrder);
+    setHasReordered(true);
+    setHasUnsavedChanges({ ...hasUnsavedChanges, members: true });
+  };
+
+  const getClassMembers = (className: string) => {
+    if (!members || !memberClasses) return [];
+    const memberClass = memberClasses.find(mc => mc.name === className);
+    if (!memberClass) return [];
+    
+    const classMembers = members
+      .filter(member => member.memberClassId === memberClass.id)
+      .sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0));
+    
+    return hasReordered && reorderedMembers.length > 0 
+      ? reorderedMembers.filter(m => m.memberClassId === memberClass.id)
+      : classMembers;
+  };
+
+  if (membersLoading) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <Loading variant="spinner" size="lg" />
+      </div>
+    );
+  }
+
+  const isEmpty = !members || members.length === 0;
+
+  return (
+    <Card className="bg-white/70 dark:bg-slate-800/70 backdrop-blur-md border-white/20">
+      <CardHeader className="border-b border-white/10">
+        <div className="flex items-center justify-between">
+          <div>
+            <CardTitle className="text-2xl text-slate-900 dark:text-white" style={{ fontFamily: 'Beo, serif' }}>
+              Members Management
+            </CardTitle>
+            <CardDescription>Manage members by their roles and classifications</CardDescription>
+          </div>
+          <div className="flex gap-2">
+            {hasReordered && (
+              <Button
+                onClick={() => saveOrderMutation.mutate(reorderedMembers)}
+                disabled={saveOrderMutation.isPending}
+                data-testid="button-save-member-order"
+              >
+                <Save className="h-4 w-4 mr-2" />
+                Save Order
+              </Button>
+            )}
+            <Button onClick={() => setIsAddDialogOpen(true)} data-testid="button-add-member">
+              <Plus className="h-4 w-4 mr-2" />
+              Add Member
+            </Button>
+          </div>
+        </div>
+      </CardHeader>
+
+      <CardContent className="p-6">
+        {isEmpty ? (
+          <EmptyState
+            title="No Members Yet"
+            description="Get started by adding your first member to the society"
+            action={
+              <Button onClick={() => setIsAddDialogOpen(true)}>
+                <Plus className="h-4 w-4 mr-2" />
+                Add First Member
+              </Button>
+            }
+          />
+        ) : (
+          <div className="space-y-6">
+            {memberClasses?.map((memberClass) => {
+              const classMembers = getClassMembers(memberClass.name);
+              if (classMembers.length === 0) return null;
+
+              return (
+                <div key={memberClass.id} className="space-y-3">
+                  <h3 className="text-lg font-semibold">{memberClass.name}</h3>
+                  <DndContext
+                    sensors={sensors}
+                    collisionDetection={closestCenter}
+                    onDragEnd={(event) => handleDragEnd(event, classMembers)}
+                  >
+                    <SortableContext
+                      items={classMembers.map(m => m.id)}
+                      strategy={verticalListSortingStrategy}
+                    >
+                      <div className="space-y-2">
+                        {classMembers.map((member) => (
+                          <SortableItem key={member.id} id={member.id}>
+                            <div className="flex-1 flex items-center justify-between bg-white/50 dark:bg-slate-800/50 p-4 rounded-lg border border-white/20">
+                              <div className="flex items-center gap-4">
+                                <img
+                                  src={member.thumbnail || member.image || blankPfpPath}
+                                  alt={member.name}
+                                  className="w-12 h-12 rounded-full object-cover"
+                                />
+                                <div>
+                                  <h4 className="font-medium">{member.name}</h4>
+                                  {member.role && <p className="text-sm text-muted-foreground">{member.role}</p>}
+                                </div>
+                              </div>
+                              <div className="flex gap-2">
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => setEditingMember(member)}
+                                >
+                                  <Edit className="h-4 w-4" />
+                                </Button>
+                                <AlertDialog>
+                                  <AlertDialogTrigger asChild>
+                                    <Button size="sm" variant="outline" className="text-red-600">
+                                      <Trash2 className="h-4 w-4" />
+                                    </Button>
+                                  </AlertDialogTrigger>
+                                  <AlertDialogContent>
+                                    <AlertDialogHeader>
+                                      <AlertDialogTitle>Delete Member</AlertDialogTitle>
+                                      <AlertDialogDescription>
+                                        Are you sure you want to delete {member.name}? This cannot be undone.
+                                      </AlertDialogDescription>
+                                    </AlertDialogHeader>
+                                    <AlertDialogFooter>
+                                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                      <AlertDialogAction
+                                        onClick={() => deleteMutation.mutate(member.id)}
+                                        className="bg-red-600 hover:bg-red-700"
+                                      >
+                                        Delete
+                                      </AlertDialogAction>
+                                    </AlertDialogFooter>
+                                  </AlertDialogContent>
+                                </AlertDialog>
+                              </div>
+                            </div>
+                          </SortableItem>
+                        ))}
+                      </div>
+                    </SortableContext>
+                  </DndContext>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </CardContent>
+
+      <MemberDialog
+        isOpen={isAddDialogOpen || !!editingMember}
+        onClose={() => {
+          setIsAddDialogOpen(false);
+          setEditingMember(null);
+        }}
+        member={editingMember}
+        memberClasses={memberClasses || []}
+      />
+    </Card>
+  );
+}
+
+// Member Dialog Component
+function MemberDialog({
+  isOpen,
+  onClose,
+  member,
+  memberClasses,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  member: Member | null;
+  memberClasses: MemberClass[];
+}) {
+  const [formData, setFormData] = useState({
+    name: "",
+    role: "",
+    memberClassId: "",
+    image: "",
+    displayOrder: 0,
+    isActive: true,
+  });
+  const { toast } = useToast();
+
+  useEffect(() => {
+    if (member) {
+      setFormData({
+        name: member.name || "",
+        role: member.role || "",
+        memberClassId: member.memberClassId || "",
+        image: member.image || "",
+        displayOrder: member.displayOrder || 0,
+        isActive: member.isActive ?? true,
+      });
+    } else {
+      setFormData({
+        name: "",
+        role: "",
+        memberClassId: "",
+        image: "",
+        displayOrder: 0,
+        isActive: true,
+      });
+    }
+  }, [member, isOpen]);
+
+  const saveMutation = useMutation({
+    mutationFn: async (data: typeof formData) => {
+      const members = await loadJsonData<Member>("members.json");
+      
+      if (member) {
+        const index = members.findIndex(m => m.id === member.id);
+        if (index !== -1) {
+          members[index] = { ...members[index], ...data, updatedAt: new Date() };
+        }
+      } else {
+        members.push({
+          ...data,
+          id: generateId(),
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        } as Member);
+      }
+      
+      await saveToJson("members.json", members);
+      return members;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/data/members.json"] });
+      onClose();
+      toast({
+        title: "Success",
+        description: member ? "Member updated successfully" : "Member added successfully",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to save member",
+        variant: "destructive",
+      });
+    },
+  });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit(formData);
-    setFormData({
-      name: "",
-      role: "",
-      memberClassId: "",
-      bio: "",
-      email: "",
-      linkedIn: "",
-      year: "",
-      image: "",
-      displayOrder: 0,
-      isActive: true,
-    });
+    
+    if (!formData.name.trim()) {
+      toast({
+        title: "Validation Error",
+        description: "Name is required",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const selectedClass = memberClasses.find(mc => mc.id === formData.memberClassId);
+    if (selectedClass?.name !== "Active Member" && !formData.role.trim()) {
+      toast({
+        title: "Validation Error",
+        description: "Role is required for this member class",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    saveMutation.mutate(formData);
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogTrigger asChild>
-        <Button data-testid="button-add-member">
-          <Plus className="h-4 w-4 mr-2" />
-          Add Member
-        </Button>
-      </DialogTrigger>
+    <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Add New Member</DialogTitle>
+          <DialogTitle>{member ? "Edit Member" : "Add New Member"}</DialogTitle>
           <DialogDescription>
-            Add a new member to the ISB Medical Society
+            {member ? "Update member information" : "Add a new member to the society"}
           </DialogDescription>
         </DialogHeader>
+
         <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <ImageUploadField
+            value={formData.image}
+            onChange={(url) => setFormData({ ...formData, image: url })}
+            category="members"
+            label="Profile Image"
+            currentImage={member?.image || undefined}
+          />
+
+          <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="name">Name *</Label>
+              <Label>Name *</Label>
               <Input
-                id="name"
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                placeholder="Enter member name"
+                placeholder="Enter name"
                 required
-                data-testid="input-member-name"
               />
             </div>
-            {!isActiveMember && (
-              <div className="space-y-2">
-                <Label htmlFor="role">Role *</Label>
-                <Input
-                  id="role"
-                  value={formData.role}
-                  onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-                  placeholder="e.g., President, Vice President"
-                  required
-                  data-testid="input-member-role"
-                />
-              </div>
-            )}
-          </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="memberClass">Member Class</Label>
-            <Select
-              value={formData.memberClassId || "none"}
-              onValueChange={(value) => setFormData({ ...formData, memberClassId: value === "none" ? "" : value })}
-            >
-              <SelectTrigger data-testid="select-member-class">
-                <SelectValue placeholder="Select member class" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">No Class Assigned</SelectItem>
-                {memberClasses?.map((memberClass) => (
-                  <SelectItem key={memberClass.id} value={memberClass.id}>
-                    {memberClass.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="bio">Bio</Label>
-            <Textarea
-              id="bio"
-              value={formData.bio}
-              onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
-              placeholder="Brief description of the member's background and interests"
-              className="min-h-[100px]"
-              data-testid="input-member-bio"
-            />
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                placeholder="member@isbmedicalsociety.org"
-                data-testid="input-member-email"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="year">Grade/Year</Label>
-              <Input
-                id="year"
-                value={formData.year}
-                onChange={(e) => setFormData({ ...formData, year: e.target.value })}
-                placeholder="e.g., Grade 12, Senior"
-                data-testid="input-member-year"
-              />
+              <Label>Member Class</Label>
+              <Select
+                value={formData.memberClassId}
+                onValueChange={(value) => setFormData({ ...formData, memberClassId: value })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select class" />
+                </SelectTrigger>
+                <SelectContent>
+                  {memberClasses.map((mc) => (
+                    <SelectItem key={mc.id} value={mc.id}>
+                      {mc.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {!isActiveMember && (
-              <div className="space-y-2">
-                <Label htmlFor="image">Profile Image URL *</Label>
-                <Input
-                  id="image"
-                  value={formData.image}
-                  onChange={(e) => setFormData({ ...formData, image: e.target.value })}
-                  placeholder="https://example.com/image.jpg"
-                  required
-                  data-testid="input-member-image"
-                />
-              </div>
-            )}
+          {memberClasses.find(mc => mc.id === formData.memberClassId)?.name !== "Active Member" && (
             <div className="space-y-2">
-              <Label htmlFor="linkedIn">LinkedIn Profile</Label>
+              <Label>Role *</Label>
               <Input
-                id="linkedIn"
-                value={formData.linkedIn}
-                onChange={(e) => setFormData({ ...formData, linkedIn: e.target.value })}
-                placeholder="https://linkedin.com/in/username"
-                data-testid="input-member-linkedin"
+                value={formData.role}
+                onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+                placeholder="Enter role"
+                required
               />
             </div>
-          </div>
+          )}
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="displayOrder">Display Order</Label>
+              <Label>Display Order</Label>
               <Input
-                id="displayOrder"
                 type="number"
                 value={formData.displayOrder}
                 onChange={(e) => setFormData({ ...formData, displayOrder: parseInt(e.target.value) || 0 })}
-                placeholder="0"
-                data-testid="input-member-display-order"
               />
             </div>
-            <div className="flex items-center space-x-2 pt-8">
-              <input
-                type="checkbox"
-                id="isActive"
-                checked={formData.isActive}
-                onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
-                data-testid="switch-member-active"
-              />
-              <Label htmlFor="isActive">Active Member</Label>
+
+            <div className="space-y-2">
+              <Label>Status</Label>
+              <Select
+                value={formData.isActive ? "active" : "inactive"}
+                onValueChange={(value) => setFormData({ ...formData, isActive: value === "active" })}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="active">Active</SelectItem>
+                  <SelectItem value="inactive">Inactive</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
 
           <DialogFooter>
-            <Button 
-              type="button" 
-              variant="outline" 
-              onClick={() => onOpenChange(false)}
-              disabled={isLoading}
-            >
+            <Button type="button" variant="outline" onClick={onClose}>
               Cancel
             </Button>
-            <Button 
-              type="submit" 
-              disabled={isLoading}
-              data-testid="button-submit-member"
-            >
-              {isLoading ? <Loading size="sm" variant="spinner" className="mr-2" /> : null}
-              Add Member
+            <Button type="submit" disabled={saveMutation.isPending}>
+              {saveMutation.isPending ? (
+                <>
+                  <Loading size="sm" variant="spinner" className="mr-2" />
+                  Saving...
+                </>
+              ) : (
+                member ? "Update" : "Add Member"
+              )}
             </Button>
           </DialogFooter>
         </form>
@@ -1713,199 +895,676 @@ function AddMemberDialog({
   );
 }
 
-// Edit Member Dialog Component  
-function EditMemberDialog({ 
-  member,
-  isOpen, 
-  onOpenChange, 
-  onSubmit, 
-  isLoading 
-}: { 
-  member: Member;
-  isOpen: boolean; 
-  onOpenChange: (open: boolean) => void; 
-  onSubmit: (data: any) => void;
-  isLoading: boolean;
+// Member Class Management Component
+function MemberClassManagement({
+  hasUnsavedChanges,
+  setHasUnsavedChanges,
+}: {
+  hasUnsavedChanges: Record<string, boolean>;
+  setHasUnsavedChanges: (value: Record<string, boolean>) => void;
 }) {
-  const [formData, setFormData] = useState({
-    name: member.name,
-    role: member.role,
-    memberClassId: member.memberClassId || "",
-    bio: member.bio || "",
-    linkedIn: member.linkedIn || "",
-    year: member.year || "",
-    image: member.image || "",
-    displayOrder: member.displayOrder || 0,
-    isActive: member.isActive ?? true,
-  });
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [editingClass, setEditingClass] = useState<MemberClass | null>(null);
+  const [reorderedClasses, setReorderedClasses] = useState<MemberClass[]>([]);
+  const [hasReordered, setHasReordered] = useState(false);
+  const { toast } = useToast();
 
-  // Fetch member classes for selection
-  const { data: memberClasses } = useQuery<MemberClass[]>({
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  const { data: memberClasses, isLoading } = useQuery<MemberClass[]>({
     queryKey: ["/data/memberClasses.json"],
     queryFn: async () => {
       const res = await fetch("/data/memberClasses.json");
-      if (!res.ok) throw new Error("Failed to load member classes");
+      if (!res.ok) throw new Error("Failed to load");
       return res.json();
     },
   });
 
-  // Determine if selected class is Active Member
-  const selectedMemberClass = memberClasses?.find(mc => mc.id === formData.memberClassId);
-  const isActiveMember = selectedMemberClass?.name === "Active Member";
+  const saveOrderMutation = useMutation({
+    mutationFn: async (orderedClasses: MemberClass[]) => {
+      const updated = orderedClasses.map((mc, index) => ({ ...mc, displayOrder: index }));
+      await saveToJson("memberClasses.json", updated);
+      return updated;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/data/memberClasses.json"] });
+      setHasReordered(false);
+      setHasUnsavedChanges({ ...hasUnsavedChanges, memberClasses: false });
+      toast({ title: "Success", description: "Order saved successfully" });
+    },
+  });
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    onSubmit(formData);
+  const deleteMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const classes = await loadJsonData<MemberClass>("memberClasses.json");
+      const filtered = classes.filter(c => c.id !== id);
+      await saveToJson("memberClasses.json", filtered);
+      return filtered;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/data/memberClasses.json"] });
+      toast({ title: "Success", description: "Member class deleted" });
+    },
+  });
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id || !memberClasses) return;
+
+    const oldIndex = memberClasses.findIndex(c => c.id === active.id);
+    const newIndex = memberClasses.findIndex(c => c.id === over.id);
+
+    const newOrder = arrayMove(memberClasses, oldIndex, newIndex);
+    setReorderedClasses(newOrder);
+    setHasReordered(true);
+    setHasUnsavedChanges({ ...hasUnsavedChanges, memberClasses: true });
   };
 
+  const displayClasses = hasReordered ? reorderedClasses : (memberClasses || []);
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <Loading variant="spinner" size="lg" />
+      </div>
+    );
+  }
+
   return (
-    <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>Edit Member</DialogTitle>
-          <DialogDescription>
-            Update {member.name}'s information
-          </DialogDescription>
-        </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="edit-name">Name *</Label>
-              <Input
-                id="edit-name"
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                placeholder="Enter member name"
-                required
-                data-testid="input-edit-member-name"
-              />
-            </div>
-            {!isActiveMember && (
-              <div className="space-y-2">
-                <Label htmlFor="edit-role">Role *</Label>
-                <Input
-                  id="edit-role"
-                  value={formData.role || ""}
-                  onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-                  placeholder="e.g., President, Vice President"
-                  required
-                  data-testid="input-edit-member-role"
-                />
-              </div>
+    <Card className="bg-white/70 dark:bg-slate-800/70 backdrop-blur-md border-white/20">
+      <CardHeader className="border-b border-white/10">
+        <div className="flex items-center justify-between">
+          <div>
+            <CardTitle className="text-2xl" style={{ fontFamily: 'Beo, serif' }}>
+              Member Classes
+            </CardTitle>
+            <CardDescription>Manage member classifications and categories</CardDescription>
+          </div>
+          <div className="flex gap-2">
+            {hasReordered && (
+              <Button
+                onClick={() => saveOrderMutation.mutate(reorderedClasses)}
+                disabled={saveOrderMutation.isPending}
+              >
+                <Save className="h-4 w-4 mr-2" />
+                Save Order
+              </Button>
             )}
+            <Button onClick={() => setIsAddDialogOpen(true)}>
+              <Plus className="h-4 w-4 mr-2" />
+              Add Class
+            </Button>
           </div>
+        </div>
+      </CardHeader>
 
-          <div className="space-y-2">
-            <Label htmlFor="edit-memberClass">Member Class</Label>
-            <Select
-              value={formData.memberClassId || "none"}
-              onValueChange={(value) => setFormData({ ...formData, memberClassId: value === "none" ? "" : value })}
+      <CardContent className="p-6">
+        {displayClasses.length === 0 ? (
+          <EmptyState
+            title="No Member Classes"
+            description="Create your first member class to organize members"
+            action={
+              <Button onClick={() => setIsAddDialogOpen(true)}>
+                <Plus className="h-4 w-4 mr-2" />
+                Add First Class
+              </Button>
+            }
+          />
+        ) : (
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleDragEnd}
+          >
+            <SortableContext
+              items={displayClasses.map(c => c.id)}
+              strategy={verticalListSortingStrategy}
             >
-              <SelectTrigger data-testid="select-edit-member-class">
-                <SelectValue placeholder="Select member class" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">No Class Assigned</SelectItem>
-                {memberClasses?.map((memberClass) => (
-                  <SelectItem key={memberClass.id} value={memberClass.id}>
-                    {memberClass.name}
-                  </SelectItem>
+              <div className="space-y-2">
+                {displayClasses.map((memberClass) => (
+                  <SortableItem key={memberClass.id} id={memberClass.id}>
+                    <div className="flex-1 flex items-center justify-between bg-white/50 dark:bg-slate-800/50 p-4 rounded-lg border border-white/20">
+                      <div>
+                        <h4 className="font-medium">{memberClass.name}</h4>
+                        {memberClass.description && (
+                          <p className="text-sm text-muted-foreground">{memberClass.description}</p>
+                        )}
+                      </div>
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => setEditingClass(memberClass)}
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button size="sm" variant="outline" className="text-red-600">
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Delete Member Class</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                Are you sure? This will remove the class from all members.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction
+                                onClick={() => deleteMutation.mutate(memberClass.id)}
+                                className="bg-red-600 hover:bg-red-700"
+                              >
+                                Delete
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      </div>
+                    </div>
+                  </SortableItem>
                 ))}
-              </SelectContent>
-            </Select>
-          </div>
+              </div>
+            </SortableContext>
+          </DndContext>
+        )}
+      </CardContent>
 
+      <MemberClassDialog
+        isOpen={isAddDialogOpen || !!editingClass}
+        onClose={() => {
+          setIsAddDialogOpen(false);
+          setEditingClass(null);
+        }}
+        memberClass={editingClass}
+      />
+    </Card>
+  );
+}
+
+// Member Class Dialog
+function MemberClassDialog({
+  isOpen,
+  onClose,
+  memberClass,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  memberClass: MemberClass | null;
+}) {
+  const [formData, setFormData] = useState({
+    name: "",
+    description: "",
+    displayOrder: 0,
+  });
+  const { toast } = useToast();
+
+  useEffect(() => {
+    if (memberClass) {
+      setFormData({
+        name: memberClass.name || "",
+        description: memberClass.description || "",
+        displayOrder: memberClass.displayOrder || 0,
+      });
+    } else {
+      setFormData({ name: "", description: "", displayOrder: 0 });
+    }
+  }, [memberClass, isOpen]);
+
+  const saveMutation = useMutation({
+    mutationFn: async (data: typeof formData) => {
+      const classes = await loadJsonData<MemberClass>("memberClasses.json");
+      
+      if (memberClass) {
+        const index = classes.findIndex(c => c.id === memberClass.id);
+        if (index !== -1) {
+          classes[index] = { ...classes[index], ...data };
+        }
+      } else {
+        classes.push({ ...data, id: generateId() } as MemberClass);
+      }
+      
+      await saveToJson("memberClasses.json", classes);
+      return classes;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/data/memberClasses.json"] });
+      onClose();
+      toast({
+        title: "Success",
+        description: memberClass ? "Class updated" : "Class added",
+      });
+    },
+  });
+
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>{memberClass ? "Edit Class" : "Add Class"}</DialogTitle>
+        </DialogHeader>
+
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (!formData.name.trim()) {
+              toast({
+                title: "Validation Error",
+                description: "Name is required",
+                variant: "destructive",
+              });
+              return;
+            }
+            saveMutation.mutate(formData);
+          }}
+          className="space-y-4"
+        >
           <div className="space-y-2">
-            <Label htmlFor="edit-bio">Bio</Label>
-            <Textarea
-              id="edit-bio"
-              value={formData.bio}
-              onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
-              placeholder="Brief description of the member's background and interests"
-              className="min-h-[100px]"
-              data-testid="input-edit-member-bio"
+            <Label>Name *</Label>
+            <Input
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              required
             />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="edit-year">Grade/Year</Label>
-              <Input
-                id="edit-year"
-                value={formData.year}
-                onChange={(e) => setFormData({ ...formData, year: e.target.value })}
-                placeholder="e.g., Grade 12, Senior"
-                data-testid="input-edit-member-year"
-              />
-            </div>
+          <div className="space-y-2">
+            <Label>Description</Label>
+            <Textarea
+              value={formData.description}
+              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+            />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {!isActiveMember && (
-              <div className="space-y-2">
-                <Label htmlFor="edit-image">Profile Image URL *</Label>
-                <Input
-                  id="edit-image"
-                  value={formData.image}
-                  onChange={(e) => setFormData({ ...formData, image: e.target.value })}
-                  placeholder="https://example.com/image.jpg"
-                  required
-                  data-testid="input-edit-member-image"
-                />
-              </div>
-            )}
-            <div className="space-y-2">
-              <Label htmlFor="edit-linkedIn">LinkedIn Profile</Label>
-              <Input
-                id="edit-linkedIn"
-                value={formData.linkedIn}
-                onChange={(e) => setFormData({ ...formData, linkedIn: e.target.value })}
-                placeholder="https://linkedin.com/in/username"
-                data-testid="input-edit-member-linkedin"
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="edit-displayOrder">Display Order</Label>
-              <Input
-                id="edit-displayOrder"
-                type="number"
-                value={formData.displayOrder}
-                onChange={(e) => setFormData({ ...formData, displayOrder: parseInt(e.target.value) || 0 })}
-                placeholder="0"
-                data-testid="input-edit-member-display-order"
-              />
-            </div>
-            <div className="flex items-center space-x-2 pt-8">
-              <input
-                type="checkbox"
-                id="edit-isActive"
-                checked={formData.isActive}
-                onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
-                data-testid="switch-edit-member-active"
-              />
-              <Label htmlFor="edit-isActive">Active Member</Label>
-            </div>
+          <div className="space-y-2">
+            <Label>Display Order</Label>
+            <Input
+              type="number"
+              value={formData.displayOrder}
+              onChange={(e) => setFormData({ ...formData, displayOrder: parseInt(e.target.value) || 0 })}
+            />
           </div>
 
           <DialogFooter>
-            <Button 
-              type="button" 
-              variant="outline" 
-              onClick={() => onOpenChange(false)}
-              disabled={isLoading}
-            >
+            <Button type="button" variant="outline" onClick={onClose}>
               Cancel
             </Button>
+            <Button type="submit" disabled={saveMutation.isPending}>
+              {saveMutation.isPending ? "Saving..." : memberClass ? "Update" : "Add"}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+// Program Management Component  
+function ProgramManagement({
+  hasUnsavedChanges,
+  setHasUnsavedChanges,
+}: {
+  hasUnsavedChanges: Record<string, boolean>;
+  setHasUnsavedChanges: (value: Record<string, boolean>) => void;
+}) {
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [editingProgram, setEditingProgram] = useState<Program | null>(null);
+  const [reorderedPrograms, setReorderedPrograms] = useState<Program[]>([]);
+  const [hasReordered, setHasReordered] = useState(false);
+  const { toast } = useToast();
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  const { data: programs, isLoading } = useQuery<Program[]>({
+    queryKey: ["/data/programs.json"],
+    queryFn: async () => {
+      const res = await fetch("/data/programs.json");
+      if (!res.ok) throw new Error("Failed to load");
+      return res.json();
+    },
+  });
+
+  const saveOrderMutation = useMutation({
+    mutationFn: async (orderedPrograms: Program[]) => {
+      const updated = orderedPrograms.map((p, index) => ({ ...p, displayOrder: index }));
+      await saveToJson("programs.json", updated);
+      return updated;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/data/programs.json"] });
+      setHasReordered(false);
+      setHasUnsavedChanges({ ...hasUnsavedChanges, programs: false });
+      toast({ title: "Success", description: "Order saved" });
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const progs = await loadJsonData<Program>("programs.json");
+      const filtered = progs.filter(p => p.id !== id);
+      await saveToJson("programs.json", filtered);
+      return filtered;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/data/programs.json"] });
+      toast({ title: "Success", description: "Program deleted" });
+    },
+  });
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id || !programs) return;
+
+    const oldIndex = programs.findIndex(p => p.id === active.id);
+    const newIndex = programs.findIndex(p => p.id === over.id);
+
+    const newOrder = arrayMove(programs, oldIndex, newIndex);
+    setReorderedPrograms(newOrder);
+    setHasReordered(true);
+    setHasUnsavedChanges({ ...hasUnsavedChanges, programs: true });
+  };
+
+  const displayPrograms = hasReordered ? reorderedPrograms : (programs || []);
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <Loading variant="spinner" size="lg" />
+      </div>
+    );
+  }
+
+  const canAdd = !programs || programs.length < 4;
+
+  return (
+    <Card className="bg-white/70 dark:bg-slate-800/70 backdrop-blur-md border-white/20">
+      <CardHeader className="border-b border-white/10">
+        <div className="flex items-center justify-between">
+          <div>
+            <CardTitle className="text-2xl" style={{ fontFamily: 'Beo, serif' }}>
+              Activities Management
+            </CardTitle>
+            <CardDescription>Manage programs and activities (Max: 4)</CardDescription>
+          </div>
+          <div className="flex gap-2">
+            {hasReordered && (
+              <Button
+                onClick={() => saveOrderMutation.mutate(reorderedPrograms)}
+                disabled={saveOrderMutation.isPending}
+              >
+                <Save className="h-4 w-4 mr-2" />
+                Save Order
+              </Button>
+            )}
             <Button 
-              type="submit" 
-              disabled={isLoading}
-              data-testid="button-update-member"
+              onClick={() => {
+                if (!canAdd) {
+                  toast({
+                    title: "Limit Reached",
+                    description: "Maximum of 4 programs allowed. Please delete one to add a new program.",
+                    variant: "destructive",
+                  });
+                  return;
+                }
+                setIsAddDialogOpen(true);
+              }}
+              disabled={!canAdd}
             >
-              {isLoading ? <Loading size="sm" variant="spinner" className="mr-2" /> : null}
-              Update Member
+              <Plus className="h-4 w-4 mr-2" />
+              Add Program {programs && `(${programs.length}/4)`}
+            </Button>
+          </div>
+        </div>
+      </CardHeader>
+
+      <CardContent className="p-6">
+        {displayPrograms.length === 0 ? (
+          <EmptyState
+            title="No Programs Yet"
+            description="Add your first activity or program"
+            action={
+              <Button onClick={() => setIsAddDialogOpen(true)}>
+                <Plus className="h-4 w-4 mr-2" />
+                Add First Program
+              </Button>
+            }
+          />
+        ) : (
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleDragEnd}
+          >
+            <SortableContext
+              items={displayPrograms.map(p => p.id)}
+              strategy={verticalListSortingStrategy}
+            >
+              <div className="space-y-2">
+                {displayPrograms.map((program) => (
+                  <SortableItem key={program.id} id={program.id}>
+                    <div className="flex-1 flex items-center justify-between bg-white/50 dark:bg-slate-800/50 p-4 rounded-lg border border-white/20">
+                      <div className="flex items-center gap-4">
+                        {program.image && (
+                          <img
+                            src={program.image}
+                            alt={program.title}
+                            className="w-16 h-16 rounded object-cover"
+                          />
+                        )}
+                        <div>
+                          <h4 className="font-medium">{program.title}</h4>
+                          <p className="text-sm text-muted-foreground line-clamp-1">{program.description}</p>
+                        </div>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => setEditingProgram(program)}
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button size="sm" variant="outline" className="text-red-600">
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Delete Program</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                Are you sure you want to delete {program.title}?
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction
+                                onClick={() => deleteMutation.mutate(program.id)}
+                                className="bg-red-600 hover:bg-red-700"
+                              >
+                                Delete
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      </div>
+                    </div>
+                  </SortableItem>
+                ))}
+              </div>
+            </SortableContext>
+          </DndContext>
+        )}
+      </CardContent>
+
+      <ProgramDialog
+        isOpen={isAddDialogOpen || !!editingProgram}
+        onClose={() => {
+          setIsAddDialogOpen(false);
+          setEditingProgram(null);
+        }}
+        program={editingProgram}
+      />
+    </Card>
+  );
+}
+
+// Program Dialog
+function ProgramDialog({
+  isOpen,
+  onClose,
+  program,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  program: Program | null;
+}) {
+  const [formData, setFormData] = useState({
+    title: "",
+    subtitle: "",
+    description: "",
+    image: "",
+    displayOrder: 0,
+  });
+  const { toast } = useToast();
+
+  useEffect(() => {
+    if (program) {
+      setFormData({
+        title: program.title || "",
+        subtitle: program.subtitle || "",
+        description: program.description || "",
+        image: program.image || "",
+        displayOrder: program.displayOrder || 0,
+      });
+    } else {
+      setFormData({ title: "", subtitle: "", description: "", image: "", displayOrder: 0 });
+    }
+  }, [program, isOpen]);
+
+  const saveMutation = useMutation({
+    mutationFn: async (data: typeof formData) => {
+      const programs = await loadJsonData<Program>("programs.json");
+      
+      if (!program && programs.length >= 4) {
+        throw new Error("Maximum of 4 programs allowed");
+      }
+      
+      if (program) {
+        const index = programs.findIndex(p => p.id === program.id);
+        if (index !== -1) {
+          programs[index] = { ...programs[index], ...data };
+        }
+      } else {
+        programs.push({ ...data, id: generateId() } as Program);
+      }
+      
+      await saveToJson("programs.json", programs);
+      return programs;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/data/programs.json"] });
+      onClose();
+      toast({
+        title: "Success",
+        description: program ? "Program updated" : "Program added",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to save program",
+        variant: "destructive",
+      });
+    },
+  });
+
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="max-w-2xl">
+        <DialogHeader>
+          <DialogTitle>{program ? "Edit Program" : "Add Program"}</DialogTitle>
+        </DialogHeader>
+
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (!formData.title.trim()) {
+              toast({
+                title: "Validation Error",
+                description: "Title is required",
+                variant: "destructive",
+              });
+              return;
+            }
+            saveMutation.mutate(formData);
+          }}
+          className="space-y-4"
+        >
+          <ImageUploadField
+            value={formData.image}
+            onChange={(url) => setFormData({ ...formData, image: url })}
+            category="programs"
+            label="Program Image"
+            currentImage={program?.image}
+          />
+
+          <div className="space-y-2">
+            <Label>Title *</Label>
+            <Input
+              value={formData.title}
+              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+              required
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label>Subtitle *</Label>
+            <Input
+              value={formData.subtitle}
+              onChange={(e) => setFormData({ ...formData, subtitle: e.target.value })}
+              placeholder="Brief tagline"
+              required
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label>Description *</Label>
+            <Textarea
+              value={formData.description}
+              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              required
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label>Display Order</Label>
+            <Input
+              type="number"
+              value={formData.displayOrder}
+              onChange={(e) => setFormData({ ...formData, displayOrder: parseInt(e.target.value) || 0 })}
+            />
+          </div>
+
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={onClose}>
+              Cancel
+            </Button>
+            <Button type="submit" disabled={saveMutation.isPending}>
+              {saveMutation.isPending ? "Saving..." : program ? "Update" : "Add"}
             </Button>
           </DialogFooter>
         </form>
@@ -1915,2012 +1574,700 @@ function EditMemberDialog({
 }
 
 // News Management Component
-function NewsManagement() {
+function NewsManagement({
+  hasUnsavedChanges,
+  setHasUnsavedChanges,
+}: {
+  hasUnsavedChanges: Record<string, boolean>;
+  setHasUnsavedChanges: (value: Record<string, boolean>) => void;
+}) {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [editingNews, setEditingNews] = useState<News | null>(null);
-  const [deletingNewsId, setDeletingNewsId] = useState<string | null>(null);
+  const [reorderedNews, setReorderedNews] = useState<News[]>([]);
+  const [hasReordered, setHasReordered] = useState(false);
   const { toast } = useToast();
 
-  // Fetch news
-  const { data: newsItems, isLoading, isError, refetch } = useQuery<News[]>({
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  const { data: news, isLoading } = useQuery<News[]>({
     queryKey: ["/data/news.json"],
     queryFn: async () => {
       const res = await fetch("/data/news.json");
-      if (!res.ok) throw new Error("Failed to load news");
+      if (!res.ok) throw new Error("Failed to load");
       return res.json();
     },
   });
 
-  // Sort news by creation date (newest first)
-  const sortedNews = newsItems ? [...newsItems].sort((a, b) => {
-    const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
-    const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
-    return dateB - dateA;
-  }) : [];
-
-  // Add news mutation
-  const addNewsMutation = useMutation({
-    mutationFn: async (data: any) => {
-      const newsItems = await loadJsonData<News>("news.json");
-      const newNews = { 
-        ...data, 
-        id: generateId(), 
-        createdAt: new Date(), 
-        updatedAt: new Date() 
-      };
-      newsItems.push(newNews);
-      await saveToJson("news.json", newsItems);
-      return newNews;
+  const saveOrderMutation = useMutation({
+    mutationFn: async (orderedNews: News[]) => {
+      await saveToJson("news.json", orderedNews);
+      return orderedNews;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/data/news.json"] });
-      setIsAddDialogOpen(false);
-      toast({
-        title: "Success",
-        description: "News article added successfully!",
-      });
-    },
-    onError: () => {
-      toast({
-        title: "Error",
-        description: "Failed to add news article. Please try again.",
-        variant: "destructive",
-      });
+      setHasReordered(false);
+      setHasUnsavedChanges({ ...hasUnsavedChanges, news: false });
+      toast({ title: "Success", description: "Order saved" });
     },
   });
 
-  // Update news mutation
-  const updateNewsMutation = useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: any }) => {
-      const newsItems = await loadJsonData<News>("news.json");
-      const index = newsItems.findIndex(n => n.id === id);
-      if (index === -1) throw new Error("News article not found");
-      newsItems[index] = { ...newsItems[index], ...data, updatedAt: new Date() };
-      await saveToJson("news.json", newsItems);
-      return newsItems[index];
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/data/news.json"] });
-      setEditingNews(null);
-      toast({
-        title: "Success",
-        description: "News article updated successfully!",
-      });
-    },
-    onError: () => {
-      toast({
-        title: "Error",
-        description: "Failed to update news article. Please try again.",
-        variant: "destructive",
-      });
-    },
-  });
-
-  // Delete news mutation
-  const deleteNewsMutation = useMutation({
+  const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
       const newsItems = await loadJsonData<News>("news.json");
       const filtered = newsItems.filter(n => n.id !== id);
       await saveToJson("news.json", filtered);
+      return filtered;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/data/news.json"] });
-      setDeletingNewsId(null);
-      toast({
-        title: "Success",
-        description: "News article deleted successfully!",
-      });
-    },
-    onError: () => {
-      toast({
-        title: "Error",
-        description: "Failed to delete news article. Please try again.",
-        variant: "destructive",
-      });
+      toast({ title: "Success", description: "News deleted" });
     },
   });
 
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id || !news) return;
+
+    const oldIndex = news.findIndex(n => n.id === active.id);
+    const newIndex = news.findIndex(n => n.id === over.id);
+
+    const newOrder = arrayMove(news, oldIndex, newIndex);
+    setReorderedNews(newOrder);
+    setHasReordered(true);
+    setHasUnsavedChanges({ ...hasUnsavedChanges, news: true });
+  };
+
+  const displayNews = hasReordered ? reorderedNews : (news || []);
+
   if (isLoading) {
     return (
-      <Card className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-md border border-white/20">
-        <CardContent className="flex items-center justify-center py-8">
-          <Loading size="lg" variant="spinner" />
-        </CardContent>
-      </Card>
-    );
-  }
-
-  if (isError) {
-    return (
-      <Card className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-md border border-white/20">
-        <CardContent className="text-center py-8">
-          <p className="text-red-600 dark:text-red-400">Failed to load news articles</p>
-          <Button onClick={() => refetch()} className="mt-4">
-            Retry
-          </Button>
-        </CardContent>
-      </Card>
+      <div className="flex items-center justify-center p-8">
+        <Loading variant="spinner" size="lg" />
+      </div>
     );
   }
 
   return (
-    <Card className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-md border border-white/20">
-      <CardHeader>
+    <Card className="bg-white/70 dark:bg-slate-800/70 backdrop-blur-md border-white/20">
+      <CardHeader className="border-b border-white/10">
         <div className="flex items-center justify-between">
           <div>
-            <CardTitle className="flex items-center gap-2">
-              <Newspaper className="h-5 w-5" />
+            <CardTitle className="text-2xl" style={{ fontFamily: 'Beo, serif' }}>
               News Management
             </CardTitle>
-            <CardDescription>
-              Create, edit, and publish news articles
-            </CardDescription>
+            <CardDescription>Manage news articles and updates</CardDescription>
           </div>
-          <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-            <DialogTrigger asChild>
-              <Button data-testid="button-add-news">
-                <Plus className="h-4 w-4 mr-2" />
-                Add News Article
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-              <NewsForm
-                onSubmit={(data) => addNewsMutation.mutate(data)}
-                isLoading={addNewsMutation.isPending}
-              />
-            </DialogContent>
-          </Dialog>
-        </div>
-      </CardHeader>
-      <CardContent>
-        {sortedNews.length === 0 ? (
-          <div className="text-center py-8">
-            <Newspaper className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
-            <h3 className="text-lg font-semibold mb-2">No News Articles</h3>
-            <p className="text-muted-foreground mb-4">
-              Create your first news article to share updates
-            </p>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {sortedNews.map((newsItem) => (
-              <div
-                key={newsItem.id}
-                className="flex items-start gap-4 p-4 rounded-lg border bg-card hover:bg-accent/50 transition-colors"
-                data-testid={`news-item-${newsItem.id}`}
+          <div className="flex gap-2">
+            {hasReordered && (
+              <Button
+                onClick={() => saveOrderMutation.mutate(reorderedNews)}
+                disabled={saveOrderMutation.isPending}
               >
-                <img
-                  src={newsItem.image}
-                  alt={newsItem.title}
-                  className="w-20 h-20 rounded-lg object-cover flex-shrink-0"
-                />
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="space-y-1 flex-1">
-                      <div className="flex items-center gap-2">
-                        <h3 className="font-semibold truncate">{newsItem.title}</h3>
-                        <Badge variant={newsItem.isPublished ? "default" : "secondary"}>
-                          {newsItem.isPublished ? "Published" : "Draft"}
-                        </Badge>
-                        <Badge variant="outline" className="text-xs">
-                          {newsItem.category}
-                        </Badge>
-                      </div>
-                      <p className="text-sm text-muted-foreground line-clamp-2">
-                        {newsItem.description}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        Created: {newsItem.createdAt ? new Date(newsItem.createdAt).toLocaleDateString() : 'Unknown'}
-                        {newsItem.publishDate && (
-                          <span> • Published: {new Date(newsItem.publishDate).toLocaleDateString()}</span>
-                        )}
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Dialog
-                        open={editingNews?.id === newsItem.id}
-                        onOpenChange={(open) =>
-                          setEditingNews(open ? newsItem : null)
-                        }
-                      >
-                        <DialogTrigger asChild>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            data-testid={`button-edit-news-${newsItem.id}`}
-                          >
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                        </DialogTrigger>
-                        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-                          <NewsForm
-                            newsItem={newsItem}
-                            onSubmit={(data) =>
-                              updateNewsMutation.mutate({
-                                id: newsItem.id,
-                                data,
-                              })
-                            }
-                            isLoading={updateNewsMutation.isPending}
-                          />
-                        </DialogContent>
-                      </Dialog>
-
-                      <AlertDialog
-                        open={deletingNewsId === newsItem.id}
-                        onOpenChange={(open) =>
-                          setDeletingNewsId(open ? newsItem.id : null)
-                        }
-                      >
-                        <AlertDialogTrigger asChild>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300"
-                            data-testid={`button-delete-news-${newsItem.id}`}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>Delete News Article</AlertDialogTitle>
-                            <AlertDialogDescription>
-                              Are you sure you want to delete "{newsItem.title}"? This action cannot be undone.
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction
-                              onClick={() => deleteNewsMutation.mutate(newsItem.id)}
-                              className="bg-red-600 hover:bg-red-700"
-                            >
-                              Delete
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* Edit News Dialog */}
-        {editingNews && (
-          <Dialog
-            open={!!editingNews}
-            onOpenChange={(open) => !open && setEditingNews(null)}
-          >
-            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-              <NewsForm
-                newsItem={editingNews}
-                onSubmit={(data) =>
-                  updateNewsMutation.mutate({
-                    id: editingNews.id,
-                    data,
-                  })
-                }
-                isLoading={updateNewsMutation.isPending}
-              />
-            </DialogContent>
-          </Dialog>
-        )}
-      </CardContent>
-    </Card>
-  );
-}
-
-// Member Class Management Component
-function MemberClassManagement() {
-  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-  const [editingClass, setEditingClass] = useState<MemberClass | null>(null);
-  const [deletingClassId, setDeletingClassId] = useState<string | null>(null);
-  const { toast } = useToast();
-
-  // Fetch member classes
-  const { data: memberClasses, isLoading, isError, refetch } = useQuery<MemberClass[]>({
-    queryKey: ["/data/memberClasses.json"],
-    queryFn: async () => {
-      const res = await fetch("/data/memberClasses.json");
-      if (!res.ok) throw new Error("Failed to load member classes");
-      return res.json();
-    },
-  });
-
-  // Sort member classes by display order
-  const sortedClasses = memberClasses ? [...memberClasses].sort((a, b) => {
-    const orderA = a.displayOrder || 0;
-    const orderB = b.displayOrder || 0;
-    if (orderA !== orderB) return orderA - orderB;
-    return a.name.localeCompare(b.name);
-  }) : [];
-
-  // Add member class mutation
-  const addClassMutation = useMutation({
-    mutationFn: async (data: any) => {
-      const memberClasses = await loadJsonData<MemberClass>("memberClasses.json");
-      const newClass = { 
-        ...data, 
-        id: generateId(), 
-        createdAt: new Date(), 
-        updatedAt: new Date() 
-      };
-      memberClasses.push(newClass);
-      await saveToJson("memberClasses.json", memberClasses);
-      return newClass;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/data/memberClasses.json"] });
-      setIsAddDialogOpen(false);
-      toast({
-        title: "Success",
-        description: "Member class added successfully!",
-      });
-    },
-    onError: () => {
-      toast({
-        title: "Error",
-        description: "Failed to add member class. Please try again.",
-        variant: "destructive",
-      });
-    },
-  });
-
-  // Update member class mutation
-  const updateClassMutation = useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: any }) => {
-      const memberClasses = await loadJsonData<MemberClass>("memberClasses.json");
-      const index = memberClasses.findIndex(mc => mc.id === id);
-      if (index === -1) throw new Error("Member class not found");
-      memberClasses[index] = { ...memberClasses[index], ...data, updatedAt: new Date() };
-      await saveToJson("memberClasses.json", memberClasses);
-      return memberClasses[index];
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/data/memberClasses.json"] });
-      setEditingClass(null);
-      toast({
-        title: "Success",
-        description: "Member class updated successfully!",
-      });
-    },
-    onError: () => {
-      toast({
-        title: "Error",
-        description: "Failed to update member class. Please try again.",
-        variant: "destructive",
-      });
-    },
-  });
-
-  // Delete member class mutation
-  const deleteClassMutation = useMutation({
-    mutationFn: async (id: string) => {
-      const memberClasses = await loadJsonData<MemberClass>("memberClasses.json");
-      const filtered = memberClasses.filter(mc => mc.id !== id);
-      await saveToJson("memberClasses.json", filtered);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/data/memberClasses.json"] });
-      setDeletingClassId(null);
-      toast({
-        title: "Success",
-        description: "Member class deleted successfully!",
-      });
-    },
-    onError: () => {
-      toast({
-        title: "Error",
-        description: "Failed to delete member class. Please try again.",
-        variant: "destructive",
-      });
-    },
-  });
-
-  if (isLoading) {
-    return (
-      <Card className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-md border border-white/20">
-        <CardContent className="flex items-center justify-center py-8">
-          <Loading size="lg" variant="spinner" />
-        </CardContent>
-      </Card>
-    );
-  }
-
-  if (isError) {
-    return (
-      <Card className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-md border border-white/20">
-        <CardContent className="text-center py-8">
-          <p className="text-red-600 dark:text-red-400">Failed to load member classes</p>
-          <Button onClick={() => refetch()} className="mt-4">
-            Retry
-          </Button>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  return (
-    <Card className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-md border border-white/20">
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <div>
-            <CardTitle className="flex items-center gap-2">
-              <GraduationCap className="h-5 w-5" />
-              Member Classes
-            </CardTitle>
-            <CardDescription>
-              Manage member categories and hierarchies
-            </CardDescription>
-          </div>
-          <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-            <DialogTrigger asChild>
-              <Button data-testid="button-add-member-class">
-                <Plus className="h-4 w-4 mr-2" />
-                Add Class
+                <Save className="h-4 w-4 mr-2" />
+                Save Order
               </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <MemberClassForm
-                onSubmit={(data) => addClassMutation.mutate(data)}
-                isLoading={addClassMutation.isPending}
-              />
-            </DialogContent>
-          </Dialog>
-        </div>
-      </CardHeader>
-      <CardContent>
-        {sortedClasses.length === 0 ? (
-          <div className="text-center py-8">
-            <GraduationCap className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
-            <h3 className="text-lg font-semibold mb-2">No Member Classes</h3>
-            <p className="text-muted-foreground mb-4">
-              Create your first member class to organize your team
-            </p>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {sortedClasses.map((memberClass) => (
-              <div
-                key={memberClass.id}
-                className="flex items-center justify-between p-4 rounded-lg border bg-card hover:bg-accent/50 transition-colors"
-                data-testid={`member-class-${memberClass.id}`}
-              >
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2">
-                    <h3 className="font-semibold">{memberClass.name}</h3>
-                    <Badge variant={memberClass.isActive ? "default" : "secondary"}>
-                      {memberClass.isActive ? "Active" : "Inactive"}
-                    </Badge>
-                  </div>
-                  {memberClass.description && (
-                    <p className="text-sm text-muted-foreground">
-                      {memberClass.description}
-                    </p>
-                  )}
-                  <p className="text-xs text-muted-foreground">
-                    Display Order: {memberClass.displayOrder ?? 0}
-                  </p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Dialog
-                    open={editingClass?.id === memberClass.id}
-                    onOpenChange={(open) =>
-                      setEditingClass(open ? memberClass : null)
-                    }
-                  >
-                    <DialogTrigger asChild>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        data-testid={`button-edit-member-class-${memberClass.id}`}
-                      >
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent>
-                      <MemberClassForm
-                        memberClass={memberClass}
-                        onSubmit={(data) =>
-                          updateClassMutation.mutate({
-                            id: memberClass.id,
-                            data,
-                          })
-                        }
-                        isLoading={updateClassMutation.isPending}
-                      />
-                    </DialogContent>
-                  </Dialog>
-
-                  <AlertDialog
-                    open={deletingClassId === memberClass.id}
-                    onOpenChange={(open) =>
-                      setDeletingClassId(open ? memberClass.id : null)
-                    }
-                  >
-                    <AlertDialogTrigger asChild>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300"
-                        data-testid={`button-delete-member-class-${memberClass.id}`}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>Delete Member Class</AlertDialogTitle>
-                        <AlertDialogDescription>
-                          Are you sure you want to delete "{memberClass.name}"? This action cannot be undone.
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction
-                          onClick={() => deleteClassMutation.mutate(memberClass.id)}
-                          className="bg-red-600 hover:bg-red-700"
-                        >
-                          Delete
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </CardContent>
-    </Card>
-  );
-}
-
-// Member Class Form Component
-function MemberClassForm({
-  memberClass,
-  onSubmit,
-  isLoading,
-}: {
-  memberClass?: MemberClass;
-  onSubmit: (data: any) => void;
-  isLoading: boolean;
-}) {
-  const [formData, setFormData] = useState({
-    name: memberClass?.name || "",
-    description: memberClass?.description || "",
-    displayOrder: memberClass?.displayOrder?.toString() || "0",
-    isActive: memberClass?.isActive ?? true,
-  });
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    onSubmit({
-      ...formData,
-      displayOrder: parseInt(formData.displayOrder) || 0,
-    });
-  };
-
-  return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <DialogHeader>
-        <DialogTitle>
-          {memberClass ? "Edit Member Class" : "Add Member Class"}
-        </DialogTitle>
-        <DialogDescription>
-          {memberClass
-            ? "Update the member class information"
-            : "Create a new member class to categorize your team members"}
-        </DialogDescription>
-      </DialogHeader>
-
-      <div className="space-y-4">
-        <div>
-          <Label htmlFor="name">Class Name *</Label>
-          <Input
-            id="name"
-            value={formData.name}
-            onChange={(e) =>
-              setFormData({ ...formData, name: e.target.value })
-            }
-            placeholder="e.g., Officers, Active Members"
-            required
-            data-testid="input-member-class-name"
-          />
-        </div>
-
-        <div>
-          <Label htmlFor="description">Description</Label>
-          <Textarea
-            id="description"
-            value={formData.description}
-            onChange={(e) =>
-              setFormData({ ...formData, description: e.target.value })
-            }
-            placeholder="Brief description of this member class"
-            rows={3}
-            data-testid="input-member-class-description"
-          />
-        </div>
-
-        <div>
-          <Label htmlFor="displayOrder">Display Order</Label>
-          <Input
-            id="displayOrder"
-            type="number"
-            value={formData.displayOrder}
-            onChange={(e) =>
-              setFormData({ ...formData, displayOrder: e.target.value })
-            }
-            placeholder="0"
-            min="0"
-            data-testid="input-member-class-display-order"
-          />
-        </div>
-
-        <div className="flex items-center space-x-2">
-          <input
-            type="checkbox"
-            id="isActive"
-            checked={formData.isActive}
-            onChange={(e) =>
-              setFormData({ ...formData, isActive: e.target.checked })
-            }
-            data-testid="input-member-class-active"
-          />
-          <Label htmlFor="isActive">Active</Label>
-        </div>
-      </div>
-
-      <DialogFooter>
-        <Button
-          type="submit"
-          disabled={isLoading || !formData.name.trim()}
-          data-testid="button-submit-member-class"
-        >
-          {isLoading && <Loading size="sm" variant="spinner" className="mr-2" />}
-          {memberClass ? "Update" : "Create"} Member Class
-        </Button>
-      </DialogFooter>
-    </form>
-  );
-}
-
-// News Form Component
-function NewsForm({
-  newsItem,
-  onSubmit,
-  isLoading,
-}: {
-  newsItem?: News;
-  onSubmit: (data: any) => void;
-  isLoading: boolean;
-}) {
-  const [formData, setFormData] = useState({
-    category: newsItem?.category || "",
-    title: newsItem?.title || "",
-    description: newsItem?.description || "",
-    content: newsItem?.content || "",
-    image: newsItem?.image || "",
-    isPublished: newsItem?.isPublished ?? false,
-    publishDate: newsItem?.publishDate ? new Date(newsItem.publishDate).toISOString().split('T')[0] : "",
-  });
-  const [imageFile, setImageFile] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState(newsItem?.image || "");
-  const [originalImage, setOriginalImage] = useState<string | null>(null);
-  const [showCropper, setShowCropper] = useState(false);
-  const [crop, setCrop] = useState({ x: 0, y: 0 });
-  const [zoom, setZoom] = useState(1);
-  const [croppedAreaPixels, setCroppedAreaPixels] = useState<any>(null);
-  const { toast } = useToast();
-
-  // Crop completion callback
-  const onCropComplete = useCallback(
-    (croppedArea: any, croppedAreaPixels: any) => {
-      setCroppedAreaPixels(croppedAreaPixels);
-    },
-    []
-  );
-
-  // Handle initial image selection
-  const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      setImageFile(file);
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const result = e.target?.result as string;
-        setOriginalImage(result);
-        setShowCropper(true);
-        // Reset cropping state
-        setCrop({ x: 0, y: 0 });
-        setZoom(1);
-        setCroppedAreaPixels(null);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  // Create cropped image
-  const createCroppedImage = useCallback(
-    async (imageSrc: string, pixelCrop: any) => {
-      const image = new window.Image();
-      image.src = imageSrc;
-      
-      return new Promise<string>((resolve) => {
-        image.onload = () => {
-          const canvas = document.createElement('canvas');
-          const ctx = canvas.getContext('2d');
-          
-          if (!ctx || !pixelCrop) {
-            resolve(imageSrc);
-            return;
-          }
-          
-          canvas.width = pixelCrop.width;
-          canvas.height = pixelCrop.height;
-          
-          ctx.drawImage(
-            image,
-            pixelCrop.x,
-            pixelCrop.y,
-            pixelCrop.width,
-            pixelCrop.height,
-            0,
-            0,
-            pixelCrop.width,
-            pixelCrop.height
-          );
-          
-          resolve(canvas.toDataURL('image/png'));
-        };
-      });
-    },
-    []
-  );
-
-  // Apply crop
-  const handleApplyCrop = async () => {
-    if (!originalImage || !croppedAreaPixels) return;
-    
-    try {
-      const croppedImage = await createCroppedImage(originalImage, croppedAreaPixels);
-      setImagePreview(croppedImage);
-      setFormData({ ...formData, image: croppedImage });
-      setShowCropper(false);
-      setOriginalImage(null);
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to process cropped image. Please try again.",
-        variant: "destructive",
-      });
-    }
-  };
-
-  // Cancel cropping
-  const handleCancelCrop = () => {
-    setShowCropper(false);
-    setOriginalImage(null);
-    setCrop({ x: 0, y: 0 });
-    setZoom(1);
-    setCroppedAreaPixels(null);
-    // Clear the file input
-    const input = document.getElementById('news-image-upload') as HTMLInputElement;
-    if (input) input.value = '';
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    onSubmit({
-      ...formData,
-      publishDate: formData.publishDate ? new Date(formData.publishDate) : null,
-    });
-  };
-
-  return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <DialogHeader>
-        <DialogTitle>
-          {newsItem ? "Edit News Article" : "Add News Article"}
-        </DialogTitle>
-        <DialogDescription>
-          {newsItem
-            ? "Update the news article information"
-            : "Create a new news article to share updates"}
-        </DialogDescription>
-      </DialogHeader>
-
-      <div className="space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <Label htmlFor="title">Title *</Label>
-            <Input
-              id="title"
-              value={formData.title}
-              onChange={(e) =>
-                setFormData({ ...formData, title: e.target.value })
-              }
-              placeholder="News article title"
-              required
-              data-testid="input-news-title"
-            />
-          </div>
-          <div>
-            <Label htmlFor="category">Category *</Label>
-            <Select
-              value={formData.category}
-              onValueChange={(value) => setFormData({ ...formData, category: value })}
-            >
-              <SelectTrigger data-testid="select-news-category">
-                <SelectValue placeholder="Select category" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="General">General</SelectItem>
-                <SelectItem value="Events">Events</SelectItem>
-                <SelectItem value="Research">Research</SelectItem>
-                <SelectItem value="Community">Community</SelectItem>
-                <SelectItem value="Healthcare">Healthcare</SelectItem>
-                <SelectItem value="Announcements">Announcements</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-
-        <div>
-          <Label htmlFor="description">Description *</Label>
-          <Textarea
-            id="description"
-            value={formData.description}
-            onChange={(e) =>
-              setFormData({ ...formData, description: e.target.value })
-            }
-            placeholder="Brief description of the news article"
-            required
-            rows={3}
-            data-testid="input-news-description"
-          />
-        </div>
-
-        <div>
-          <Label htmlFor="content">Content</Label>
-          <Textarea
-            id="content"
-            value={formData.content}
-            onChange={(e) =>
-              setFormData({ ...formData, content: e.target.value })
-            }
-            placeholder="Full article content"
-            rows={8}
-            data-testid="input-news-content"
-          />
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="news-image-upload">Article Image *</Label>
-          <div className="flex items-center gap-4">
-            {imagePreview && (
-              <div className="relative w-24 h-24 rounded-lg overflow-hidden border-2 border-white/20">
-                <img
-                  src={imagePreview}
-                  alt="Preview"
-                  className="w-full h-full object-cover"
-                />
-              </div>
             )}
-            <div className="flex-1">
-              <Input
-                id="news-image-upload"
-                type="file"
-                accept="image/*"
-                onChange={handleImageChange}
-                className="cursor-pointer"
-                data-testid="input-news-image-upload"
-              />
-              <p className="text-sm text-muted-foreground mt-1">
-                Upload an image and crop it to your desired size
-              </p>
-            </div>
+            <Button onClick={() => setIsAddDialogOpen(true)}>
+              <Plus className="h-4 w-4 mr-2" />
+              Add News
+            </Button>
           </div>
         </div>
+      </CardHeader>
 
-        {showCropper && originalImage && (
-          <div className="space-y-4 p-4 bg-black/20 rounded-lg border border-white/10">
-            <div className="relative w-full h-64 bg-black/50 rounded-lg overflow-hidden">
-              <Cropper
-                image={originalImage}
-                crop={crop}
-                zoom={zoom}
-                aspect={16 / 9}
-                onCropChange={setCrop}
-                onZoomChange={setZoom}
-                onCropComplete={onCropComplete}
-                style={{
-                  containerStyle: {
-                    background: 'rgba(0, 0, 0, 0.5)',
-                  },
-                }}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Zoom</Label>
-              <input
-                type="range"
-                min={1}
-                max={3}
-                step={0.1}
-                value={zoom}
-                onChange={(e) => setZoom(parseFloat(e.target.value))}
-                className="w-full"
-              />
-            </div>
-            <div className="flex gap-2">
-              <Button
-                type="button"
-                onClick={handleApplyCrop}
-                className="flex-1"
-                data-testid="button-apply-crop-news"
-              >
-                Apply Crop
+      <CardContent className="p-6">
+        {displayNews.length === 0 ? (
+          <EmptyState
+            title="No News Articles"
+            description="Create your first news article"
+            action={
+              <Button onClick={() => setIsAddDialogOpen(true)}>
+                <Plus className="h-4 w-4 mr-2" />
+                Add First News
               </Button>
-              <Button
-                type="button"
-                onClick={handleCancelCrop}
-                variant="outline"
-                className="flex-1"
-                data-testid="button-cancel-crop-news"
-              >
-                Cancel
-              </Button>
-            </div>
-          </div>
+            }
+          />
+        ) : (
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleDragEnd}
+          >
+            <SortableContext
+              items={displayNews.map(n => n.id)}
+              strategy={verticalListSortingStrategy}
+            >
+              <div className="space-y-2">
+                {displayNews.map((newsItem) => (
+                  <SortableItem key={newsItem.id} id={newsItem.id}>
+                    <div className="flex-1 flex items-center justify-between bg-white/50 dark:bg-slate-800/50 p-4 rounded-lg border border-white/20">
+                      <div className="flex items-center gap-4">
+                        {newsItem.image && (
+                          <img
+                            src={newsItem.image}
+                            alt={newsItem.title}
+                            className="w-16 h-16 rounded object-cover"
+                          />
+                        )}
+                        <div>
+                          <h4 className="font-medium">{newsItem.title}</h4>
+                          <p className="text-sm text-muted-foreground">{newsItem.category}</p>
+                        </div>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => setEditingNews(newsItem)}
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button size="sm" variant="outline" className="text-red-600">
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Delete News</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                Are you sure you want to delete {newsItem.title}?
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction
+                                onClick={() => deleteMutation.mutate(newsItem.id)}
+                                className="bg-red-600 hover:bg-red-700"
+                              >
+                                Delete
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      </div>
+                    </div>
+                  </SortableItem>
+                ))}
+              </div>
+            </SortableContext>
+          </DndContext>
         )}
+      </CardContent>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="flex items-center space-x-2">
-            <input
-              type="checkbox"
-              id="isPublished"
-              checked={formData.isPublished}
-              onChange={(e) =>
-                setFormData({ ...formData, isPublished: e.target.checked })
-              }
-              data-testid="input-news-published"
-            />
-            <Label htmlFor="isPublished">Published</Label>
-          </div>
-          
-          {formData.isPublished && (
-            <div>
-              <Label htmlFor="publishDate">Publish Date</Label>
-              <Input
-                id="publishDate"
-                type="date"
-                value={formData.publishDate}
-                onChange={(e) =>
-                  setFormData({ ...formData, publishDate: e.target.value })
-                }
-                data-testid="input-news-publish-date"
-              />
-            </div>
-          )}
-        </div>
-      </div>
-
-      <DialogFooter>
-        <Button
-          type="submit"
-          disabled={isLoading || !formData.title.trim() || !formData.category.trim() || !formData.description.trim() || !imagePreview}
-          data-testid="button-submit-news"
-        >
-          {isLoading && <Loading size="sm" variant="spinner" className="mr-2" />}
-          {newsItem ? "Update" : "Create"} News Article
-        </Button>
-      </DialogFooter>
-    </form>
+      <NewsDialog
+        isOpen={isAddDialogOpen || !!editingNews}
+        onClose={() => {
+          setIsAddDialogOpen(false);
+          setEditingNews(null);
+        }}
+        news={editingNews}
+      />
+    </Card>
   );
 }
 
-// Hero Images Management Component
-function HeroImageManagement() {
-  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-  const [editingHeroImage, setEditingHeroImage] = useState<HeroImage | null>(null);
-  const [deletingHeroImageId, setDeletingHeroImageId] = useState<string | null>(null);
+// News Dialog
+function NewsDialog({
+  isOpen,
+  onClose,
+  news,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  news: News | null;
+}) {
+  const [formData, setFormData] = useState({
+    title: "",
+    category: "",
+    description: "",
+    content: "",
+    image: "",
+  });
   const { toast } = useToast();
 
-  // Fetch hero images
-  const { data: heroImages, isLoading, isError, refetch } = useQuery<HeroImage[]>({
+  useEffect(() => {
+    if (news) {
+      setFormData({
+        title: news.title || "",
+        category: news.category || "",
+        description: news.description || "",
+        content: news.content || "",
+        image: news.image || "",
+      });
+    } else {
+      setFormData({
+        title: "",
+        category: "",
+        description: "",
+        content: "",
+        image: "",
+      });
+    }
+  }, [news, isOpen]);
+
+  const saveMutation = useMutation({
+    mutationFn: async (data: typeof formData) => {
+      const newsItems = await loadJsonData<News>("news.json");
+      
+      if (news) {
+        const index = newsItems.findIndex(n => n.id === news.id);
+        if (index !== -1) {
+          newsItems[index] = { ...newsItems[index], ...data };
+        }
+      } else {
+        newsItems.push({ ...data, id: generateId() } as News);
+      }
+      
+      await saveToJson("news.json", newsItems);
+      return newsItems;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/data/news.json"] });
+      onClose();
+      toast({
+        title: "Success",
+        description: news ? "News updated" : "News added",
+      });
+    },
+  });
+
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>{news ? "Edit News" : "Add News"}</DialogTitle>
+        </DialogHeader>
+
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (!formData.title.trim()) {
+              toast({
+                title: "Validation Error",
+                description: "Title is required",
+                variant: "destructive",
+              });
+              return;
+            }
+            saveMutation.mutate(formData);
+          }}
+          className="space-y-4"
+        >
+          <ImageUploadField
+            value={formData.image}
+            onChange={(url) => setFormData({ ...formData, image: url })}
+            category="news"
+            label="News Image"
+            currentImage={news?.image}
+          />
+
+          <div className="space-y-2">
+            <Label>Title *</Label>
+            <Input
+              value={formData.title}
+              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+              required
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label>Category *</Label>
+            <Input
+              value={formData.category}
+              onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+              placeholder="e.g., Events, Announcements"
+              required
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label>Description *</Label>
+            <Textarea
+              value={formData.description}
+              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              placeholder="Brief summary"
+              required
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label>Content</Label>
+            <Textarea
+              value={formData.content}
+              onChange={(e) => setFormData({ ...formData, content: e.target.value })}
+              placeholder="Full article content (optional)"
+              className="min-h-[200px]"
+            />
+          </div>
+
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={onClose}>
+              Cancel
+            </Button>
+            <Button type="submit" disabled={saveMutation.isPending}>
+              {saveMutation.isPending ? "Saving..." : news ? "Update" : "Add"}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+// Hero Image Management Component
+function HeroImageManagement({
+  hasUnsavedChanges,
+  setHasUnsavedChanges,
+}: {
+  hasUnsavedChanges: Record<string, boolean>;
+  setHasUnsavedChanges: (value: Record<string, boolean>) => void;
+}) {
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [editingHero, setEditingHero] = useState<HeroImage | null>(null);
+  const [reorderedHeroes, setReorderedHeroes] = useState<HeroImage[]>([]);
+  const [hasReordered, setHasReordered] = useState(false);
+  const { toast } = useToast();
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  const { data: heroImages, isLoading } = useQuery<HeroImage[]>({
     queryKey: ["/data/heroImages.json"],
     queryFn: async () => {
       const res = await fetch("/data/heroImages.json");
-      if (!res.ok) throw new Error("Failed to load hero images");
+      if (!res.ok) throw new Error("Failed to load");
       return res.json();
     },
   });
 
-  // Sort hero images by display order
-  const sortedHeroImages = heroImages ? [...heroImages].sort((a, b) => {
-    const orderA = a.displayOrder || 0;
-    const orderB = b.displayOrder || 0;
-    if (orderA !== orderB) return orderA - orderB;
-    return a.title.localeCompare(b.title);
-  }) : [];
-
-  // Add hero image mutation
-  const addHeroImageMutation = useMutation({
-    mutationFn: async (data: any) => {
-      const heroImages = await loadJsonData<HeroImage>("heroImages.json");
-      const newHeroImage = { 
-        ...data, 
-        id: generateId(), 
-        createdAt: new Date(), 
-        updatedAt: new Date() 
-      };
-      heroImages.push(newHeroImage);
-      await saveToJson("heroImages.json", heroImages);
-      return newHeroImage;
+  const saveOrderMutation = useMutation({
+    mutationFn: async (orderedHeroes: HeroImage[]) => {
+      const updated = orderedHeroes.map((h, index) => ({ ...h, displayOrder: index }));
+      await saveToJson("heroImages.json", updated);
+      return updated;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/data/heroImages.json"] });
-      setIsAddDialogOpen(false);
-      toast({
-        title: "Success",
-        description: "Hero image added successfully!",
-      });
-    },
-    onError: () => {
-      toast({
-        title: "Error",
-        description: "Failed to add hero image. Please try again.",
-        variant: "destructive",
-      });
+      setHasReordered(false);
+      setHasUnsavedChanges({ ...hasUnsavedChanges, hero: false });
+      toast({ title: "Success", description: "Order saved" });
     },
   });
 
-  // Update hero image mutation
-  const updateHeroImageMutation = useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: any }) => {
-      const heroImages = await loadJsonData<HeroImage>("heroImages.json");
-      const index = heroImages.findIndex(h => h.id === id);
-      if (index === -1) throw new Error("Hero image not found");
-      heroImages[index] = { ...heroImages[index], ...data, updatedAt: new Date() };
-      await saveToJson("heroImages.json", heroImages);
-      return heroImages[index];
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/data/heroImages.json"] });
-      setEditingHeroImage(null);
-      toast({
-        title: "Success",
-        description: "Hero image updated successfully!",
-      });
-    },
-    onError: () => {
-      toast({
-        title: "Error",
-        description: "Failed to update hero image. Please try again.",
-        variant: "destructive",
-      });
-    },
-  });
-
-  // Delete hero image mutation
-  const deleteHeroImageMutation = useMutation({
+  const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
-      const heroImages = await loadJsonData<HeroImage>("heroImages.json");
-      const filtered = heroImages.filter(h => h.id !== id);
+      const heroes = await loadJsonData<HeroImage>("heroImages.json");
+      const filtered = heroes.filter(h => h.id !== id);
       await saveToJson("heroImages.json", filtered);
+      return filtered;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/data/heroImages.json"] });
-      setDeletingHeroImageId(null);
-      toast({
-        title: "Success",
-        description: "Hero image deleted successfully!",
-      });
-    },
-    onError: () => {
-      toast({
-        title: "Error",
-        description: "Failed to delete hero image. Please try again.",
-        variant: "destructive",
-      });
+      toast({ title: "Success", description: "Hero image deleted" });
     },
   });
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id || !heroImages) return;
+
+    const oldIndex = heroImages.findIndex(h => h.id === active.id);
+    const newIndex = heroImages.findIndex(h => h.id === over.id);
+
+    const newOrder = arrayMove(heroImages, oldIndex, newIndex);
+    setReorderedHeroes(newOrder);
+    setHasReordered(true);
+    setHasUnsavedChanges({ ...hasUnsavedChanges, hero: true });
+  };
+
+  const displayHeroes = hasReordered ? reorderedHeroes : (heroImages || []);
 
   if (isLoading) {
     return (
-      <Card className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-md border border-white/20">
-        <CardContent className="flex items-center justify-center py-8">
-          <Loading size="lg" variant="spinner" />
-        </CardContent>
-      </Card>
-    );
-  }
-
-  if (isError) {
-    return (
-      <Card className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-md border border-white/20">
-        <CardContent className="text-center py-8">
-          <p className="text-red-600 dark:text-red-400">Failed to load hero images</p>
-          <Button onClick={() => refetch()} className="mt-4">
-            Retry
-          </Button>
-        </CardContent>
-      </Card>
+      <div className="flex items-center justify-center p-8">
+        <Loading variant="spinner" size="lg" />
+      </div>
     );
   }
 
   return (
-    <Card className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-md border border-white/20">
-      <CardHeader>
+    <Card className="bg-white/70 dark:bg-slate-800/70 backdrop-blur-md border-white/20">
+      <CardHeader className="border-b border-white/10">
         <div className="flex items-center justify-between">
           <div>
-            <CardTitle className="flex items-center gap-2">
-              <Image className="h-5 w-5" />
-              Hero Images Management
+            <CardTitle className="text-2xl" style={{ fontFamily: 'Beo, serif' }}>
+              Hero Images
             </CardTitle>
-            <CardDescription>
-              Manage carousel images and captions for the homepage
-            </CardDescription>
+            <CardDescription>Manage homepage hero images and carousel</CardDescription>
           </div>
-          <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-            <DialogTrigger asChild>
-              <Button data-testid="button-add-hero-image">
-                <Plus className="h-4 w-4 mr-2" />
-                Add Hero Image
+          <div className="flex gap-2">
+            {hasReordered && (
+              <Button
+                onClick={() => saveOrderMutation.mutate(reorderedHeroes)}
+                disabled={saveOrderMutation.isPending}
+              >
+                <Save className="h-4 w-4 mr-2" />
+                Save Order
               </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-              <HeroImageForm
-                onSubmit={(data) => addHeroImageMutation.mutate(data)}
-                isLoading={addHeroImageMutation.isPending}
-              />
-            </DialogContent>
-          </Dialog>
+            )}
+            <Button onClick={() => setIsAddDialogOpen(true)}>
+              <Plus className="h-4 w-4 mr-2" />
+              Add Hero Image
+            </Button>
+          </div>
         </div>
       </CardHeader>
-      <CardContent>
-        {sortedHeroImages.length === 0 ? (
-          <div className="text-center py-8">
-            <Image className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
-            <h3 className="text-lg font-semibold mb-2">No Hero Images</h3>
-            <p className="text-muted-foreground mb-4">
-              Add your first hero image to showcase on the homepage
-            </p>
-          </div>
+
+      <CardContent className="p-6">
+        {displayHeroes.length === 0 ? (
+          <EmptyState
+            title="No Hero Images"
+            description="Add your first hero image for the homepage carousel"
+            action={
+              <Button onClick={() => setIsAddDialogOpen(true)}>
+                <Plus className="h-4 w-4 mr-2" />
+                Add First Hero Image
+              </Button>
+            }
+          />
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {sortedHeroImages.map((heroImage) => (
-              <div
-                key={heroImage.id}
-                className="group relative bg-white/50 dark:bg-slate-800/50 rounded-lg border border-white/20 p-4 hover:bg-white/70 dark:hover:bg-slate-800/70 transition-all duration-300"
-                data-testid={`hero-image-${heroImage.id}`}
-              >
-                <div className="relative mb-4">
-                  <img
-                    src={heroImage.imageUrl}
-                    alt={heroImage.altText}
-                    className="w-full h-32 object-cover rounded-lg"
-                  />
-                  <div className="absolute top-2 right-2 flex items-center gap-1">
-                    <Badge variant={heroImage.isActive ? "default" : "secondary"} className="text-xs">
-                      {heroImage.isActive ? "Active" : "Inactive"}
-                    </Badge>
-                  </div>
-                </div>
-                
-                <div className="space-y-2">
-                  <h3 className="font-semibold truncate" data-testid={`text-hero-title-${heroImage.id}`}>
-                    {heroImage.title}
-                  </h3>
-                  {heroImage.description && (
-                    <p className="text-sm text-muted-foreground line-clamp-2" data-testid={`text-hero-description-${heroImage.id}`}>
-                      {heroImage.description}
-                    </p>
-                  )}
-                  <p className="text-xs text-muted-foreground">
-                    Display Order: {heroImage.displayOrder ?? 0}
-                  </p>
-                </div>
-
-                <div className="flex items-center gap-2 mt-4">
-                  <Dialog
-                    open={editingHeroImage?.id === heroImage.id}
-                    onOpenChange={(open) =>
-                      setEditingHeroImage(open ? heroImage : null)
-                    }
-                  >
-                    <DialogTrigger asChild>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        data-testid={`button-edit-hero-image-${heroImage.id}`}
-                      >
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-                      <HeroImageForm
-                        heroImage={heroImage}
-                        onSubmit={(data) =>
-                          updateHeroImageMutation.mutate({
-                            id: heroImage.id,
-                            data,
-                          })
-                        }
-                        isLoading={updateHeroImageMutation.isPending}
-                      />
-                    </DialogContent>
-                  </Dialog>
-
-                  <AlertDialog
-                    open={deletingHeroImageId === heroImage.id}
-                    onOpenChange={(open) =>
-                      setDeletingHeroImageId(open ? heroImage.id : null)
-                    }
-                  >
-                    <AlertDialogTrigger asChild>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300"
-                        data-testid={`button-delete-hero-image-${heroImage.id}`}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>Delete Hero Image</AlertDialogTitle>
-                        <AlertDialogDescription>
-                          Are you sure you want to delete "{heroImage.title}"? This action cannot be undone.
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction
-                          onClick={() => deleteHeroImageMutation.mutate(heroImage.id)}
-                          className="bg-red-600 hover:bg-red-700"
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleDragEnd}
+          >
+            <SortableContext
+              items={displayHeroes.map(h => h.id)}
+              strategy={verticalListSortingStrategy}
+            >
+              <div className="space-y-2">
+                {displayHeroes.map((hero) => (
+                  <SortableItem key={hero.id} id={hero.id}>
+                    <div className="flex-1 flex items-center justify-between bg-white/50 dark:bg-slate-800/50 p-4 rounded-lg border border-white/20">
+                      <div className="flex items-center gap-4">
+                        <img
+                          src={hero.imageUrl}
+                          alt={hero.altText || hero.title || "Hero"}
+                          className="w-24 h-16 rounded object-cover"
+                        />
+                        <div>
+                          <h4 className="font-medium">{hero.title || "Untitled"}</h4>
+                          {hero.description && (
+                            <p className="text-sm text-muted-foreground">{hero.description}</p>
+                          )}
+                        </div>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => setEditingHero(hero)}
                         >
-                          Delete
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
-                </div>
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button size="sm" variant="outline" className="text-red-600">
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Delete Hero Image</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                Are you sure you want to delete this hero image?
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction
+                                onClick={() => deleteMutation.mutate(hero.id)}
+                                className="bg-red-600 hover:bg-red-700"
+                              >
+                                Delete
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      </div>
+                    </div>
+                  </SortableItem>
+                ))}
               </div>
-            ))}
-          </div>
+            </SortableContext>
+          </DndContext>
         )}
       </CardContent>
+
+      <HeroImageDialog
+        isOpen={isAddDialogOpen || !!editingHero}
+        onClose={() => {
+          setIsAddDialogOpen(false);
+          setEditingHero(null);
+        }}
+        heroImage={editingHero}
+      />
     </Card>
   );
 }
-// Hero Image Form Component
-function HeroImageForm({
+
+// Hero Image Dialog
+function HeroImageDialog({
+  isOpen,
+  onClose,
   heroImage,
-  onSubmit,
-  isLoading,
 }: {
-  heroImage?: HeroImage;
-  onSubmit: (data: any) => void;
-  isLoading: boolean;
+  isOpen: boolean;
+  onClose: () => void;
+  heroImage: HeroImage | null;
 }) {
   const [formData, setFormData] = useState({
-    imageUrl: heroImage?.imageUrl || "",
-    displayOrder: heroImage?.displayOrder?.toString() || "0",
-    isActive: heroImage?.isActive ?? true,
+    title: "",
+    description: "",
+    imageUrl: "",
+    altText: "",
+    displayOrder: 0,
   });
-  const [imageFile, setImageFile] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState(heroImage?.thumbnail || heroImage?.imageUrl || "");
-  const [originalImage, setOriginalImage] = useState<string | null>(null);
-  const [showCropper, setShowCropper] = useState(false);
-  const [crop, setCrop] = useState({ x: 0, y: 0 });
-  const [zoom, setZoom] = useState(1);
-  const [croppedAreaPixels, setCroppedAreaPixels] = useState<any>(null);
   const { toast } = useToast();
 
-  // Crop completion callback
-  const onCropComplete = useCallback(
-    (croppedArea: any, croppedAreaPixels: any) => {
-      setCroppedAreaPixels(croppedAreaPixels);
-    },
-    []
-  );
-
-  // Handle initial image selection
-  const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      setImageFile(file);
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const result = e.target?.result as string;
-        setOriginalImage(result);
-        setShowCropper(true);
-        setCrop({ x: 0, y: 0 });
-        setZoom(1);
-        setCroppedAreaPixels(null);
-      };
-      reader.readAsDataURL(file);
+  useEffect(() => {
+    if (heroImage) {
+      setFormData({
+        title: heroImage.title || "",
+        description: heroImage.description || "",
+        imageUrl: heroImage.imageUrl || "",
+        altText: heroImage.altText || "",
+        displayOrder: heroImage.displayOrder || 0,
+      });
+    } else {
+      setFormData({ title: "", description: "", imageUrl: "", altText: "", displayOrder: 0 });
     }
-  };
+  }, [heroImage, isOpen]);
 
-  // Create cropped image
-  const createCroppedImage = useCallback(
-    async (imageSrc: string, pixelCrop: any) => {
-      const image = new window.Image();
-      image.src = imageSrc;
+  const saveMutation = useMutation({
+    mutationFn: async (data: typeof formData) => {
+      const heroes = await loadJsonData<HeroImage>("heroImages.json");
       
-      return new Promise<string>((resolve) => {
-        image.onload = () => {
-          const canvas = document.createElement('canvas');
-          const ctx = canvas.getContext('2d');
-          
-          if (!ctx || !pixelCrop) {
-            resolve(imageSrc);
-            return;
-          }
-          
-          canvas.width = pixelCrop.width;
-          canvas.height = pixelCrop.height;
-          
-          ctx.drawImage(
-            image,
-            pixelCrop.x,
-            pixelCrop.y,
-            pixelCrop.width,
-            pixelCrop.height,
-            0,
-            0,
-            pixelCrop.width,
-            pixelCrop.height
-          );
-          
-          resolve(canvas.toDataURL('image/png'));
-        };
+      if (heroImage) {
+        const index = heroes.findIndex(h => h.id === heroImage.id);
+        if (index !== -1) {
+          heroes[index] = { ...heroes[index], ...data };
+        }
+      } else {
+        heroes.push({ ...data, id: generateId() } as HeroImage);
+      }
+      
+      await saveToJson("heroImages.json", heroes);
+      return heroes;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/data/heroImages.json"] });
+      onClose();
+      toast({
+        title: "Success",
+        description: heroImage ? "Hero image updated" : "Hero image added",
       });
     },
-    []
-  );
-
-  // Apply crop
-  const handleApplyCrop = async () => {
-    if (!originalImage || !croppedAreaPixels) return;
-    
-    try {
-      const croppedImage = await createCroppedImage(originalImage, croppedAreaPixels);
-      setImagePreview(croppedImage);
-      setFormData({ ...formData, imageUrl: croppedImage });
-      setShowCropper(false);
-      setOriginalImage(null);
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to process cropped image. Please try again.",
-        variant: "destructive",
-      });
-    }
-  };
-
-  // Cancel cropping
-  const handleCancelCrop = () => {
-    setShowCropper(false);
-    setOriginalImage(null);
-    setCrop({ x: 0, y: 0 });
-    setZoom(1);
-    setCroppedAreaPixels(null);
-    const input = document.getElementById('hero-image-upload') as HTMLInputElement;
-    if (input) input.value = '';
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    onSubmit({
-      ...formData,
-      title: "Hero Image",
-      altText: "ISB Medical Society hero image",
-      description: "",
-      displayOrder: parseInt(formData.displayOrder) || 0,
-    });
-  };
+  });
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <DialogHeader>
-        <DialogTitle>
-          {heroImage ? "Edit Hero Image" : "Add Hero Image"}
-        </DialogTitle>
-        <DialogDescription>
-          {heroImage
-            ? "Update the hero image information"
-            : "Add a new hero image to the carousel"}
-        </DialogDescription>
-      </DialogHeader>
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="max-w-2xl">
+        <DialogHeader>
+          <DialogTitle>{heroImage ? "Edit Hero Image" : "Add Hero Image"}</DialogTitle>
+        </DialogHeader>
 
-      <div className="space-y-4">
-        <div className="space-y-2">
-          <Label htmlFor="hero-image-upload">Hero Image *</Label>
-          <div className="flex items-center gap-4">
-            {imagePreview && (
-              <div className="relative w-32 h-20 rounded-lg overflow-hidden border-2 border-white/20">
-                <img
-                  src={imagePreview}
-                  alt="Preview"
-                  className="w-full h-full object-cover"
-                />
-              </div>
-            )}
-            <div className="flex-1">
-              <Input
-                id="hero-image-upload"
-                type="file"
-                accept="image/*"
-                onChange={handleImageChange}
-                className="cursor-pointer"
-                data-testid="input-hero-image-upload"
-              />
-              <p className="text-sm text-muted-foreground mt-1">
-                Upload an image and crop it to your desired size (16:9 recommended for hero images)
-              </p>
-            </div>
-          </div>
-        </div>
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (!formData.imageUrl.trim()) {
+              toast({
+                title: "Validation Error",
+                description: "Image is required",
+                variant: "destructive",
+              });
+              return;
+            }
+            if (!formData.altText.trim()) {
+              toast({
+                title: "Validation Error",
+                description: "Alt text is required for accessibility",
+                variant: "destructive",
+              });
+              return;
+            }
+            saveMutation.mutate(formData);
+          }}
+          className="space-y-4"
+        >
+          <ImageUploadField
+            value={formData.imageUrl}
+            onChange={(url) => setFormData({ ...formData, imageUrl: url })}
+            category="hero"
+            label="Hero Image"
+            required
+            currentImage={heroImage?.imageUrl}
+          />
 
-        {showCropper && originalImage && (
-          <div className="space-y-4 p-4 bg-black/20 rounded-lg border border-white/10">
-            <div className="relative w-full h-64 bg-black/50 rounded-lg overflow-hidden">
-              <Cropper
-                image={originalImage}
-                crop={crop}
-                zoom={zoom}
-                aspect={16 / 9}
-                onCropChange={setCrop}
-                onZoomChange={setZoom}
-                onCropComplete={onCropComplete}
-                style={{
-                  containerStyle: {
-                    background: 'rgba(0, 0, 0, 0.5)',
-                  },
-                }}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Zoom</Label>
-              <input
-                type="range"
-                min={1}
-                max={3}
-                step={0.1}
-                value={zoom}
-                onChange={(e) => setZoom(parseFloat(e.target.value))}
-                className="w-full"
-              />
-            </div>
-            <div className="flex gap-2">
-              <Button
-                type="button"
-                onClick={handleApplyCrop}
-                className="flex-1"
-                data-testid="button-apply-crop-hero"
-              >
-                Apply Crop
-              </Button>
-              <Button
-                type="button"
-                onClick={handleCancelCrop}
-                variant="outline"
-                className="flex-1"
-                data-testid="button-cancel-crop-hero"
-              >
-                Cancel
-              </Button>
-            </div>
-          </div>
-        )}
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <Label htmlFor="displayOrder">Display Order</Label>
+          <div className="space-y-2">
+            <Label>Title *</Label>
             <Input
-              id="displayOrder"
+              value={formData.title}
+              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+              placeholder="Image title"
+              required
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label>Description</Label>
+            <Textarea
+              value={formData.description}
+              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              placeholder="Optional description"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label>Alt Text *</Label>
+            <Input
+              value={formData.altText}
+              onChange={(e) => setFormData({ ...formData, altText: e.target.value })}
+              placeholder="Describe image for accessibility"
+              required
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label>Display Order</Label>
+            <Input
               type="number"
               value={formData.displayOrder}
-              onChange={(e) =>
-                setFormData({ ...formData, displayOrder: e.target.value })
-              }
-              placeholder="0"
-              min="0"
-              data-testid="input-hero-display-order"
+              onChange={(e) => setFormData({ ...formData, displayOrder: parseInt(e.target.value) || 0 })}
             />
           </div>
 
-          <div className="flex items-center space-x-2">
-            <input
-              type="checkbox"
-              id="isActive"
-              checked={formData.isActive}
-              onChange={(e) =>
-                setFormData({ ...formData, isActive: e.target.checked })
-              }
-              data-testid="input-hero-active"
-            />
-            <Label htmlFor="isActive">Active</Label>
-          </div>
-        </div>
-      </div>
-
-      <DialogFooter>
-        <Button
-          type="submit"
-          disabled={isLoading || !imagePreview}
-          data-testid="button-submit-hero-image"
-        >
-          {isLoading && <Loading size="sm" variant="spinner" className="mr-2" />}
-          {heroImage ? "Update" : "Create"} Hero Image
-        </Button>
-      </DialogFooter>
-    </form>
-  );
-}
-
-// Programs/Activities Management Component
-function ProgramManagement() {
-  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-  const [editingProgram, setEditingProgram] = useState<Program | null>(null);
-  const [deletingProgramId, setDeletingProgramId] = useState<string | null>(null);
-  const { toast } = useToast();
-
-  const { data: programs, isLoading, isError } = useQuery<Program[]>({
-    queryKey: ["/data/programs.json"],
-    queryFn: async () => {
-      const res = await fetch("/data/programs.json");
-      if (!res.ok) throw new Error("Failed to load programs");
-      return res.json();
-    },
-  });
-
-  const sortedPrograms = programs ? [...programs].sort((a, b) => {
-    const orderA = a.displayOrder || 0;
-    const orderB = b.displayOrder || 0;
-    return orderA - orderB;
-  }) : [];
-
-  const addProgramMutation = useMutation({
-    mutationFn: async (data: any) => {
-      const programs = await loadJsonData<Program>("programs.json");
-      const newProgram = { 
-        ...data, 
-        id: generateId(), 
-        createdAt: new Date(), 
-        updatedAt: new Date() 
-      };
-      programs.push(newProgram);
-      await saveToJson("programs.json", programs);
-      return newProgram;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/data/programs.json"] });
-      setIsAddDialogOpen(false);
-      toast({
-        title: "Success",
-        description: "Activity created successfully",
-      });
-    },
-    onError: () => {
-      toast({
-        title: "Error",
-        description: "Failed to create activity",
-        variant: "destructive",
-      });
-    },
-  });
-
-  const updateProgramMutation = useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: any }) => {
-      const programs = await loadJsonData<Program>("programs.json");
-      const index = programs.findIndex(p => p.id === id);
-      if (index === -1) throw new Error("Program not found");
-      programs[index] = { ...programs[index], ...data, updatedAt: new Date() };
-      await saveToJson("programs.json", programs);
-      return programs[index];
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/data/programs.json"] });
-      setEditingProgram(null);
-      toast({
-        title: "Success",
-        description: "Activity updated successfully",
-      });
-    },
-    onError: () => {
-      toast({
-        title: "Error",
-        description: "Failed to update activity",
-        variant: "destructive",
-      });
-    },
-  });
-
-  const deleteProgramMutation = useMutation({
-    mutationFn: async (id: string) => {
-      const programs = await loadJsonData<Program>("programs.json");
-      const filtered = programs.filter(p => p.id !== id);
-      await saveToJson("programs.json", filtered);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/data/programs.json"] });
-      setDeletingProgramId(null);
-      toast({
-        title: "Success",
-        description: "Activity deleted successfully",
-      });
-    },
-    onError: () => {
-      toast({
-        title: "Error",
-        description: "Failed to delete activity",
-        variant: "destructive",
-      });
-    },
-  });
-
-  if (isLoading) return <Loading />;
-  if (isError) {
-    return (
-      <Card>
-        <CardContent className="pt-6">
-          <p className="text-destructive">Failed to load activities</p>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  const canAddMore = (sortedPrograms?.length || 0) < 4;
-
-  return (
-    <Card className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-md border border-white/20">
-      <CardHeader>
-        <div className="flex justify-between items-center">
-          <div>
-            <CardTitle className="flex items-center gap-2">
-              <Activity className="h-5 w-5" />
-              Our Activities Management
-            </CardTitle>
-            <CardDescription>
-              Manage the 4 activities shown on the homepage (limit: 4 activities)
-            </CardDescription>
-          </div>
-          <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-            <DialogTrigger asChild>
-              <Button
-                disabled={!canAddMore}
-                data-testid="button-add-program"
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                Add Activity
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-              <DialogHeader>
-                <DialogTitle>Add New Activity</DialogTitle>
-                <DialogDescription>
-                  Create a new activity to display on the homepage
-                </DialogDescription>
-              </DialogHeader>
-              <ProgramForm
-                onSubmit={(data) => addProgramMutation.mutate(data)}
-                isLoading={addProgramMutation.isPending}
-              />
-            </DialogContent>
-          </Dialog>
-        </div>
-      </CardHeader>
-      <CardContent>
-        {!canAddMore && (
-          <div className="mb-4 p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-md">
-            <p className="text-sm text-yellow-800 dark:text-yellow-200">
-              Maximum of 4 activities reached. Delete an activity to add a new one.
-            </p>
-          </div>
-        )}
-
-        {sortedPrograms.length === 0 ? (
-          <div className="text-center py-8">
-            <Activity className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
-            <h3 className="text-lg font-semibold mb-2">No Activities</h3>
-            <p className="text-muted-foreground mb-4">
-              Add your first activity to showcase on the homepage
-            </p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {sortedPrograms.map((program) => (
-              <Card key={program.id} className="overflow-hidden">
-                <div className="relative h-48">
-                  <img
-                    src={program.thumbnail || program.image}
-                    alt={program.title}
-                    className="w-full h-full object-cover"
-                  />
-                  <Badge className="absolute top-2 left-2">
-                    Order: {program.displayOrder ?? 0}
-                  </Badge>
-                </div>
-                <CardContent className="pt-4">
-                  <h3 className="font-semibold text-lg mb-2">{program.title}</h3>
-                  <p className="text-sm line-clamp-2">{program.description}</p>
-                  <div className="flex gap-2 mt-4">
-                    <Dialog open={editingProgram?.id === program.id} onOpenChange={(open) => !open && setEditingProgram(null)}>
-                      <DialogTrigger asChild>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => setEditingProgram(program)}
-                          data-testid={`button-edit-program-${program.id}`}
-                        >
-                          <Edit className="h-4 w-4 mr-2" />
-                          Edit
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-                        <DialogHeader>
-                          <DialogTitle>Edit Activity</DialogTitle>
-                          <DialogDescription>
-                            Update this activity's information
-                          </DialogDescription>
-                        </DialogHeader>
-                        <ProgramForm
-                          program={program}
-                          onSubmit={(data) => updateProgramMutation.mutate({ id: program.id, data })}
-                          isLoading={updateProgramMutation.isPending}
-                        />
-                      </DialogContent>
-                    </Dialog>
-
-                    <AlertDialog open={deletingProgramId === program.id} onOpenChange={(open) => !open && setDeletingProgramId(null)}>
-                      <AlertDialogTrigger asChild>
-                        <Button
-                          variant="destructive"
-                          size="sm"
-                          onClick={() => setDeletingProgramId(program.id)}
-                          data-testid={`button-delete-program-${program.id}`}
-                        >
-                          <Trash2 className="h-4 w-4 mr-2" />
-                          Delete
-                        </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>Delete Activity</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            Are you sure you want to delete "{program.title}"? This action cannot be undone.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel data-testid="button-cancel-delete-program">Cancel</AlertDialogCancel>
-                          <AlertDialogAction
-                            onClick={() => deleteProgramMutation.mutate(program.id)}
-                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                            data-testid="button-confirm-delete-program"
-                          >
-                            Delete
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        )}
-      </CardContent>
-    </Card>
-  );
-}
-
-function ProgramForm({ program, onSubmit, isLoading }: {
-  program?: Program;
-  onSubmit: (data: any) => void;
-  isLoading: boolean;
-}) {
-  const [formData, setFormData] = useState({
-    title: program?.title || "",
-    description: program?.description || "",
-    displayOrder: program?.displayOrder?.toString() || "0",
-  });
-  const [imagePreview, setImagePreview] = useState<string | null>(program?.image || null);
-  const [crop, setCrop] = useState({ x: 0, y: 0 });
-  const [zoom, setZoom] = useState(1);
-  const [croppedAreaPixels, setCroppedAreaPixels] = useState<any>(null);
-  const [originalImage, setOriginalImage] = useState<string | null>(null);
-
-  const onCropComplete = useCallback((croppedArea: any, croppedAreaPixels: any) => {
-    setCroppedAreaPixels(croppedAreaPixels);
-  }, []);
-
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setOriginalImage(reader.result as string);
-        setImagePreview(null);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const getCroppedImage = async (): Promise<string> => {
-    if (!originalImage || !croppedAreaPixels) return originalImage!;
-
-    const image = await createImage(originalImage);
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
-
-    canvas.width = croppedAreaPixels.width;
-    canvas.height = croppedAreaPixels.height;
-
-    ctx?.drawImage(
-      image,
-      croppedAreaPixels.x,
-      croppedAreaPixels.y,
-      croppedAreaPixels.width,
-      croppedAreaPixels.height,
-      0,
-      0,
-      croppedAreaPixels.width,
-      croppedAreaPixels.height
-    );
-
-    return canvas.toDataURL('image/jpeg', 0.9);
-  };
-
-  const createImage = (url: string): Promise<HTMLImageElement> => 
-    new Promise((resolve, reject) => {
-      const image = new window.Image();
-      image.addEventListener('load', () => resolve(image));
-      image.addEventListener('error', (error) => reject(error));
-      image.src = url;
-    });
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    let finalImage = imagePreview;
-    if (originalImage && croppedAreaPixels) {
-      finalImage = await getCroppedImage();
-      setImagePreview(finalImage);
-    }
-
-    onSubmit({
-      ...formData,
-      displayOrder: parseInt(formData.displayOrder) || 0,
-      image: finalImage || program?.image,
-    });
-  };
-
-  return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div>
-        <Label htmlFor="title">Title *</Label>
-        <Input
-          id="title"
-          value={formData.title}
-          onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-          placeholder="First on the scene"
-          required
-          data-testid="input-program-title"
-        />
-      </div>
-
-      <div>
-        <Label htmlFor="description">Description *</Label>
-        <Textarea
-          id="description"
-          value={formData.description}
-          onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-          placeholder="Hands-on training in basic medical procedures..."
-          required
-          rows={3}
-          data-testid="input-program-description"
-        />
-      </div>
-
-      <div>
-        <Label htmlFor="image">Activity Image *</Label>
-        <Input
-          id="image"
-          type="file"
-          accept="image/*"
-          onChange={handleImageUpload}
-          data-testid="input-program-image"
-        />
-        {originalImage && !imagePreview && (
-          <div className="mt-4">
-            <div className="relative h-64 bg-gray-100 dark:bg-gray-800 rounded-md overflow-hidden">
-              <Cropper
-                image={originalImage}
-                crop={crop}
-                zoom={zoom}
-                aspect={4 / 3}
-                onCropChange={setCrop}
-                onZoomChange={setZoom}
-                onCropComplete={onCropComplete}
-              />
-            </div>
-            <div className="mt-2">
-              <Label>Zoom</Label>
-              <input
-                type="range"
-                min={1}
-                max={3}
-                step={0.1}
-                value={zoom}
-                onChange={(e) => setZoom(Number(e.target.value))}
-                className="w-full"
-              />
-            </div>
-            <Button
-              type="button"
-              onClick={async () => {
-                const cropped = await getCroppedImage();
-                setImagePreview(cropped);
-                setOriginalImage(null);
-              }}
-              className="mt-2"
-            >
-              Apply Crop
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={onClose}>
+              Cancel
             </Button>
-          </div>
-        )}
-        {imagePreview && (
-          <div className="mt-4">
-            <img src={imagePreview} alt="Preview" className="w-full h-48 object-cover rounded-md" />
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                setImagePreview(null);
-                setOriginalImage(null);
-              }}
-              className="mt-2"
-            >
-              Change Image
+            <Button type="submit" disabled={saveMutation.isPending}>
+              {saveMutation.isPending ? "Saving..." : heroImage ? "Update" : "Add"}
             </Button>
-          </div>
-        )}
-      </div>
-
-      <div>
-        <Label htmlFor="displayOrder">Display Order</Label>
-        <Input
-          id="displayOrder"
-          type="number"
-          value={formData.displayOrder}
-          onChange={(e) => setFormData({ ...formData, displayOrder: e.target.value })}
-          placeholder="0"
-          min="0"
-          data-testid="input-program-display-order"
-        />
-      </div>
-
-      <DialogFooter>
-        <Button
-          type="submit"
-          disabled={isLoading || !formData.title.trim() || !formData.description.trim() || (!imagePreview && !program?.image)}
-          data-testid="button-submit-program"
-        >
-          {isLoading && <Loading size="sm" variant="spinner" className="mr-2" />}
-          {program ? "Update" : "Create"} Activity
-        </Button>
-      </DialogFooter>
-    </form>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
   );
 }
