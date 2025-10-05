@@ -1,0 +1,715 @@
+import type { Express } from "express";
+import { createServer, type Server } from "http";
+import session from "express-session";
+import { storage } from "./storage";
+import { insertProgramSchema, insertNewsSchema, insertMemberSchema, insertMemberClassSchema, insertHeroImageSchema } from "@shared/schema";
+import { processImage, cleanupOldImages } from "./imageProcessor";
+import { randomUUID } from 'crypto';
+import { z } from "zod";
+
+// Simple authentication middleware
+const isAuthenticated = (req: any, res: any, next: any) => {
+  if (req.session && (req.session as any).isAuthenticated) {
+    return next();
+  }
+  return res.status(401).json({ message: "Authentication required" });
+};
+
+// Simple admin check middleware
+const isAdmin = (req: any, res: any, next: any) => {
+  if (req.session && (req.session as any).isAuthenticated && (req.session as any).isAdmin) {
+    return next();
+  }
+  return res.status(403).json({ message: "Admin access required" });
+};
+
+export async function registerRoutes(app: Express): Promise<Server> {
+  // Setup simple session middleware with memory store
+  app.set("trust proxy", 1);
+  app.use(session({
+    secret: process.env.SESSION_SECRET || 'isb-medical-society-secret-key-change-in-production',
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 1 week
+    },
+  }));
+
+  // Simple login route
+  const loginSchema = z.object({
+    username: z.string(),
+    password: z.string(),
+  });
+
+  app.post('/api/login', async (req, res) => {
+    try {
+      const { username, password } = loginSchema.parse(req.body);
+      
+      // Check hardcoded credentials
+      if (username === 'admin' && password === 'password') {
+        (req.session as any).isAuthenticated = true;
+        (req.session as any).isAdmin = true;
+        (req.session as any).user = {
+          id: 'admin',
+          username: 'admin',
+          role: 'admin'
+        };
+        res.json({ message: "Login successful" });
+      } else {
+        res.status(401).json({ message: "Invalid username or password" });
+      }
+    } catch (error) {
+      res.status(400).json({ message: "Invalid request data" });
+    }
+  });
+
+  // Logout route
+  app.post('/api/logout', (req, res) => {
+    req.session.destroy(() => {
+      res.json({ message: "Logged out successfully" });
+    });
+  });
+
+  // Auth status route
+  app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
+    res.json((req.session as any).user);
+  });
+
+  // Check if user is admin
+  app.get('/api/auth/admin', isAuthenticated, async (req: any, res) => {
+    res.json({ 
+      isAdmin: (req.session as any).isAdmin || false, 
+      adminUser: (req.session as any).isAdmin ? { 
+        id: 'admin',
+        role: 'admin' 
+      } : null 
+    });
+  });
+  // Programs routes
+  app.get("/api/programs", async (req, res) => {
+    try {
+      const programs = await storage.getPrograms();
+      res.json(programs);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch programs" });
+    }
+  });
+
+  app.get("/api/programs/:id", async (req, res) => {
+    try {
+      const program = await storage.getProgram(req.params.id);
+      if (!program) {
+        return res.status(404).json({ message: "Program not found" });
+      }
+      res.json(program);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch program" });
+    }
+  });
+
+  app.post("/api/programs", async (req, res) => {
+    try {
+      const validatedData = insertProgramSchema.parse(req.body);
+      const program = await storage.createProgram(validatedData);
+      res.status(201).json(program);
+    } catch (error) {
+      res.status(400).json({ message: "Invalid program data" });
+    }
+  });
+
+  // News routes - specific routes must come before parameterized routes
+  app.get("/api/news/published", async (req, res) => {
+    try {
+      const news = await storage.getPublishedNews();
+      res.json(news);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch published news" });
+    }
+  });
+
+  app.get("/api/news", async (req, res) => {
+    try {
+      const news = await storage.getNews();
+      res.json(news);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch news" });
+    }
+  });
+
+  app.get("/api/news/:id", async (req, res) => {
+    try {
+      const newsItem = await storage.getNewsItem(req.params.id);
+      if (!newsItem) {
+        return res.status(404).json({ message: "News item not found" });
+      }
+      res.json(newsItem);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch news item" });
+    }
+  });
+
+  app.post("/api/news", async (req, res) => {
+    try {
+      const validatedData = insertNewsSchema.parse(req.body);
+      const news = await storage.createNews(validatedData);
+      res.status(201).json(news);
+    } catch (error) {
+      res.status(400).json({ message: "Invalid news data" });
+    }
+  });
+
+  // Member classes routes (public)
+  app.get("/api/member-classes", async (req, res) => {
+    try {
+      const memberClasses = await storage.getMemberClasses();
+      res.json(memberClasses);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch member classes" });
+    }
+  });
+
+  // Members routes (public)
+  app.get("/api/members", async (req, res) => {
+    try {
+      const members = await storage.getMembers();
+      res.json(members);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch members" });
+    }
+  });
+
+  // Hero images routes (public)
+  app.get("/api/hero-images", async (req, res) => {
+    try {
+      const heroImages = await storage.getHeroImages();
+      res.json(heroImages);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch hero images" });
+    }
+  });
+
+  // Contact form route removed - email functionality not in use
+
+  // Admin-only routes
+
+  // Member classes management routes
+  app.get("/api/admin/member-classes", isAuthenticated, isAdmin, async (req, res) => {
+    try {
+      const memberClasses = await storage.getMemberClasses();
+      res.json(memberClasses);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch member classes" });
+    }
+  });
+
+  app.post("/api/admin/member-classes", isAuthenticated, isAdmin, async (req, res) => {
+    try {
+      const validatedData = insertMemberClassSchema.parse(req.body);
+      const memberClass = await storage.createMemberClass(validatedData);
+      res.status(201).json(memberClass);
+    } catch (error) {
+      res.status(400).json({ message: "Invalid member class data" });
+    }
+  });
+
+  app.put("/api/admin/member-classes/:id", isAuthenticated, isAdmin, async (req, res) => {
+    try {
+      const validatedData = insertMemberClassSchema.partial().parse(req.body);
+      const memberClass = await storage.updateMemberClass(req.params.id, validatedData);
+      res.json(memberClass);
+    } catch (error) {
+      res.status(400).json({ message: "Failed to update member class" });
+    }
+  });
+
+  app.delete("/api/admin/member-classes/:id", isAuthenticated, isAdmin, async (req, res) => {
+    try {
+      await storage.deleteMemberClass(req.params.id);
+      res.status(204).send();
+    } catch (error) {
+      res.status(500).json({ message: "Failed to delete member class" });
+    }
+  });
+
+  // Members management routes
+  app.get("/api/admin/members", isAuthenticated, isAdmin, async (req, res) => {
+    try {
+      const members = await storage.getMembers();
+      res.json(members);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch members" });
+    }
+  });
+
+  app.post("/api/admin/members", isAuthenticated, isAdmin, async (req, res) => {
+    try {
+      const validatedData = insertMemberSchema.parse(req.body);
+      
+      // Get member class to determine validation rules
+      const memberClass = await storage.getMemberClass(validatedData.memberClassId!);
+      if (!memberClass) {
+        return res.status(400).json({ message: "Invalid member class" });
+      }
+      
+      // Apply conditional validation based on member class
+      if (memberClass.name === "Active Member") {
+        // Active Members only need name - role is optional
+        validatedData.role = null;
+        
+        // Process image if provided for Active Members too
+        if (validatedData.image) {
+          const memberId = randomUUID();
+          const processedImages = await processImage(validatedData.image, memberId);
+          
+          // Store the JPG fallback URLs (most compatible)
+          validatedData.image = processedImages.original.jpg;
+          (validatedData as any).thumbnail = processedImages.thumbnail.jpg;
+        }
+      } else {
+        // Other classes need name and role (image is optional)
+        if (!validatedData.role?.trim()) {
+          return res.status(400).json({ message: "Role is required for " + memberClass.name });
+        }
+        
+        // Process image if provided
+        if (validatedData.image) {
+          const memberId = randomUUID();
+          const processedImages = await processImage(validatedData.image, memberId);
+          
+          // Store the JPG fallback URLs (most compatible)
+          validatedData.image = processedImages.original.jpg;
+          (validatedData as any).thumbnail = processedImages.thumbnail.jpg;
+        }
+      }
+      
+      const member = await storage.createMember(validatedData);
+      res.status(201).json(member);
+    } catch (error) {
+      console.error("Member creation error:", error);
+      res.status(400).json({ message: "Invalid member data" });
+    }
+  });
+
+  app.put("/api/admin/members/:id", isAuthenticated, isAdmin, async (req, res) => {
+    try {
+      const validatedData = insertMemberSchema.partial().parse(req.body);
+      
+      // Get the current member to determine class if not being changed
+      const currentMember = await storage.getMember(req.params.id);
+      if (!currentMember) {
+        return res.status(404).json({ message: "Member not found" });
+      }
+      
+      // Use provided memberClassId or current member's class
+      const targetClassId = validatedData.memberClassId || currentMember.memberClassId;
+      
+      if (targetClassId) {
+        const memberClass = await storage.getMemberClass(targetClassId);
+        if (!memberClass) {
+          return res.status(400).json({ message: "Invalid member class" });
+        }
+        
+        if (memberClass.name === "Active Member") {
+          // Active Members only need name - role is optional
+          validatedData.role = null;
+          
+          // Process new image if provided for Active Members too
+          if (validatedData.image && validatedData.image.startsWith('data:')) {
+            // Clean up old images first
+            if (currentMember.image) {
+              await cleanupOldImages(currentMember.image, currentMember.thumbnail || '');
+            }
+            
+            const processedImages = await processImage(validatedData.image, req.params.id);
+            
+            // Store the JPG fallback URLs (most compatible)
+            validatedData.image = processedImages.original.jpg;
+            (validatedData as any).thumbnail = processedImages.thumbnail.jpg;
+          }
+        } else {
+          // Other classes need name and role (image is optional)
+          if (validatedData.role !== undefined && !validatedData.role?.trim()) {
+            return res.status(400).json({ message: "Role is required for " + memberClass.name });
+          }
+          
+          // Process new image if provided
+          if (validatedData.image && validatedData.image.startsWith('data:')) {
+            // Clean up old images first
+            if (currentMember.image) {
+              await cleanupOldImages(currentMember.image, currentMember.thumbnail || '');
+            }
+            
+            const processedImages = await processImage(validatedData.image, req.params.id);
+            
+            // Store the JPG fallback URLs (most compatible)
+            validatedData.image = processedImages.original.jpg;
+            (validatedData as any).thumbnail = processedImages.thumbnail.jpg;
+          }
+        }
+      }
+      
+      
+      const member = await storage.updateMember(req.params.id, validatedData);
+      res.json(member);
+    } catch (error) {
+      console.error("Member update error:", error);
+      res.status(400).json({ message: "Failed to update member" });
+    }
+  });
+
+  app.delete("/api/admin/members/:id", isAuthenticated, isAdmin, async (req, res) => {
+    try {
+      await storage.deleteMember(req.params.id);
+      res.status(204).send();
+    } catch (error) {
+      res.status(500).json({ message: "Failed to delete member" });
+    }
+  });
+
+  // Hero images management routes
+  app.get("/api/admin/hero-images", isAuthenticated, isAdmin, async (req, res) => {
+    try {
+      const heroImages = await storage.getHeroImages();
+      res.json(heroImages);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch hero images" });
+    }
+  });
+
+  app.post("/api/admin/hero-images", isAuthenticated, isAdmin, async (req, res) => {
+    try {
+      const validatedData = insertHeroImageSchema.parse(req.body);
+      
+      // Process the image if it's a base64 data URL
+      if (validatedData.imageUrl && validatedData.imageUrl.startsWith('data:image/')) {
+        try {
+          const heroId = randomUUID();
+          const processedImages = await processImage(validatedData.imageUrl, `hero-${heroId}`);
+          
+          // Store the JPG fallback URLs (most compatible)
+          validatedData.imageUrl = processedImages.original.jpg;
+          (validatedData as any).thumbnail = processedImages.thumbnail.jpg;
+        } catch (error) {
+          console.error("Image processing error:", error);
+        }
+      }
+      
+      const heroImage = await storage.createHeroImage(validatedData);
+      res.status(201).json(heroImage);
+    } catch (error) {
+      res.status(400).json({ message: "Invalid hero image data" });
+    }
+  });
+
+  app.put("/api/admin/hero-images/:id", isAuthenticated, isAdmin, async (req, res) => {
+    try {
+      const validatedData = insertHeroImageSchema.partial().parse(req.body);
+      
+      // Process the image if it's a base64 data URL
+      if (validatedData.imageUrl && validatedData.imageUrl.startsWith('data:image/')) {
+        try {
+          const heroId = randomUUID();
+          const processedImages = await processImage(validatedData.imageUrl, `hero-${heroId}`);
+          
+          // Store the JPG fallback URLs (most compatible)
+          validatedData.imageUrl = processedImages.original.jpg;
+          (validatedData as any).thumbnail = processedImages.thumbnail.jpg;
+        } catch (error) {
+          console.error("Image processing error:", error);
+        }
+      }
+      
+      const heroImage = await storage.updateHeroImage(req.params.id, validatedData);
+      res.json(heroImage);
+    } catch (error) {
+      res.status(400).json({ message: "Failed to update hero image" });
+    }
+  });
+
+  app.delete("/api/admin/hero-images/:id", isAuthenticated, isAdmin, async (req, res) => {
+    try {
+      await storage.deleteHeroImage(req.params.id);
+      res.status(204).send();
+    } catch (error) {
+      res.status(500).json({ message: "Failed to delete hero image" });
+    }
+  });
+
+  // Admin programs management routes
+  app.get("/api/admin/programs", isAuthenticated, isAdmin, async (req, res) => {
+    try {
+      const programs = await storage.getPrograms();
+      res.json(programs);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch programs" });
+    }
+  });
+
+  app.post("/api/admin/programs", isAuthenticated, isAdmin, async (req, res) => {
+    try {
+      const validatedData = insertProgramSchema.parse(req.body);
+      
+      // Process the image if it's a base64 data URL
+      if (validatedData.image && validatedData.image.startsWith('data:image/')) {
+        try {
+          const programId = randomUUID();
+          const processedImages = await processImage(validatedData.image, `program-${programId}`);
+          
+          // Store the JPG fallback URLs (most compatible)
+          validatedData.image = processedImages.original.jpg;
+          (validatedData as any).thumbnail = processedImages.thumbnail.jpg;
+        } catch (error) {
+          console.error("Image processing error:", error);
+        }
+      }
+      
+      const program = await storage.createProgram(validatedData);
+      res.status(201).json(program);
+    } catch (error) {
+      res.status(400).json({ message: "Invalid program data" });
+    }
+  });
+
+  app.put("/api/admin/programs/:id", isAuthenticated, isAdmin, async (req, res) => {
+    try {
+      const validatedData = insertProgramSchema.partial().parse(req.body);
+      
+      // Process the image if it's a base64 data URL
+      if (validatedData.image && validatedData.image.startsWith('data:image/')) {
+        try {
+          const programId = randomUUID();
+          const processedImages = await processImage(validatedData.image, `program-${programId}`);
+          
+          // Store the JPG fallback URLs (most compatible)
+          validatedData.image = processedImages.original.jpg;
+          (validatedData as any).thumbnail = processedImages.thumbnail.jpg;
+        } catch (error) {
+          console.error("Image processing error:", error);
+        }
+      }
+      
+      const program = await storage.updateProgram(req.params.id, validatedData);
+      res.json(program);
+    } catch (error) {
+      res.status(400).json({ message: "Failed to update program" });
+    }
+  });
+
+  app.delete("/api/admin/programs/:id", isAuthenticated, isAdmin, async (req, res) => {
+    try {
+      await storage.deleteProgram(req.params.id);
+      res.status(204).send();
+    } catch (error) {
+      res.status(500).json({ message: "Failed to delete program" });
+    }
+  });
+
+  // Admin news management routes
+  app.get("/api/admin/news", isAuthenticated, isAdmin, async (req, res) => {
+    try {
+      const news = await storage.getNews();
+      res.json(news);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch news" });
+    }
+  });
+
+  app.post("/api/admin/news", isAuthenticated, isAdmin, async (req, res) => {
+    try {
+      const validatedData = insertNewsSchema.parse(req.body);
+      
+      // Process the image if it's a base64 data URL
+      if (validatedData.image && validatedData.image.startsWith('data:image/')) {
+        try {
+          const newsId = randomUUID();
+          const processedImages = await processImage(validatedData.image, newsId);
+          
+          // Store the JPG fallback URLs (most compatible)
+          validatedData.image = processedImages.original.jpg;
+          (validatedData as any).thumbnail = processedImages.thumbnail.jpg;
+        } catch (error) {
+          console.error("Image processing error:", error);
+        }
+      }
+      
+      const news = await storage.createNews(validatedData);
+      
+      res.status(201).json(news);
+    } catch (error) {
+      console.error("News validation error:", error);
+      res.status(400).json({ message: "Invalid news data", error: error instanceof Error ? error.message : String(error) });
+    }
+  });
+
+  app.put("/api/admin/news/:id", isAuthenticated, isAdmin, async (req, res) => {
+    try {
+      const validatedData = insertNewsSchema.partial().parse(req.body);
+      
+      // Process the image if it's a base64 data URL
+      if (validatedData.image && validatedData.image.startsWith('data:image/')) {
+        try {
+          const newsId = randomUUID();
+          const processedImages = await processImage(validatedData.image, newsId);
+          
+          // Store the JPG fallback URLs (most compatible)
+          validatedData.image = processedImages.original.jpg;
+          (validatedData as any).thumbnail = processedImages.thumbnail.jpg;
+        } catch (error) {
+          console.error("Image processing error:", error);
+        }
+      }
+      
+      const news = await storage.updateNews(req.params.id, validatedData);
+      res.json(news);
+    } catch (error) {
+      res.status(400).json({ message: "Failed to update news" });
+    }
+  });
+
+  app.delete("/api/admin/news/:id", isAuthenticated, isAdmin, async (req, res) => {
+    try {
+      await storage.deleteNews(req.params.id);
+      res.status(204).send();
+    } catch (error) {
+      res.status(500).json({ message: "Failed to delete news" });
+    }
+  });
+
+  // Object Storage routes
+  const ObjectStorageService = (await import('./objectStorage')).ObjectStorageService;
+  
+  app.post("/api/objects/upload", isAuthenticated, isAdmin, async (req, res) => {
+    try {
+      const objectStorageService = new ObjectStorageService();
+      const uploadURL = await objectStorageService.getObjectEntityUploadURL();
+      res.json({ uploadURL });
+    } catch (error) {
+      console.error("Error getting upload URL:", error);
+      res.status(500).json({ error: "Failed to get upload URL" });
+    }
+  });
+
+  app.get("/objects/:objectPath(*)", async (req, res) => {
+    try {
+      const objectStorageService = new ObjectStorageService();
+      const objectFile = await objectStorageService.getObjectEntityFile(req.path);
+      await objectStorageService.downloadObject(objectFile, res);
+    } catch (error) {
+      console.error("Error accessing object:", error);
+      const ObjectNotFoundError = (await import('./objectStorage')).ObjectNotFoundError;
+      if (error instanceof ObjectNotFoundError) {
+        return res.sendStatus(404);
+      }
+      return res.sendStatus(500);
+    }
+  });
+
+  // Disabled - will be replaced by dev upload endpoint
+  // app.put("/api/admin/member-images", isAuthenticated, isAdmin, async (req, res) => {
+  //   if (!req.body.imageURL) {
+  //     return res.status(400).json({ error: "imageURL is required" });
+  //   }
+
+  //   const userId = (req.session as any).user?.id;
+
+  //   try {
+  //     const objectStorageService = new ObjectStorageService();
+  //     const ObjectAclPolicy = (await import('./objectAcl')).ObjectAclPolicy;
+  //     const objectPath = await objectStorageService.trySetObjectEntityAclPolicy(
+  //       req.body.imageURL,
+  //       {
+  //         owner: userId,
+  //         visibility: "public",
+  //       }
+  //     );
+
+  //     res.status(200).json({ objectPath });
+  //   } catch (error) {
+  //     console.error("Error setting member image:", error);
+  //     res.status(500).json({ error: "Internal server error" });
+  //   }
+  // });
+
+  // Dev-only JSON save endpoint (for editing content on Replit)
+  if (process.env.NODE_ENV === "development") {
+    const fs = await import("fs/promises");
+    const path = await import("path");
+    const multer = (await import("multer")).default;
+    
+    const DATA_DIR = path.resolve(process.cwd(), "client", "public", "data");
+    const UPLOAD_DIR = path.resolve(process.cwd(), "client", "public", "uploads");
+    
+    // Ensure directories exist
+    await fs.mkdir(DATA_DIR, { recursive: true });
+    await fs.mkdir(UPLOAD_DIR, { recursive: true });
+
+    const TOKEN = process.env.LOCAL_ADMIN_TOKEN;
+    
+    const requireDevToken = (req: any, res: any, next: any) => {
+      if (!TOKEN || req.header("x-admin-token") !== TOKEN) {
+        return res.status(401).json({ error: "unauthorized" });
+      }
+      next();
+    };
+
+    // Save JSON endpoint
+    app.post("/dev/save-json", requireDevToken, async (req, res) => {
+      try {
+        const { file, content } = req.body as { file: string; content: any };
+        
+        if (!file?.endsWith(".json") || file.includes("..") || file.includes("/")) {
+          return res.status(400).json({ error: "invalid file" });
+        }
+        
+        JSON.parse(JSON.stringify(content));
+        
+        const abs = path.join(DATA_DIR, file);
+        await fs.writeFile(abs, JSON.stringify(content, null, 2), "utf8");
+        
+        console.log(`[dev-api] Saved ${file}`);
+        res.json({ ok: true });
+      } catch (e: any) {
+        console.error("[dev-api] Error saving JSON:", e);
+        res.status(500).json({ error: e.message });
+      }
+    });
+
+    // Image upload endpoint
+    const upload = multer({ 
+      dest: UPLOAD_DIR,
+      limits: { fileSize: 10 * 1024 * 1024 }
+    });
+
+    app.post("/dev/upload", requireDevToken, upload.single("file"), async (req, res) => {
+      try {
+        if (!req.file) {
+          return res.status(400).json({ error: "no file" });
+        }
+        
+        const ext = path.extname(req.file.originalname);
+        const basename = path.basename(req.file.originalname, ext);
+        const timestamp = Date.now();
+        const newFilename = `${basename}-${timestamp}${ext}`;
+        const newPath = path.join(UPLOAD_DIR, newFilename);
+        
+        await fs.rename(req.file.path, newPath);
+        
+        const publicPath = `/uploads/${newFilename}`;
+        console.log(`[dev-api] Uploaded ${publicPath}`);
+        
+        res.json({ ok: true, publicPath });
+      } catch (e: any) {
+        console.error("[dev-api] Error uploading file:", e);
+        res.status(500).json({ error: e.message });
+      }
+    });
+
+    console.log("[dev-api] Dev-only endpoints enabled (/dev/save-json, /dev/upload)");
+    console.log(`[dev-api] Auth token ${TOKEN ? "configured" : "NOT SET - set LOCAL_ADMIN_TOKEN"}`);
+  }
+
+  const httpServer = createServer(app);
+  return httpServer;
+}
