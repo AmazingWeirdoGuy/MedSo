@@ -1,0 +1,147 @@
+Here’s a single message you can paste to Ghostwriter:
+
+---
+
+**Goal**
+Refactor this project so I can **edit on Replit** (with a dev-only admin page that writes JSON files in the repo) and **deploy to Vercel** as a **frontend-only** site. In production there is **no backend**; the site just reads the JSON I saved during editing.
+
+**Requirements**
+
+1. Move all dynamic content to JSON files inside the repo:
+
+```
+client/src/data/members.json
+client/src/data/news.json
+client/src/data/heroImages.json
+client/src/data/programs.json
+```
+
+React should import or fetch these JSON files to render content.
+
+2. Create a **dev-only file-writer API** that runs **only on Replit** (local/dev), not in production:
+
+* New file: `dev-api/server.ts` (Express)
+* Endpoint: `POST /dev/save-json`
+* Writes JSON to `client/src/data/<file>.json` after validating input and preventing path traversal.
+* Protected by a simple header token: `x-admin-token`.
+* API must **throw/disable itself** if `process.env.NODE_ENV === "production"` or if a Replit-only env marker isn’t present.
+
+**`dev-api/server.ts` (sketch):**
+
+```ts
+import express from "express";
+import fs from "fs/promises";
+import path from "path";
+
+const app = express();
+app.use(express.json());
+
+// Disable in prod builds
+if (process.env.NODE_ENV === "production") {
+  throw new Error("Dev API disabled in production");
+}
+
+const ROOT = path.resolve(process.cwd(), "client", "src", "data");
+const REQUIRED_TOKEN = process.env.LOCAL_ADMIN_TOKEN;
+
+app.post("/dev/save-json", async (req, res) => {
+  try {
+    const token = req.header("x-admin-token");
+    if (!REQUIRED_TOKEN || token !== REQUIRED_TOKEN) {
+      return res.status(401).json({ error: "unauthorized" });
+    }
+
+    const { file, content } = req.body as { file: string; content: any };
+    if (!file || !file.endsWith(".json") || file.includes("..")) {
+      return res.status(400).json({ error: "invalid file" });
+    }
+
+    // Validate JSON
+    JSON.parse(JSON.stringify(content));
+
+    const abs = path.join(ROOT, file);
+    await fs.writeFile(abs, JSON.stringify(content, null, 2), "utf8");
+    res.json({ ok: true });
+  } catch (e: any) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+const PORT = process.env.PORT || 5174;
+app.listen(PORT, () => console.log(`[dev-api] listening on ${PORT}`));
+```
+
+3. **Vite dev proxy** (so the React app can call `/dev/save-json` while editing):
+   In `vite.config.ts` add:
+
+```ts
+server: {
+  allowedHosts: ["*"],
+  proxy: { "/dev": "http://localhost:5174" }
+}
+```
+
+4. **Admin page (dev-only UI):**
+
+* Route `/admin` shows only if a dev flag is set. Use a Vite env var: `VITE_ENABLE_LOCAL_ADMIN=true`.
+* The admin UI loads current JSON (import or fetch), lets me edit entries (members, news, etc.) and sends:
+
+```ts
+await fetch("/dev/save-json", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+    "x-admin-token": import.meta.env.VITE_LOCAL_ADMIN_TOKEN
+  },
+  body: JSON.stringify({ file: "members.json", content: updatedMembers })
+});
+```
+
+* In **production**, the `/admin` route should be hidden/disabled (based on `import.meta.env.PROD` or missing `VITE_ENABLE_LOCAL_ADMIN`).
+
+5. **Scripts & deps**
+   In `package.json`:
+
+```json
+{
+  "scripts": {
+    "dev": "concurrently -n APP,API -c green,cyan \"vite\" \"ts-node dev-api/server.ts\"",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "concurrently": "^9",
+    "ts-node": "^10",
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "express": "^4"
+  }
+}
+```
+
+On Replit set secrets:
+
+* `LOCAL_ADMIN_TOKEN=<long-random-string>`
+* `VITE_ENABLE_LOCAL_ADMIN=true`
+* `VITE_LOCAL_ADMIN_TOKEN=<same-long-random-string>`
+
+6. **Clean up**
+
+* Remove all backend/server/DB code (Express routes, Drizzle, SendGrid, Replit auth, OIDC, etc.).
+* Ensure all imports use the existing aliases; fix any `@` paths.
+* Update `vite.config.ts`:
+
+  * `root` → `client`
+  * `build.outDir` → `dist/public` (or just `dist`, as long as Vercel serves the built files correctly).
+* Make sure `npm run build` produces a static bundle that Vercel can host. No Node server in production.
+
+7. **Production behavior (Vercel)**
+
+* Only the static frontend is deployed.
+* The app **reads the JSON files** saved in `client/src/data/*.json`.
+* `/admin` is not exposed (guarded by env flags).
+* No references to Replit-specific packages/services.
+
+**Result**
+When I edit on Replit, the admin page updates the JSON files inside the repo via the dev API. I push/export to GitHub → Vercel builds → the updated data appears on the live site. No backend needed in production.
