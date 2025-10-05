@@ -12,9 +12,14 @@ app.use(express.urlencoded({ extended: false, limit: '50mb' }));
 // Database setup for session store
 const PgSession = connectPgSimple(session);
 const DATABASE_URL = process.env.DATABASE_URL || process.env.POSTGRES_URL;
+const SESSION_SECRET = process.env.SESSION_SECRET;
 
 if (!DATABASE_URL) {
   throw new Error("DATABASE_URL is not set");
+}
+
+if (!SESSION_SECRET) {
+  throw new Error("SESSION_SECRET is not set. Please set this environment variable to a secure random string.");
 }
 
 // Session middleware with PostgreSQL store
@@ -25,7 +30,7 @@ app.use(session({
     tableName: 'sessions',
     createTableIfMissing: false,
   }),
-  secret: process.env.SESSION_SECRET || 'isb-medical-society-secret-key-change-in-production',
+  secret: SESSION_SECRET,
   resave: false,
   saveUninitialized: false,
   cookie: {
@@ -61,13 +66,20 @@ app.post('/api/login', async (req, res) => {
   try {
     const { username, password } = loginSchema.parse(req.body);
     
-    // Check hardcoded credentials
-    if (username === 'admin' && password === 'password') {
+    // Check credentials from environment variables
+    const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'admin';
+    const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
+    
+    if (!ADMIN_PASSWORD) {
+      return res.status(500).json({ message: "Server configuration error: ADMIN_PASSWORD not set" });
+    }
+    
+    if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
       (req.session as any).isAuthenticated = true;
       (req.session as any).isAdmin = true;
       (req.session as any).user = {
         id: 'admin',
-        username: 'admin',
+        username: ADMIN_USERNAME,
         role: 'admin'
       };
       res.json({ message: "Login successful" });

@@ -21,9 +21,16 @@ const isAdmin = (req: any, res: any, next: any) => {
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Setup simple session middleware with memory store
+  const SESSION_SECRET = process.env.SESSION_SECRET;
+  
+  if (!SESSION_SECRET) {
+    console.warn("WARNING: SESSION_SECRET is not set. Using a default value for development only.");
+    console.warn("Please set SESSION_SECRET environment variable for production use.");
+  }
+  
   app.set("trust proxy", 1);
   app.use(session({
-    secret: process.env.SESSION_SECRET || 'isb-medical-society-secret-key-change-in-production',
+    secret: SESSION_SECRET || 'isb-medical-society-dev-secret-change-for-production',
     resave: false,
     saveUninitialized: false,
     cookie: {
@@ -43,13 +50,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { username, password } = loginSchema.parse(req.body);
       
-      // Check hardcoded credentials
-      if (username === 'admin' && password === 'password') {
+      // Check credentials from environment variables
+      const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'admin';
+      const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'password';
+      
+      if (!process.env.ADMIN_PASSWORD) {
+        console.warn("WARNING: ADMIN_PASSWORD not set. Using default 'password' for development only.");
+      }
+      
+      if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
         (req.session as any).isAuthenticated = true;
         (req.session as any).isAdmin = true;
         (req.session as any).user = {
           id: 'admin',
-          username: 'admin',
+          username: ADMIN_USERNAME,
           role: 'admin'
         };
         res.json({ message: "Login successful" });
