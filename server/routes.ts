@@ -106,7 +106,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       next();
     };
 
-    // Save JSON endpoint
+    // Save JSON endpoint with auto-sorting and validation
     app.post("/dev/save-json", requireDevToken, async (req, res) => {
       try {
         const { file, content } = req.body as { file: string; content: any };
@@ -115,23 +115,72 @@ export async function registerRoutes(app: Express): Promise<Server> {
           return res.status(400).json({ error: "invalid file" });
         }
         
+        // Validate JSON is serializable
         JSON.parse(JSON.stringify(content));
         
-        const abs = path.join(DATA_DIR, file);
-        await fs.writeFile(abs, JSON.stringify(content, null, 2), "utf8");
+        let dataToSave = content;
         
-        console.log(`[dev-api] Saved ${file}`);
-        res.json({ ok: true });
+        // Auto-sort arrays by displayOrder, then by name/title
+        if (Array.isArray(content)) {
+          dataToSave = [...content].sort((a, b) => {
+            if (a.displayOrder !== b.displayOrder) {
+              return (a.displayOrder || 0) - (b.displayOrder || 0);
+            }
+            const nameA = a.name || a.title || '';
+            const nameB = b.name || b.title || '';
+            return nameA.localeCompare(nameB);
+          });
+          
+          // Enforce programs limit
+          if (file === 'programs.json' && dataToSave.length > 4) {
+            return res.status(400).json({ 
+              error: "Programs are limited to a maximum of 4 items. Please remove some programs before adding new ones." 
+            });
+          }
+        }
+        
+        const abs = path.join(DATA_DIR, file);
+        await fs.writeFile(abs, JSON.stringify(dataToSave, null, 2), "utf8");
+        
+        console.log(`[dev-api] Saved ${file} (${Array.isArray(dataToSave) ? dataToSave.length : 1} items)`);
+        res.json({ ok: true, count: Array.isArray(dataToSave) ? dataToSave.length : 1 });
       } catch (e: any) {
         console.error("[dev-api] Error saving JSON:", e);
         res.status(500).json({ error: e.message });
       }
     });
 
-    // Image upload endpoint
+    // Image upload endpoint with category support
+    const storage = multer.diskStorage({
+      destination: async (req, file, cb) => {
+        const category = req.query.category as string || 'misc';
+        const allowedCategories = ['members', 'news', 'hero', 'programs', 'misc'];
+        const finalCategory = allowedCategories.includes(category) ? category : 'misc';
+        const destDir = path.join(UPLOAD_DIR, finalCategory);
+        await fs.mkdir(destDir, { recursive: true });
+        cb(null, destDir);
+      },
+      filename: (req, file, cb) => {
+        const ext = path.extname(file.originalname);
+        const basename = path.basename(file.originalname, ext).toLowerCase().replace(/[^a-z0-9]+/g, '-');
+        const timestamp = Date.now();
+        cb(null, `${basename}-${timestamp}${ext}`);
+      }
+    });
+
     const upload = multer({ 
-      dest: UPLOAD_DIR,
-      limits: { fileSize: 10 * 1024 * 1024 }
+      storage,
+      limits: { fileSize: 10 * 1024 * 1024 },
+      fileFilter: (req, file, cb) => {
+        const allowedTypes = /jpeg|jpg|png|webp|gif/;
+        const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
+        const mimetype = allowedTypes.test(file.mimetype);
+        
+        if (mimetype && extname) {
+          return cb(null, true);
+        }
+        cb(new Error('Only image files (jpeg, jpg, png, webp, gif) are allowed'));
+      }
     });
 
     app.post("/dev/upload", requireDevToken, upload.single("file"), async (req, res) => {
@@ -140,15 +189,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           return res.status(400).json({ error: "no file" });
         }
         
-        const ext = path.extname(req.file.originalname);
-        const basename = path.basename(req.file.originalname, ext);
-        const timestamp = Date.now();
-        const newFilename = `${basename}-${timestamp}${ext}`;
-        const newPath = path.join(UPLOAD_DIR, newFilename);
-        
-        await fs.rename(req.file.path, newPath);
-        
-        const publicPath = `/uploads/${newFilename}`;
+        const category = req.query.category as string || 'misc';
+        const publicPath = `/uploads/${category}/${req.file.filename}`;
         console.log(`[dev-api] Uploaded ${publicPath}`);
         
         res.json({ ok: true, publicPath });
@@ -158,7 +200,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
     });
 
-    console.log("[dev-api] Dev-only endpoints enabled (/dev/save-json, /dev/upload)");
+    // Delete upload endpoint
+    app.delete("/dev/upload", requireDevToken, async (req, res) => {
+      try {
+        const { path: filePath } = req.body as { path: string };
+        
+        if (!filePath || !filePath.startsWith('/uploads/')) {
+          return res.status(400).json({ error: "invalid file path" });
+        }
+        
+        const abs = path.join(process.cwd(), 'client', 'public', filePath);
+        
+        // Check if file exists
+        try {
+          await fs.access(abs);
+        } catch {
+          return res.status(404).json({ error: "file not found" });
+        }
+        
+        await fs.unlink(abs);
+        console.log(`[dev-api] Deleted ${filePath}`);
+        
+        res.json({ ok: true });
+      } catch (e: any) {
+        console.error("[dev-api] Error deleting file:", e);
+        res.status(500).json({ error: e.message });
+      }
+    });
+
+    console.log("[dev-api] Dev-only endpoints enabled (/dev/save-json, /dev/upload, /dev/upload [DELETE])");
     console.log(`[dev-api] Auth token ${TOKEN ? "configured" : "NOT SET - set LOCAL_ADMIN_TOKEN"}`);
   }
 
