@@ -1,0 +1,171 @@
+Paste this to Ghostwriter:
+
+---
+
+**Goal**
+Rebuild the **dev-only API on Replit** so it provides **feature parity** with the old admin page: **add/edit/remove** Members, Member Classes, Programs, News, and Hero Images; **reorder** items; **attach images** from files; and **persist** everything into JSON inside the repo. On Vercel, app is **static** (no admin).
+
+---
+
+## 1) Content source of truth (JSON files)
+
+Create and maintain these files (arrays of objects):
+
+```
+client/src/data/memberClasses.json
+client/src/data/members.json
+client/src/data/programs.json
+client/src/data/news.json
+client/src/data/heroImages.json
+```
+
+### Minimal schemas (TypeScript)
+
+```ts
+// client/src/types/content.ts
+export type MemberClass = { id:string; name:string; description?:string; displayOrder?:number; isActive?:boolean };
+export type Member = { id:string; name:string; role?:string; memberClassId?:string; bio?:string; image?:string; thumbnail?:string; linkedIn?:string; year?:string; displayOrder?:number; isActive?:boolean };
+export type Program = { id:string; title:string; subtitle?:string; description?:string; image?:string; createdAt?:string };
+export type News = { id:string; category:string; title:string; description:string; content?:string; image:string; isPublished?:boolean; publishDate?:string };
+export type HeroImage = { id:string; title:string; description?:string; imageUrl:string; altText:string; displayOrder?:number; isActive?:boolean };
+```
+
+---
+
+## 2) Dev-only API (Replit acts as backend in dev)
+
+* File: `dev-api/server.ts`
+* Tech: **Express**, **multer**, **ts-node**, **concurrently**
+* Guard: **Disabled in production** and requires header token `x-admin-token === process.env.LOCAL_ADMIN_TOKEN`
+* Storage:
+
+  * JSON dir: `client/src/data/`
+  * Upload dir: `client/public/uploads/` (commit images into repo)
+
+### Endpoints (match old admin capabilities)
+
+**Auth guard for all routes:** reject missing/wrong token.
+
+**Content read/write (generic):**
+
+* `GET /dev/read?file=<members.json|...>` → returns parsed JSON
+* `POST /dev/save-json` `{ file:string, content:any }` → validates & writes file prettified
+* `POST /dev/reorder` `{ file:string, order:string[] }` → reorders by id array
+
+**Entity operations (convenience CRUD, all update the right JSON file):**
+
+* `POST /dev/member-classes/upsert` `{ item: MemberClass }`
+
+* `POST /dev/member-classes/delete` `{ id:string }`
+
+* `POST /dev/members/upsert` `{ item: Member }`
+
+* `POST /dev/members/delete` `{ id:string }`
+
+* `POST /dev/programs/upsert` `{ item: Program }`
+
+* `POST /dev/programs/delete` `{ id:string }`
+
+* `POST /dev/news/upsert` `{ item: News }`
+
+* `POST /dev/news/delete` `{ id:string }`
+
+* `POST /dev/hero-images/upsert` `{ item: HeroImage }`
+
+* `POST /dev/hero-images/delete` `{ id:string }`
+
+> Implementation: load JSON, upsert by `id` (create if new), stamp `createdAt/updatedAt` where relevant, write back. Validate shape; reject missing required fields.
+
+**Uploads:**
+
+* `POST /dev/upload` (multipart form, field `file`) → saves to `client/public/uploads/…`, returns `{ publicPath: "/uploads/<name>.jpg" }`
+
+  * Optional: normalize filename to `kebab-case`, keep extension, prevent collisions.
+
+**Utilities / Safety:**
+
+* Prevent path traversal on `file` names (`..`).
+* Validate JSON (e.g., zod) and **dedupe IDs**.
+* Sort lists by `displayOrder` if provided; otherwise keep insertion.
+
+---
+
+## 3) Vite integration
+
+* In `vite.config.ts`:
+
+```ts
+server: { proxy: { "/dev": "http://localhost:5174" }, allowedHosts: ["*"] }
+```
+
+* `package.json`:
+
+```json
+{
+  "scripts": {
+    "dev": "concurrently -n APP,API -c green,cyan \"vite\" \"ts-node dev-api/server.ts\"",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": { "concurrently": "^9", "ts-node": "^10", "typescript": "^5" },
+  "dependencies": { "express": "^4", "multer": "^1", "cors": "^2" }
+}
+```
+
+**Replit Secrets**
+
+* `LOCAL_ADMIN_TOKEN=<long-random>`
+* `VITE_LOCAL_ADMIN_TOKEN=<same>`
+* `VITE_ENABLE_LOCAL_ADMIN=true`
+
+---
+
+## 4) Admin UI parity (React)
+
+* Route `/admin` is **visible only if** `import.meta.env.DEV && import.meta.env.VITE_ENABLE_LOCAL_ADMIN === "true"`.
+* Features to implement (match old admin):
+
+  * **Member Classes**: list, create/edit (id, name, description, displayOrder, isActive), delete, reorder.
+  * **Members**: list, create/edit (name, role, memberClassId, bio, image/thumbnail, linkedIn, year, displayOrder, isActive), delete, reorder.
+
+    * **Attach image**: upload via `/dev/upload`, set returned `publicPath` as `image` (and optional `thumbnail`).
+  * **Programs**: list, create/edit (title, subtitle, description, image), delete.
+  * **News**: list, create/edit (id, category, title, description, content (markdown), image, isPublished, publishDate), delete.
+  * **Hero Images**: list, create/edit (title, description, imageUrl, altText, displayOrder, isActive), delete, reorder.
+* All **Save** actions call the specific endpoint (or `save-json`) and then refresh local state.
+
+**Headers in fetch:**
+
+```ts
+headers: {
+  "Content-Type":"application/json",
+  "x-admin-token": import.meta.env.VITE_LOCAL_ADMIN_TOKEN
+}
+```
+
+---
+
+## 5) Cleanups & production rules
+
+* **Remove**: DB (Drizzle/Postgres), auth providers, SendGrid, Replit OIDC, and server routes used in production.
+* **Build**: `root: "client"`, `build.outDir: "dist"`.
+* **Vercel**: SPA fallback enabled; **do not** set `VITE_ENABLE_LOCAL_ADMIN` so `/admin` is hidden on prod.
+* Frontend reads from committed JSON; images come from `/uploads/...` or external URLs.
+
+---
+
+## 6) Acceptance checklist
+
+* Replit dev:
+
+  * `/admin` fully manages all entities (CRUD + reorder + image upload).
+  * JSON files change and are prettified; Git shows diffs.
+* Vercel prod:
+
+  * `/admin` hidden.
+  * Site renders entirely from JSON; images load.
+* No Replit-specific or DB deps in the production build.
+
+---
+
+**Outcome:** Replit serves as a private CMS (dev-only API with full parity). Vercel hosts a static site using the JSON + images committed in the repo.

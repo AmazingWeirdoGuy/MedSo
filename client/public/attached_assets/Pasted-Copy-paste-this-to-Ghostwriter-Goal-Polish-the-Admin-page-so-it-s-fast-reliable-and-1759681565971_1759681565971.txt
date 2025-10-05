@@ -1,0 +1,93 @@
+Copy–paste this to Ghostwriter:
+
+---
+
+**Goal**
+Polish the **Admin page** so it’s fast, reliable, and pleasant to use. Keep the **dev-only API on Replit** (for JSON writes + uploads) and a **pure static build on Vercel** (admin hidden). Make the whole thing actually work end-to-end.
+
+---
+
+## Admin UX polish (must-haves)
+
+* **Global layout:** left nav (Sections: Dashboard, Member Classes, Members, News, Hero Images, Programs/Activities), top bar with save status + “Publish” (writes JSON).
+* **Tables with actions:** search, sort, paginate (page size 10/25/50), inline status chips, quick edit, bulk delete.
+* **Forms:** side drawer or modal with autosave indicator. Disable Save if invalid. Keyboard shortcuts: `Ctrl/Cmd+S` to save.
+* **Drag & drop reorder:** for any collection with `displayOrder`.
+* **Image UX:** upload with preview, show current image, replace/remove, file size + type check, recommended dimensions.
+* **Validation + inline errors:** required fields, URL/image validity, member must have `memberClassId`, programs limited to **4**—block add + show reason.
+* **Unsaved changes guard:** prompt on navigate/close if dirty.
+* **Toasts + error states:** success/failure messages, retry affordances, empty state placeholders with “Add first item”.
+
+---
+
+## Admin technical details
+
+* **State mgmt:** lightweight client store (Zustand or React Context) with normalized collections (by id + ordered list).
+* **Data flow:** load JSON on mount → edit in-memory → explicit Save calls `/dev/save-json`.
+
+  * **Optimistic UI** on save; rollback on error.
+  * After write, **re-read** JSON to confirm canonical server state.
+* **Forms:** react-hook-form + zod resolver for schemas.
+
+  * Common components: `TextField`, `TextArea`, `Select(memberClass)`, `ImagePicker`, `MarkdownEditor` (for news content).
+* **Image upload:** `POST /dev/upload?category=members|news|hero|programs`
+
+  * Enforce whitelist extensions (jpg/jpeg/png/webp), max 3–5MB, kebab-case filenames.
+  * Return `{publicPath}` and assign that to the field.
+  * Optional “Delete file” endpoint if unreferenced.
+* **Bulk ops:** select rows → delete; reorder via DnD with “Save order” button (updates `displayOrder` then saves).
+* **Access control:** admin visible only if `import.meta.env.DEV && import.meta.env.VITE_ENABLE_LOCAL_ADMIN === "true"`. Hide routes otherwise.
+* **Networking:** all admin writes include `x-admin-token`. Centralize fetch with error handling, retry (exponential backoff), and timeout.
+* **Perf:** virtualize long lists, debounce search (250ms), memoize selectors.
+* **A11y:** labels, alt text fields, keyboard focus traps in modals, color-contrast pass.
+
+---
+
+## Schemas (zod)
+
+* `MemberClass`: `{ id, name, description?, displayOrder=0, isActive=true }`
+* `Member`: `{ id, name, role?, memberClassId, bio?, image, thumbnail?, linkedIn?, year?, displayOrder=0, isActive=true }`
+* `News`: `{ id, category, title, description, content?, image, isPublished=false, publishDate? }`
+* `HeroImage`: `{ id, title, description?, imageUrl, altText, displayOrder=0, isActive=true }`
+* `Program`: `{ id, title, subtitle, description, image }`
+
+  * **Enforce max 4 items** total.
+
+Validate before save; return readable errors.
+
+---
+
+## Dev-only API (confirm)
+
+* `POST /dev/save-json` → writes to `client/src/data/*.json`, formats 2 spaces, sorts by `displayOrder` then name/title.
+* `POST /dev/upload` → saves to `client/public/uploads/{category}/`, returns `{ publicPath }`.
+* Protected by token; **throws** if `NODE_ENV === 'production'`.
+* Vite proxy in dev: `proxy: { "/dev": "http://localhost:5174" }`.
+
+---
+
+## Code quality & portability
+
+* Remove dead backend code (Drizzle/Postgres/OIDC/SendGrid/Replit-specific).
+* Strict TS, ESLint + Prettier, no unused deps.
+* `vite.config.ts`: `root: "client"`, `build.outDir: "dist"`, aliases intact.
+* SPA fallback for Vercel.
+* `npm run dev` runs Vite + dev API; `npm run build` outputs static; `npm run preview` works.
+
+---
+
+## Testing & checks
+
+* **Unit:** schema validation, helpers (id generation, slugify, sorting).
+* **Component tests:** forms, DnD reorder, image upload preview.
+* **Integration (dev):** full CRUD flows write to JSON and show diffs in Git.
+* **Prod sanity (Vercel):** admin hidden, content renders from JSON, images served from `/uploads/...`.
+
+---
+
+## Acceptance criteria
+
+* All admin features (member classes, members, news, hero images, programs ≤4) work end-to-end in Replit dev.
+* Saving persists to JSON + committed assets; reloading reflects changes.
+* Production build is static, loads updated content, with no admin access or backend calls.
+* No runtime errors, smooth UX, and clear error messaging.

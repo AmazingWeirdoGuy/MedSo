@@ -1,0 +1,159 @@
+Paste this to Ghostwriter:
+
+---
+
+**Goal**
+Keep Replit as a **dev-only backend** that mirrors **all features of the old admin page**. In dev (Replit), an Admin UI calls a **dev-only API** that writes JSON and saves images into the repo. On Vercel (prod), the app is **pure static** and only reads those JSON files (admin hidden).
+
+---
+
+## Scope: parity with old admin page
+
+Implement the same functions via the dev API and Admin UI:
+
+* **Member Classes**: add/update/remove; order via `displayOrder`.
+* **Members**: add/update/remove; assign `memberClassId`; upload/attach image; optional thumbnail; `displayOrder`, `isActive`.
+* **News**: add/update/remove; markdown/long text; image; `isPublished`; `publishDate`.
+* **Hero Images**: add/update/remove; title, description, alt text, image, `displayOrder`, `isActive`.
+* **Programs / Activities**: add/update/remove; **limit to 4** total; fields: `title`, `subtitle` (aka “activity title”), `description`, `image`.
+* Bulk reorder by drag & drop (updates `displayOrder`).
+
+---
+
+## Data files (source of truth)
+
+Create/maintain these JSON files (TypeScript types too):
+
+```
+client/src/data/memberClasses.json
+client/src/data/members.json
+client/src/data/news.json
+client/src/data/heroImages.json
+client/src/data/programs.json   // activities here, enforce max 4
+```
+
+**Constraints & conventions**
+
+* `id`: string (kebab-case); unique.
+* `displayOrder`: number (default 0); UI sorts ascending.
+* `isActive` booleans.
+* Images stored as **public paths** (see uploads below) or external URLs.
+* Validate schemas before save (use zod).
+
+---
+
+## Dev-only API (Replit)
+
+Create `dev-api/server.ts` (Express). **Never runs in prod**. Protect with header token.
+
+**Common**
+
+* Guard: throw if `NODE_ENV === 'production'`.
+* Replit secrets:
+
+  * `LOCAL_ADMIN_TOKEN`, `VITE_LOCAL_ADMIN_TOKEN` (same value).
+  * `VITE_ENABLE_LOCAL_ADMIN=true` (dev only).
+* Middleware: `express.json()`, simple `requireToken` that checks `x-admin-token`.
+
+**Endpoints**
+
+* `POST /dev/save-json`
+  Body: `{ file: "members.json", content: <array|obj> }`
+
+  * Validate: file in allowed set, no `..`, JSON serializable, schema-valid.
+  * Auto-sort arrays by `displayOrder` then `name/title`.
+  * Enforce **programs length ≤ 4**; reject otherwise.
+  * Optional: generate stable IDs if missing.
+
+* `POST /dev/upload` (with `multer`)
+
+  * Saves to `client/public/uploads/{category}/`.
+  * Returns `{ publicPath: "/uploads/{category}/{filename}" }`.
+  * Allowed categories: `members`, `news`, `hero`, `programs`.
+  * Normalize filenames to `kebab-case.ext`.
+
+* `POST /dev/delete-upload` (optional)
+
+  * Deletes file by relative path under `/uploads/{category}` if no longer referenced.
+
+**Vite proxy (dev)**
+
+```ts
+server: { proxy: { "/dev": "http://localhost:5174" } }
+```
+
+---
+
+## Admin UI (dev only)
+
+* Route `/admin` enabled only if `import.meta.env.DEV && import.meta.env.VITE_ENABLE_LOCAL_ADMIN === "true"`.
+* Screens:
+
+  1. **Member Classes**: CRUD + reorder.
+  2. **Members**: grid + form; image upload → `/dev/upload?category=members`; set `memberClassId`.
+  3. **News**: list + editor (markdown supported); image upload; `isPublished`, `publishDate`.
+  4. **Hero Images**: CRUD; image upload; `altText`, `displayOrder`.
+  5. **Programs/Activities**: CRUD; **block add** if 4 exist; image upload; `title`, `subtitle`, `description`.
+* “Save” buttons call `/dev/save-json` with the updated collection file.
+* Show validation errors inline (e.g., “Programs limited to 4”, missing `memberClassId`, bad URLs).
+
+**Shared UI niceties**
+
+* Drag-and-drop reorder → updates `displayOrder`.
+* Image picker: preview before save; show final public path.
+* Confirm dialogs for destructive actions.
+* Diff indicator: show unsaved changes.
+
+---
+
+## Production (Vercel)
+
+* Admin route **hidden** (no `VITE_ENABLE_LOCAL_ADMIN` in prod).
+* App reads JSON via **imports**:
+
+  ```ts
+  import members from "@/data/members.json";
+  ```
+
+  or via `fetch("/data/*.json")` if you prefer runtime fetch and copy JSON to `client/public/data/` at build time.
+* Ensure SPA routing fallback works on Vercel.
+
+---
+
+## Clean-up & portability
+
+* Remove Replit/DB, Drizzle, Postgres, OIDC/Replit auth, SendGrid, server routes, `.replit` assumptions.
+* Keep only dev API under `dev-api/` and exclude it from production build.
+* `vite.config.ts`: `root: "client"`, `build.outDir: "dist"`, aliases intact.
+* `package.json` scripts:
+
+  ```json
+  {
+    "dev": "concurrently -n APP,API -c green,cyan \"vite\" \"ts-node dev-api/server.ts\"",
+    "build": "vite build",
+    "preview": "vite preview"
+  }
+  ```
+
+---
+
+## Validation schemas (zod) — outline
+
+* `MemberClass`: `{ id, name, description?, displayOrder=0, isActive=true }`
+* `Member`: `{ id, name, role?, memberClassId, bio?, image, thumbnail?, linkedIn?, year?, displayOrder=0, isActive=true }`
+* `News`: `{ id, category, title, description, content?, image, isPublished=false, publishDate? }`
+* `HeroImage`: `{ id, title, description?, imageUrl, altText, displayOrder=0, isActive=true }`
+* `Program`: `{ id, title, subtitle, description, image }` (enforce max length 4 total)
+
+Fail fast on invalid payloads; return clear errors.
+
+---
+
+## Acceptance checklist
+
+* Replit dev: `/admin` visible, all CRUD works, uploads persist in `client/public/uploads/...`, JSON files updated and formatted, programs never exceed 4.
+* Commit shows diffs to JSON/images; push to GitHub.
+* Vercel prod: `/admin` hidden; site renders from JSON; images load from `/uploads/...` or external URLs; client routing OK.
+* No references to backend/DB in prod bundle; `npm run build` outputs a static site.
+
+**Result:** full feature parity in dev via Replit’s dev-only API, portable static site on Vercel with the exact content you curated.

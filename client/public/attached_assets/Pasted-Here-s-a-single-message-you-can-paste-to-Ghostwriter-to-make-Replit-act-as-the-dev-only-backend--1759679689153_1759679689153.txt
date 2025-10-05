@@ -1,0 +1,216 @@
+Here’s a single message you can paste to Ghostwriter to **make Replit act as the dev-only backend**, while the **production build on Vercel is pure frontend**.
+
+---
+
+**Goal**
+Keep editing power on Replit (admin can add/remove members, news, images). Replit runs a **dev-only API** that writes JSON files and saves uploads into the repo. On Vercel, the app is **static** and only reads those JSON files—**no backend**.
+
+---
+
+## 1) Content as JSON (source of truth)
+
+Create:
+
+```
+client/src/data/members.json
+client/src/data/news.json
+client/src/data/programs.json
+client/src/data/heroImages.json
+```
+
+React loads with direct imports or runtime fetch:
+
+```ts
+import members from "@/data/members.json";
+// OR
+const res = await fetch("/data/members.json");
+```
+
+(If using fetch, copy JSON into `client/public/data/` at build time or reference directly from `client/src/data` with Vite assets.)
+
+---
+
+## 2) Dev-only API (Replit acts as the “backend” only in dev)
+
+Create `dev-api/server.ts`:
+
+```ts
+import express from "express";
+import multer from "multer";
+import fs from "fs/promises";
+import path from "path";
+import cors from "cors";
+
+const app = express();
+app.use(express.json());
+app.use(cors()); // only for dev; not used in prod
+
+// Disable entirely if not in dev
+if (process.env.NODE_ENV === "production") {
+  throw new Error("Dev API disabled in production");
+}
+
+const DATA_DIR = path.resolve(process.cwd(), "client", "src", "data");
+const UPLOAD_DIR = path.resolve(process.cwd(), "client", "public", "uploads");
+await fs.mkdir(DATA_DIR, { recursive: true });
+await fs.mkdir(UPLOAD_DIR, { recursive: true });
+
+const TOKEN = process.env.LOCAL_ADMIN_TOKEN; // set in Replit Secrets
+function requireToken(req, res, next) {
+  if (!TOKEN || req.header("x-admin-token") !== TOKEN) {
+    return res.status(401).json({ error: "unauthorized" });
+  }
+  next();
+}
+
+// Save JSON (e.g., members.json)
+app.post("/dev/save-json", requireToken, async (req, res) => {
+  try {
+    const { file, content } = req.body as { file: string; content: any };
+    if (!file?.endsWith(".json") || file.includes("..")) {
+      return res.status(400).json({ error: "invalid file" });
+    }
+    // Validate JSON (throws if circular)
+    JSON.parse(JSON.stringify(content));
+    const abs = path.join(DATA_DIR, file);
+    await fs.writeFile(abs, JSON.stringify(content, null, 2), "utf8");
+    res.json({ ok: true });
+  } catch (e: any) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// Image upload → saved into repo under client/public/uploads/
+const upload = multer({ dest: UPLOAD_DIR });
+app.post("/dev/upload", requireToken, upload.single("file"), (req, res) => {
+  if (!req.file) return res.status(400).json({ error: "no file" });
+  // Optional: rename/normalize to a nicer filename
+  // For now return a public path Vercel will serve:
+  res.json({ ok: true, publicPath: `/uploads/${req.file.filename}` });
+});
+
+const PORT = process.env.PORT || 5174;
+app.listen(PORT, () => console.log(`[dev-api] listening on ${PORT}`));
+```
+
+---
+
+## 3) Vite proxy (so the React app can call the dev API in Replit)
+
+In `vite.config.ts`:
+
+```ts
+server: {
+  allowedHosts: ["*"],
+  proxy: {
+    "/dev": "http://localhost:5174"
+  }
+}
+```
+
+---
+
+## 4) Admin page (dev-only)
+
+* Route `/admin` must be **hidden in production**.
+* Use Vite env flags:
+
+  * On Replit (dev): `VITE_ENABLE_LOCAL_ADMIN=true`
+  * On Vercel (prod): **do not set** `VITE_ENABLE_LOCAL_ADMIN`
+
+Example guard:
+
+```ts
+const adminEnabled = import.meta.env.DEV && import.meta.env.VITE_ENABLE_LOCAL_ADMIN === "true";
+if (!adminEnabled) { /* hide route / redirect */ }
+```
+
+Admin “Save” calls:
+
+```ts
+await fetch("/dev/save-json", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+    "x-admin-token": import.meta.env.VITE_LOCAL_ADMIN_TOKEN
+  },
+  body: JSON.stringify({ file: "members.json", content: updatedMembers })
+});
+```
+
+Admin “Upload” calls:
+
+```ts
+const form = new FormData();
+form.append("file", selectedFile);
+const r = await fetch("/dev/upload", {
+  method: "POST",
+  headers: { "x-admin-token": import.meta.env.VITE_LOCAL_ADMIN_TOKEN },
+  body: form
+});
+const { publicPath } = await r.json();
+// Store publicPath in your JSON entry (e.g., member.image = publicPath)
+```
+
+---
+
+## 5) Scripts & deps
+
+`package.json`:
+
+```json
+{
+  "scripts": {
+    "dev": "concurrently -n APP,API -c green,cyan \"vite\" \"ts-node dev-api/server.ts\"",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "concurrently": "^9",
+    "ts-node": "^10",
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "express": "^4",
+    "multer": "^1",
+    "cors": "^2"
+  }
+}
+```
+
+Replit Secrets:
+
+* `LOCAL_ADMIN_TOKEN=<long-random>`
+* `VITE_LOCAL_ADMIN_TOKEN=<same-value>`
+* `VITE_ENABLE_LOCAL_ADMIN=true`
+
+---
+
+## 6) Clean-up & build for Vercel
+
+* Remove backend/DB code (Express routes, Drizzle, OIDC, SendGrid, Replit-specific auth).
+* Ensure `vite.config.ts`:
+
+  * `root: "client"`
+  * `build.outDir: "dist"`
+* Ensure client-side routing fallback is set for Vercel (SPA).
+* `npm run build` must output **pure static files**. No server required in prod.
+
+---
+
+## 7) Workflow
+
+* **On Replit**: run `npm run dev` → use `/admin` to add/edit members/news, upload images → JSON + images are written into the repo → commit & push.
+* **On Vercel**: connect the repo → auto-build → site reads the updated JSON and serves images from `/uploads/`.
+
+---
+
+## 8) Acceptance checks
+
+* Replit dev: `/admin` visible; saving updates JSON and shows Git diffs.
+* Vercel prod: `/admin` hidden; app reads JSON; images load from `/uploads/` or external URLs.
+* No references to Replit-only packages in prod build.
+
+---
+
+**Result:** Replit acts as your private CMS (dev-only backend). Vercel serves a static, fast site with all your updated content.
