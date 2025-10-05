@@ -40,7 +40,3 @@ scripts
 # Database (not needed for static deployment)
 drizzle.config.ts
 shared/schema.ts
-
-# User uploads (not included in static site)
-client/public/uploads
-public/uploads
