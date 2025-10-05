@@ -27,13 +27,23 @@ export default function About() {
     }));
   };
 
-  // Fetch members and member classes from API
+  // Fetch members and member classes from JSON
   const { data: members = [], isLoading: membersLoading } = useQuery<Member[]>({
-    queryKey: ["/api/members"],
+    queryKey: ["/data/members.json"],
+    queryFn: async () => {
+      const res = await fetch("/data/members.json");
+      if (!res.ok) throw new Error("Failed to load data");
+      return res.json();
+    },
   });
 
   const { data: memberClasses = [] } = useQuery<MemberClass[]>({
-    queryKey: ["/api/member-classes"],
+    queryKey: ["/data/memberClasses.json"],
+    queryFn: async () => {
+      const res = await fetch("/data/memberClasses.json");
+      if (!res.ok) throw new Error("Failed to load data");
+      return res.json();
+    },
   });
 
   // Group members by class

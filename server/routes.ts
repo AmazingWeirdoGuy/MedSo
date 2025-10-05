@@ -638,7 +638,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     const path = await import("path");
     const multer = (await import("multer")).default;
     
-    const DATA_DIR = path.resolve(process.cwd(), "client", "src", "data");
+    const DATA_DIR = path.resolve(process.cwd(), "client", "public", "data");
     const UPLOAD_DIR = path.resolve(process.cwd(), "client", "public", "uploads");
     
     // Ensure directories exist

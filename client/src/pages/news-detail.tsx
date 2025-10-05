@@ -15,7 +15,12 @@ export default function NewsDetail() {
   
   // Fetch all news to find the current article and related ones
   const { data: allNews = [], isLoading } = useQuery<News[]>({
-    queryKey: ["/api/news/published"],
+    queryKey: ["/data/news.json"],
+    queryFn: async () => {
+      const res = await fetch("/data/news.json");
+      if (!res.ok) throw new Error("Failed to load data");
+      return res.json();
+    },
   });
 
   const currentArticle = allNews.find(article => article.id === params.id);

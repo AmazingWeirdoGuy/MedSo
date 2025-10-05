@@ -9,7 +9,12 @@ import { motion } from "framer-motion";
 export default function News() {
   const [, navigate] = useLocation();
   const { data: allNews = [] } = useQuery<News[]>({
-    queryKey: ["/api/news/published"],
+    queryKey: ["/data/news.json"],
+    queryFn: async () => {
+      const res = await fetch("/data/news.json");
+      if (!res.ok) throw new Error("Failed to load data");
+      return res.json();
+    },
   });
   
   // Show only the latest 3 news items on home page

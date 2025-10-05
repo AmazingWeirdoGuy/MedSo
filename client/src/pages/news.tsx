@@ -13,7 +13,12 @@ import { motion } from "framer-motion";
 export default function News() {
   const [, navigate] = useLocation();
   const { data: newsArticles = [], isLoading } = useQuery<NewsType[]>({
-    queryKey: ["/api/news/published"],
+    queryKey: ["/data/news.json"],
+    queryFn: async () => {
+      const res = await fetch("/data/news.json");
+      if (!res.ok) throw new Error("Failed to load data");
+      return res.json();
+    },
   });
   const [loadingMore, setLoadingMore] = useState(false);
 
