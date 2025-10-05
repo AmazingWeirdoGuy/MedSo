@@ -18,8 +18,12 @@ import { Users, Newspaper, Image, Plus, Edit, Trash2, Mail, ExternalLink, Gradua
 import { Loading } from "@/components/ui/loading";
 import Cropper from "react-easy-crop";
 import { apiRequest, queryClient } from "@/lib/queryClient";
+import { saveToJson, uploadImage, loadJsonData } from "@/lib/devApi";
 import type { Member, MemberClass, News, HeroImage, AdminUser, Program } from "@shared/schema";
 import blankPfpPath from "@assets/blank-pfp.png";
+
+// Browser-compatible ID generator
+const generateId = () => `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
 export default function AdminPage() {
   const { toast } = useToast();
@@ -235,11 +239,15 @@ function MemberModal({
   // Update member mutation
   const updateMemberMutation = useMutation({
     mutationFn: async (data: any) => {
-      return apiRequest("PUT", `/api/admin/members/${member?.id}`, data);
+      const members = await loadJsonData<Member>("members.json");
+      const index = members.findIndex(m => m.id === member?.id);
+      if (index === -1) throw new Error("Member not found");
+      members[index] = { ...members[index], ...data, updatedAt: new Date() };
+      await saveToJson("members.json", members);
+      return members[index];
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/admin/members"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/members"] });
+      queryClient.invalidateQueries({ queryKey: ["/data/members.json"] });
       onOpenChange(false);
       toast({
         title: "Success",
@@ -258,11 +266,19 @@ function MemberModal({
   // Add member mutation
   const addMemberMutation = useMutation({
     mutationFn: async (data: any) => {
-      return apiRequest("POST", "/api/admin/members", data);
+      const members = await loadJsonData<Member>("members.json");
+      const newMember = { 
+        ...data, 
+        id: generateId(), 
+        createdAt: new Date(), 
+        updatedAt: new Date() 
+      };
+      members.push(newMember);
+      await saveToJson("members.json", members);
+      return newMember;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/admin/members"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/members"] });
+      queryClient.invalidateQueries({ queryKey: ["/data/members.json"] });
       onOpenChange(false);
       toast({
         title: "Success",
@@ -647,11 +663,21 @@ function MemberManagement() {
 
   // Fetch members and member classes
   const { data: members, isLoading: membersLoading, isError: membersError } = useQuery<Member[]>({
-    queryKey: ["/api/admin/members"],
+    queryKey: ["/data/members.json"],
+    queryFn: async () => {
+      const res = await fetch("/data/members.json");
+      if (!res.ok) throw new Error("Failed to load members");
+      return res.json();
+    },
   });
 
   const { data: memberClasses, isLoading: classesLoading } = useQuery<MemberClass[]>({
-    queryKey: ["/api/admin/member-classes"],
+    queryKey: ["/data/memberClasses.json"],
+    queryFn: async () => {
+      const res = await fetch("/data/memberClasses.json");
+      if (!res.ok) throw new Error("Failed to load member classes");
+      return res.json();
+    },
   });
 
   // Group members by class
@@ -796,11 +822,15 @@ function ClassSection({
   // Mutations
   const updateMemberMutation = useMutation({
     mutationFn: async ({ id, data }: { id: string; data: any }) => {
-      return apiRequest("PUT", `/api/admin/members/${id}`, data);
+      const members = await loadJsonData<Member>("members.json");
+      const index = members.findIndex(m => m.id === id);
+      if (index === -1) throw new Error("Member not found");
+      members[index] = { ...members[index], ...data, updatedAt: new Date() };
+      await saveToJson("members.json", members);
+      return members[index];
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/admin/members"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/members"] });
+      queryClient.invalidateQueries({ queryKey: ["/data/members.json"] });
       toast({
         title: "Success",
         description: "Member updated successfully!",
@@ -818,11 +848,12 @@ function ClassSection({
 
   const deleteMemberMutation = useMutation({
     mutationFn: async (id: string) => {
-      return apiRequest("DELETE", `/api/admin/members/${id}`);
+      const members = await loadJsonData<Member>("members.json");
+      const filtered = members.filter(m => m.id !== id);
+      await saveToJson("members.json", filtered);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/admin/members"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/members"] });
+      queryClient.invalidateQueries({ queryKey: ["/data/members.json"] });
       toast({
         title: "Success",
         description: "Member deleted successfully!",
@@ -1480,7 +1511,12 @@ function AddMemberDialog({
 
   // Fetch member classes for selection
   const { data: memberClasses } = useQuery<MemberClass[]>({
-    queryKey: ["/api/admin/member-classes"],
+    queryKey: ["/data/memberClasses.json"],
+    queryFn: async () => {
+      const res = await fetch("/data/memberClasses.json");
+      if (!res.ok) throw new Error("Failed to load member classes");
+      return res.json();
+    },
   });
 
   // Determine if selected class is Active Member
@@ -1705,7 +1741,12 @@ function EditMemberDialog({
 
   // Fetch member classes for selection
   const { data: memberClasses } = useQuery<MemberClass[]>({
-    queryKey: ["/api/admin/member-classes"],
+    queryKey: ["/data/memberClasses.json"],
+    queryFn: async () => {
+      const res = await fetch("/data/memberClasses.json");
+      if (!res.ok) throw new Error("Failed to load member classes");
+      return res.json();
+    },
   });
 
   // Determine if selected class is Active Member
@@ -1882,7 +1923,12 @@ function NewsManagement() {
 
   // Fetch news
   const { data: newsItems, isLoading, isError, refetch } = useQuery<News[]>({
-    queryKey: ["/api/admin/news"],
+    queryKey: ["/data/news.json"],
+    queryFn: async () => {
+      const res = await fetch("/data/news.json");
+      if (!res.ok) throw new Error("Failed to load news");
+      return res.json();
+    },
   });
 
   // Sort news by creation date (newest first)
@@ -1895,12 +1941,19 @@ function NewsManagement() {
   // Add news mutation
   const addNewsMutation = useMutation({
     mutationFn: async (data: any) => {
-      return apiRequest("POST", "/api/admin/news", data);
+      const newsItems = await loadJsonData<News>("news.json");
+      const newNews = { 
+        ...data, 
+        id: generateId(), 
+        createdAt: new Date(), 
+        updatedAt: new Date() 
+      };
+      newsItems.push(newNews);
+      await saveToJson("news.json", newsItems);
+      return newNews;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/admin/news"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/news"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/news/published"] });
+      queryClient.invalidateQueries({ queryKey: ["/data/news.json"] });
       setIsAddDialogOpen(false);
       toast({
         title: "Success",
@@ -1919,12 +1972,15 @@ function NewsManagement() {
   // Update news mutation
   const updateNewsMutation = useMutation({
     mutationFn: async ({ id, data }: { id: string; data: any }) => {
-      return apiRequest("PUT", `/api/admin/news/${id}`, data);
+      const newsItems = await loadJsonData<News>("news.json");
+      const index = newsItems.findIndex(n => n.id === id);
+      if (index === -1) throw new Error("News article not found");
+      newsItems[index] = { ...newsItems[index], ...data, updatedAt: new Date() };
+      await saveToJson("news.json", newsItems);
+      return newsItems[index];
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/admin/news"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/news"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/news/published"] });
+      queryClient.invalidateQueries({ queryKey: ["/data/news.json"] });
       setEditingNews(null);
       toast({
         title: "Success",
@@ -1943,12 +1999,12 @@ function NewsManagement() {
   // Delete news mutation
   const deleteNewsMutation = useMutation({
     mutationFn: async (id: string) => {
-      return apiRequest("DELETE", `/api/admin/news/${id}`);
+      const newsItems = await loadJsonData<News>("news.json");
+      const filtered = newsItems.filter(n => n.id !== id);
+      await saveToJson("news.json", filtered);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/admin/news"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/news"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/news/published"] });
+      queryClient.invalidateQueries({ queryKey: ["/data/news.json"] });
       setDeletingNewsId(null);
       toast({
         title: "Success",
@@ -2166,7 +2222,12 @@ function MemberClassManagement() {
 
   // Fetch member classes
   const { data: memberClasses, isLoading, isError, refetch } = useQuery<MemberClass[]>({
-    queryKey: ["/api/admin/member-classes"],
+    queryKey: ["/data/memberClasses.json"],
+    queryFn: async () => {
+      const res = await fetch("/data/memberClasses.json");
+      if (!res.ok) throw new Error("Failed to load member classes");
+      return res.json();
+    },
   });
 
   // Sort member classes by display order
@@ -2180,10 +2241,19 @@ function MemberClassManagement() {
   // Add member class mutation
   const addClassMutation = useMutation({
     mutationFn: async (data: any) => {
-      return apiRequest("POST", "/api/admin/member-classes", data);
+      const memberClasses = await loadJsonData<MemberClass>("memberClasses.json");
+      const newClass = { 
+        ...data, 
+        id: generateId(), 
+        createdAt: new Date(), 
+        updatedAt: new Date() 
+      };
+      memberClasses.push(newClass);
+      await saveToJson("memberClasses.json", memberClasses);
+      return newClass;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/admin/member-classes"] });
+      queryClient.invalidateQueries({ queryKey: ["/data/memberClasses.json"] });
       setIsAddDialogOpen(false);
       toast({
         title: "Success",
@@ -2202,10 +2272,15 @@ function MemberClassManagement() {
   // Update member class mutation
   const updateClassMutation = useMutation({
     mutationFn: async ({ id, data }: { id: string; data: any }) => {
-      return apiRequest("PUT", `/api/admin/member-classes/${id}`, data);
+      const memberClasses = await loadJsonData<MemberClass>("memberClasses.json");
+      const index = memberClasses.findIndex(mc => mc.id === id);
+      if (index === -1) throw new Error("Member class not found");
+      memberClasses[index] = { ...memberClasses[index], ...data, updatedAt: new Date() };
+      await saveToJson("memberClasses.json", memberClasses);
+      return memberClasses[index];
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/admin/member-classes"] });
+      queryClient.invalidateQueries({ queryKey: ["/data/memberClasses.json"] });
       setEditingClass(null);
       toast({
         title: "Success",
@@ -2224,10 +2299,12 @@ function MemberClassManagement() {
   // Delete member class mutation
   const deleteClassMutation = useMutation({
     mutationFn: async (id: string) => {
-      return apiRequest("DELETE", `/api/admin/member-classes/${id}`);
+      const memberClasses = await loadJsonData<MemberClass>("memberClasses.json");
+      const filtered = memberClasses.filter(mc => mc.id !== id);
+      await saveToJson("memberClasses.json", filtered);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/admin/member-classes"] });
+      queryClient.invalidateQueries({ queryKey: ["/data/memberClasses.json"] });
       setDeletingClassId(null);
       toast({
         title: "Success",
@@ -2856,7 +2933,12 @@ function HeroImageManagement() {
 
   // Fetch hero images
   const { data: heroImages, isLoading, isError, refetch } = useQuery<HeroImage[]>({
-    queryKey: ["/api/admin/hero-images"],
+    queryKey: ["/data/heroImages.json"],
+    queryFn: async () => {
+      const res = await fetch("/data/heroImages.json");
+      if (!res.ok) throw new Error("Failed to load hero images");
+      return res.json();
+    },
   });
 
   // Sort hero images by display order
@@ -2870,11 +2952,19 @@ function HeroImageManagement() {
   // Add hero image mutation
   const addHeroImageMutation = useMutation({
     mutationFn: async (data: any) => {
-      return apiRequest("POST", "/api/admin/hero-images", data);
+      const heroImages = await loadJsonData<HeroImage>("heroImages.json");
+      const newHeroImage = { 
+        ...data, 
+        id: generateId(), 
+        createdAt: new Date(), 
+        updatedAt: new Date() 
+      };
+      heroImages.push(newHeroImage);
+      await saveToJson("heroImages.json", heroImages);
+      return newHeroImage;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/admin/hero-images"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/hero-images"] });
+      queryClient.invalidateQueries({ queryKey: ["/data/heroImages.json"] });
       setIsAddDialogOpen(false);
       toast({
         title: "Success",
@@ -2893,11 +2983,15 @@ function HeroImageManagement() {
   // Update hero image mutation
   const updateHeroImageMutation = useMutation({
     mutationFn: async ({ id, data }: { id: string; data: any }) => {
-      return apiRequest("PUT", `/api/admin/hero-images/${id}`, data);
+      const heroImages = await loadJsonData<HeroImage>("heroImages.json");
+      const index = heroImages.findIndex(h => h.id === id);
+      if (index === -1) throw new Error("Hero image not found");
+      heroImages[index] = { ...heroImages[index], ...data, updatedAt: new Date() };
+      await saveToJson("heroImages.json", heroImages);
+      return heroImages[index];
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/admin/hero-images"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/hero-images"] });
+      queryClient.invalidateQueries({ queryKey: ["/data/heroImages.json"] });
       setEditingHeroImage(null);
       toast({
         title: "Success",
@@ -2916,11 +3010,12 @@ function HeroImageManagement() {
   // Delete hero image mutation
   const deleteHeroImageMutation = useMutation({
     mutationFn: async (id: string) => {
-      return apiRequest("DELETE", `/api/admin/hero-images/${id}`);
+      const heroImages = await loadJsonData<HeroImage>("heroImages.json");
+      const filtered = heroImages.filter(h => h.id !== id);
+      await saveToJson("heroImages.json", filtered);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/admin/hero-images"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/hero-images"] });
+      queryClient.invalidateQueries({ queryKey: ["/data/heroImages.json"] });
       setDeletingHeroImageId(null);
       toast({
         title: "Success",
@@ -3381,7 +3476,12 @@ function ProgramManagement() {
   const { toast } = useToast();
 
   const { data: programs, isLoading, isError } = useQuery<Program[]>({
-    queryKey: ["/api/admin/programs"],
+    queryKey: ["/data/programs.json"],
+    queryFn: async () => {
+      const res = await fetch("/data/programs.json");
+      if (!res.ok) throw new Error("Failed to load programs");
+      return res.json();
+    },
   });
 
   const sortedPrograms = programs ? [...programs].sort((a, b) => {
@@ -3392,11 +3492,19 @@ function ProgramManagement() {
 
   const addProgramMutation = useMutation({
     mutationFn: async (data: any) => {
-      return apiRequest("POST", "/api/admin/programs", data);
+      const programs = await loadJsonData<Program>("programs.json");
+      const newProgram = { 
+        ...data, 
+        id: generateId(), 
+        createdAt: new Date(), 
+        updatedAt: new Date() 
+      };
+      programs.push(newProgram);
+      await saveToJson("programs.json", programs);
+      return newProgram;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/admin/programs"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/programs"] });
+      queryClient.invalidateQueries({ queryKey: ["/data/programs.json"] });
       setIsAddDialogOpen(false);
       toast({
         title: "Success",
@@ -3414,11 +3522,15 @@ function ProgramManagement() {
 
   const updateProgramMutation = useMutation({
     mutationFn: async ({ id, data }: { id: string; data: any }) => {
-      return apiRequest("PUT", `/api/admin/programs/${id}`, data);
+      const programs = await loadJsonData<Program>("programs.json");
+      const index = programs.findIndex(p => p.id === id);
+      if (index === -1) throw new Error("Program not found");
+      programs[index] = { ...programs[index], ...data, updatedAt: new Date() };
+      await saveToJson("programs.json", programs);
+      return programs[index];
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/admin/programs"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/programs"] });
+      queryClient.invalidateQueries({ queryKey: ["/data/programs.json"] });
       setEditingProgram(null);
       toast({
         title: "Success",
@@ -3436,11 +3548,12 @@ function ProgramManagement() {
 
   const deleteProgramMutation = useMutation({
     mutationFn: async (id: string) => {
-      return apiRequest("DELETE", `/api/admin/programs/${id}`);
+      const programs = await loadJsonData<Program>("programs.json");
+      const filtered = programs.filter(p => p.id !== id);
+      await saveToJson("programs.json", filtered);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/admin/programs"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/programs"] });
+      queryClient.invalidateQueries({ queryKey: ["/data/programs.json"] });
       setDeletingProgramId(null);
       toast({
         title: "Success",
