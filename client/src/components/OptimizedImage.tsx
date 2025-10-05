@@ -63,7 +63,7 @@ export function OptimizedImage({
         <source srcSet={formats.avif} type="image/avif" />
         <source srcSet={formats.webp} type="image/webp" />
         <img
-          src={formats.jpg}
+          src={displaySrc}
           alt={alt}
           loading="lazy"
           decoding="async"
