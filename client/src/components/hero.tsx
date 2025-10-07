@@ -359,39 +359,24 @@ export default function Hero() {
       </div>
       
 
-      {/* Elegant Carousel Indicators - Touch-Optimized */}
+      {/* Elegant Carousel Indicators */}
       <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-20">
-        <div className="flex items-center gap-2 p-3 rounded-full bg-black/20 backdrop-blur-md border border-white/10">
+        <div className="flex items-center gap-3 p-2 rounded-full bg-black/20 backdrop-blur-md border border-white/10">
           {heroImages.map((_, index) => (
             <button
               key={index}
               onClick={() => goToSlide(index)}
-              className={`p-3 rounded-full transition-all duration-500 luxury-hover ${
+              className={`rounded-full transition-all duration-500 luxury-hover ${
                 index === currentSlide 
-                  ? 'bg-primary/20' 
-                  : 'bg-transparent hover:bg-white/10'
+                  ? 'bg-primary w-3 h-3 shadow-lg shadow-primary/50' 
+                  : 'bg-white/40 w-2 h-2 hover:bg-white/60'
               }`}
               style={{
-                minWidth: '44px',
-                minHeight: '44px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center'
+                boxShadow: index === currentSlide ? '0 0 20px rgba(59, 130, 246, 0.5)' : 'none'
               }}
               data-testid={`hero-indicator-${index}`}
               aria-label={`Go to slide ${index + 1}`}
-            >
-              <div 
-                className={`rounded-full transition-all duration-500 ${
-                  index === currentSlide 
-                    ? 'bg-primary w-3 h-3 shadow-lg shadow-primary/50' 
-                    : 'bg-white/40 w-2 h-2'
-                }`}
-                style={{
-                  boxShadow: index === currentSlide ? '0 0 20px rgba(59, 130, 246, 0.5)' : 'none'
-                }}
-              />
-            </button>
+            />
           ))}
         </div>
       </div>
