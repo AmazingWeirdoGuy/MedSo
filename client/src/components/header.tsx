@@ -194,48 +194,57 @@ export default function Header() {
         </div>
 
         {/* Mobile Navigation Menu */}
-        <div className={`lg:hidden transition-all duration-300 ease-in-out ${mobileMenuOpen ? 'max-h-80 opacity-100' : 'max-h-0 opacity-0 overflow-hidden'}`}>
+        <div className={`lg:hidden transition-all duration-500 ease-out overflow-hidden ${
+          mobileMenuOpen 
+            ? 'max-h-[500px] opacity-100 translate-y-0' 
+            : 'max-h-0 opacity-0 -translate-y-4'
+        }`}>
           <nav className="px-4 py-6 border-t border-border bg-background dark:bg-background" data-testid="mobile-navigation">
-            <div className="space-y-3">
+            <div className="space-y-2">
               <Link 
                 href="/" 
-                className={`block font-display font-medium text-2xl py-3 px-4 rounded-xl luxury-hover ${isActive("/") ? "text-primary bg-primary/10" : "text-muted-foreground hover:text-foreground hover:bg-muted/50"}`}
+                className={`block font-display font-medium text-xl py-4 px-5 rounded-xl luxury-hover active:scale-98 transition-all ${isActive("/") ? "text-primary bg-primary/10" : "text-muted-foreground hover:text-foreground hover:bg-muted/50"}`}
                 onClick={handleMobileNavClick}
                 data-testid="mobile-nav-home"
+                style={{ minHeight: '56px' }}
               >
                 Home
               </Link>
               <Link 
                 href="/about" 
-                className={`block font-display font-medium text-2xl py-3 px-4 rounded-xl luxury-hover ${isActive("/about") ? "text-primary bg-primary/10" : "text-muted-foreground hover:text-foreground hover:bg-muted/50"}`}
+                className={`block font-display font-medium text-xl py-4 px-5 rounded-xl luxury-hover active:scale-98 transition-all ${isActive("/about") ? "text-primary bg-primary/10" : "text-muted-foreground hover:text-foreground hover:bg-muted/50"}`}
                 onClick={handleMobileNavClick}
                 data-testid="mobile-nav-about"
+                style={{ minHeight: '56px' }}
               >
                 About
               </Link>
               <Link 
                 href="/news" 
-                className={`block font-display font-medium text-2xl py-3 px-4 rounded-xl luxury-hover ${isActive("/news") ? "text-primary bg-primary/10" : "text-muted-foreground hover:text-foreground hover:bg-muted/50"}`}
+                className={`block font-display font-medium text-xl py-4 px-5 rounded-xl luxury-hover active:scale-98 transition-all ${isActive("/news") ? "text-primary bg-primary/10" : "text-muted-foreground hover:text-foreground hover:bg-muted/50"}`}
                 onClick={handleMobileNavClick}
                 data-testid="mobile-nav-news"
+                style={{ minHeight: '56px' }}
               >
                 News
               </Link>
               <Link 
                 href="/contact" 
-                className={`block font-display font-medium text-2xl py-3 px-4 rounded-xl luxury-hover ${isActive("/contact") ? "text-primary bg-primary/10" : "text-muted-foreground hover:text-foreground hover:bg-muted/50"}`}
+                className={`block font-display font-medium text-xl py-4 px-5 rounded-xl luxury-hover active:scale-98 transition-all ${isActive("/contact") ? "text-primary bg-primary/10" : "text-muted-foreground hover:text-foreground hover:bg-muted/50"}`}
                 onClick={handleMobileNavClick}
                 data-testid="mobile-nav-contact"
+                style={{ minHeight: '56px' }}
               >
                 Contact
               </Link>
               
               {/* Mobile CTA */}
-              <div className="pt-4 border-t border-border">
+              <div className="pt-4 border-t border-border mt-2">
                 <Link href="/contact" onClick={handleMobileNavClick}>
                   <Button 
-                    className="w-full bg-primary hover:bg-primary/90 text-primary-foreground luxury-hover luxury-press text-2xl"
+                    className="w-full bg-primary hover:bg-primary/90 text-primary-foreground luxury-hover luxury-press text-lg py-6"
                     data-testid="mobile-header-cta"
+                    style={{ minHeight: '56px' }}
                   >
                     Join Us
                   </Button>
