@@ -103,11 +103,11 @@ export default function Contact() {
                    style={{ 
                      boxShadow: '0 25px 60px rgba(0, 0, 0, 0.12), 0 8px 25px rgba(0, 0, 0, 0.08)' 
                    }}>
-                <div className="p-8 lg:p-12">
+                <div className="p-4 xs:p-6 sm:p-8 lg:p-12">
                   <div className="w-full" data-testid="google-form">
                     <iframe 
                       src="https://docs.google.com/forms/d/e/1FAIpQLSdU5C0GZRTXHHyQMo8jP6iACDbj8PXYKbwDLQIPrPSmjmmmyQ/viewform?embedded=true" 
-                      className="w-full h-[900px] lg:h-[850px]"
+                      className="w-full h-[1000px] xs:h-[950px] sm:h-[900px] lg:h-[850px]"
                       frameBorder={0} 
                       title="ISB Medical Society Contact Form"
                       loading="lazy"
