@@ -30,6 +30,8 @@ export default function Hero() {
   const [location, navigate] = useLocation();
   const [loadingButton, setLoadingButton] = useState<string | null>(null);
   const [isTransitioning, setIsTransitioning] = useState(false);
+  const [touchStart, setTouchStart] = useState<number | null>(null);
+  const [touchEnd, setTouchEnd] = useState<number | null>(null);
 
   // Fetch hero images from JSON
   const { data: dbHeroImages } = useQuery<HeroImage[]>({
@@ -155,12 +157,47 @@ export default function Hero() {
     }, 500);
   };
 
+  // Swipe gesture handlers for mobile
+  const minSwipeDistance = 50; // Minimum distance for a swipe
+
+  const onTouchStart = (e: React.TouchEvent) => {
+    setTouchEnd(null);
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const onTouchMove = (e: React.TouchEvent) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+
+  const onTouchEnd = () => {
+    if (!touchStart || !touchEnd) return;
+    
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > minSwipeDistance;
+    const isRightSwipe = distance < -minSwipeDistance;
+
+    if (isLeftSwipe) {
+      // Swipe left - go to next slide
+      const nextSlide = (currentSlide + 1) % heroImages.length;
+      goToSlide(nextSlide);
+    }
+    
+    if (isRightSwipe) {
+      // Swipe right - go to previous slide
+      const prevSlide = (currentSlide - 1 + heroImages.length) % heroImages.length;
+      goToSlide(prevSlide);
+    }
+  };
+
   return (
     <section 
       className="relative h-screen overflow-hidden bg-black"
       data-testid="hero-section"
       onMouseEnter={() => setIsPlaying(false)}
       onMouseLeave={() => setIsPlaying(true)}
+      onTouchStart={onTouchStart}
+      onTouchMove={onTouchMove}
+      onTouchEnd={onTouchEnd}
     >
       {/* Enhanced Background Carousel with Fade + Swipe + Heat Effects */}
       <div className="absolute inset-0 overflow-hidden">
