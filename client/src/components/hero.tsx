@@ -228,6 +228,8 @@ export default function Hero() {
               <img 
                 src={image.src}
                 alt={image.alt}
+                loading="lazy"
+                decoding="async"
                 className="w-full h-full object-cover"
                 style={{
                   transform: isTransitioning && isActive ? 'scale(1.02)' : 'scale(1)',
