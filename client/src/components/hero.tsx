@@ -209,7 +209,7 @@ export default function Hero() {
               )}
               {/* Dim the background image only - fades away on scroll */}
               <div 
-                className="absolute inset-0 bg-black/50 transition-opacity duration-300 ease-out"
+                className="absolute inset-0 bg-black/65 transition-opacity duration-300 ease-out"
                 style={{ opacity: scrollOpacity }}
               />
             </div>
