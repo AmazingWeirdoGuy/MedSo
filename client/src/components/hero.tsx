@@ -259,17 +259,17 @@ export default function Hero() {
         
         {/* Left side - Text content */}
         <div 
-          className="h-full flex items-center justify-center p-8 sm:p-12 lg:p-16 transition-opacity duration-300 ease-out"
+          className="h-full flex items-center justify-center p-4 xs:p-6 sm:p-12 lg:p-16 transition-opacity duration-300 ease-out"
           style={{ 
             opacity: scrollOpacity
           }}
         >
-          <div className="max-w-2xl space-y-12 luxury-fade-in">
+          <div className="max-w-2xl space-y-8 sm:space-y-12 luxury-fade-in">
             
             {/* Clean, readable typography */}
-            <div className="space-y-8">
+            <div className="space-y-6 sm:space-y-8">
               <h1 
-                className="text-5xl sm:text-6xl lg:text-7xl xl:text-8xl text-white leading-[1.1] tracking-wide"
+                className="text-3xl xs:text-4xl sm:text-6xl lg:text-7xl xl:text-8xl text-white leading-[1.1] tracking-wide"
                 style={{ 
                   fontFamily: 'Beo, serif',
                   letterSpacing: '0.02em',
@@ -279,18 +279,18 @@ export default function Hero() {
                 data-testid="hero-title"
               >
                 <span className="block font-bold">Advancing</span>
-                <span className="block text-primary font-bold mt-4">Healthcare</span>
-                <span className="block text-white/80 text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold mt-6 tracking-[0.05em]">
+                <span className="block text-primary font-bold mt-2 sm:mt-4">Healthcare</span>
+                <span className="block text-white/80 text-xl xs:text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold mt-4 sm:mt-6 tracking-[0.05em]">
                   Education & Equity
                 </span>
               </h1>
               
               <p 
-                className="text-base sm:text-lg lg:text-xl text-white/90 leading-loose font-light"
+                className="text-sm xs:text-base sm:text-lg lg:text-xl text-white/90 leading-relaxed sm:leading-loose font-light"
                 style={{ 
                   letterSpacing: '0.025em',
                   textShadow: '1px 1px 2px rgba(0, 0, 0, 0.4)',
-                  lineHeight: '1.8'
+                  lineHeight: '1.6'
                 }}
                 data-testid="hero-description"
               >
