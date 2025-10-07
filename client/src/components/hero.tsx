@@ -366,17 +366,23 @@ export default function Hero() {
             <button
               key={index}
               onClick={() => goToSlide(index)}
-              className={`rounded-full transition-all duration-500 luxury-hover ${
+              className={`rounded-full overflow-hidden relative ${
                 index === currentSlide 
-                  ? 'bg-primary w-8 h-3 shadow-lg shadow-primary/50' 
-                  : 'bg-white/40 w-2 h-2 hover:bg-white/60'
+                  ? 'w-8 h-3' 
+                  : 'w-2 h-2 bg-white/40 hover:bg-white/60'
               }`}
-              style={{
-                boxShadow: index === currentSlide ? '0 0 20px rgba(59, 130, 246, 0.5)' : 'none'
-              }}
               data-testid={`hero-indicator-${index}`}
               aria-label={`Go to slide ${index + 1}`}
-            />
+            >
+              <div 
+                className={`absolute inset-0 bg-primary transition-all duration-500 ease-out ${
+                  index === currentSlide ? 'translate-x-0 opacity-100' : '-translate-x-full opacity-0'
+                }`}
+                style={{
+                  boxShadow: index === currentSlide ? '0 0 20px rgba(59, 130, 246, 0.5)' : 'none'
+                }}
+              />
+            </button>
           ))}
         </div>
       </div>
