@@ -368,7 +368,7 @@ export default function Hero() {
               onClick={() => goToSlide(index)}
               className={`rounded-full transition-all duration-500 luxury-hover ${
                 index === currentSlide 
-                  ? 'bg-primary w-3 h-3 shadow-lg shadow-primary/50' 
+                  ? 'bg-primary w-8 h-3 shadow-lg shadow-primary/50' 
                   : 'bg-white/40 w-2 h-2 hover:bg-white/60'
               }`}
               style={{
