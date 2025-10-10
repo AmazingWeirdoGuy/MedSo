@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
@@ -21,6 +21,14 @@ export default function News() {
     },
   });
   const [loadingMore, setLoadingMore] = useState(false);
+
+  useEffect(() => {
+    document.title = "News & Events - ISB Medical Society | Latest Updates";
+    const metaDescription = document.querySelector('meta[name="description"]');
+    if (metaDescription) {
+      metaDescription.setAttribute("content", "Stay updated with the latest news, events, and achievements from ISB Medical Society. Discover our healthcare initiatives, workshops, community outreach programs, and student activities.");
+    }
+  }, []);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">

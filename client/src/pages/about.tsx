@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
 import { Button } from "@/components/ui/button";
@@ -19,6 +19,14 @@ export default function About() {
     advisors: false
   });
   const [loadingJoin, setLoadingJoin] = useState(false);
+
+  useEffect(() => {
+    document.title = "About Us - ISB Medical Society | Meet Our Team";
+    const metaDescription = document.querySelector('meta[name="description"]');
+    if (metaDescription) {
+      metaDescription.setAttribute("content", "Meet the dedicated team behind ISB Medical Society. Learn about our officers, members, advisors, and the passionate students driving healthcare education and advocacy at ISB.");
+    }
+  }, []);
 
   const toggleSection = (section: string) => {
     setOpenSections(prev => ({

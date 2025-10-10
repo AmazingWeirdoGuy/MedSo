@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import Header from "@/components/header";
 import Hero from "@/components/hero";
 import Mission from "@/components/mission";
@@ -6,6 +7,14 @@ import News from "@/components/news";
 import Footer from "@/components/footer";
 
 export default function Home() {
+  useEffect(() => {
+    document.title = "ISB Medical Society | Healthcare Education & Advocacy";
+    const metaDescription = document.querySelector('meta[name="description"]');
+    if (metaDescription) {
+      metaDescription.setAttribute("content", "ISB Medical Society is a student organization dedicated to healthcare education, medical advocacy, and promoting equity in medicine. Join us in exploring the world of healthcare and making a meaningful impact.");
+    }
+  }, []);
+
   return (
     <div className="min-h-screen bg-background">
       <Header />

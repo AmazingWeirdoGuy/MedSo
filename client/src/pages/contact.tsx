@@ -8,6 +8,12 @@ export default function Contact() {
   const [scrollY, setScrollY] = useState(0);
 
   useEffect(() => {
+    document.title = "Contact Us - ISB Medical Society | Get In Touch";
+    const metaDescription = document.querySelector('meta[name="description"]');
+    if (metaDescription) {
+      metaDescription.setAttribute("content", "Get in touch with ISB Medical Society. Contact us for membership inquiries, event information, or questions about our healthcare education initiatives. We're here to help!");
+    }
+
     const handleScroll = () => setScrollY(window.scrollY);
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
