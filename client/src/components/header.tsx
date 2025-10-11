@@ -79,7 +79,7 @@ export default function Header() {
         <div className="flex justify-between items-center h-20">
           {/* Logo */}
           <Link href="/">
-            <div className="flex items-center space-x-4 luxury-hover" data-testid="logo">
+            <div className="flex items-center space-x-4 transition-opacity duration-300 hover:opacity-80" data-testid="logo">
               <img 
                 src={logoImage}
                 alt="ISB Medical Society Logo" 
