@@ -78,8 +78,8 @@ export default function Header() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-20">
           {/* Logo */}
-          <Link href="/">
-            <div className="flex items-center space-x-4 transition-opacity duration-300 hover:opacity-80" data-testid="logo">
+          <Link href="/" style={{ boxShadow: 'none' }}>
+            <div className="flex items-center space-x-4 transition-opacity duration-300 hover:opacity-80" data-testid="logo" style={{ boxShadow: 'none' }}>
               <img 
                 src={logoImage}
                 alt="ISB Medical Society Logo" 
