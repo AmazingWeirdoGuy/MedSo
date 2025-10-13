@@ -1,5 +1,27 @@
 [
   {
+    "name": "Chelsea Lee",
+    "role": "",
+    "memberClassId": "active-member",
+    "image": "/uploads/members/chelsea-lee-1760335400752.jpg",
+    "displayOrder": 0,
+    "isActive": true,
+    "id": "1760335405750-9d6hgiui6",
+    "createdAt": "2025-10-13T06:03:25.750Z",
+    "updatedAt": "2025-10-13T06:03:25.750Z"
+  },
+  {
+    "name": "Fallon Maier",
+    "role": "",
+    "memberClassId": "active-member",
+    "image": "",
+    "displayOrder": 0,
+    "isActive": true,
+    "id": "1760335500909-kf42c49lc",
+    "createdAt": "2025-10-13T06:05:00.909Z",
+    "updatedAt": "2025-10-13T06:05:00.909Z"
+  },
+  {
     "id": "5b01722a-27a3-44df-bf47-1db8ed28c1b0",
     "name": "Napat (Ben) Thongjen",
     "role": null,
@@ -15,6 +37,28 @@
     "updatedAt": "2025-10-04T07:57:19.385Z"
   },
   {
+    "name": "Penpannarai Chantaramporn",
+    "role": "",
+    "memberClassId": "active-member",
+    "image": "/uploads/members/penpannarai-1760335488327.png",
+    "displayOrder": 0,
+    "isActive": true,
+    "id": "1760335487376-tu6b29dmx",
+    "createdAt": "2025-10-13T06:04:47.376Z",
+    "updatedAt": "2025-10-13T06:04:47.376Z"
+  },
+  {
+    "name": "Pensawan Chantaramporn",
+    "role": "",
+    "memberClassId": "active-member",
+    "image": "/uploads/members/pensawan-1760335438103.jpg",
+    "displayOrder": 0,
+    "isActive": true,
+    "id": "1760335438084-ruaq9qypd",
+    "createdAt": "2025-10-13T06:03:58.084Z",
+    "updatedAt": "2025-10-13T06:03:58.084Z"
+  },
+  {
     "id": "8b3cc7dc-358f-4bfd-988d-fbebfb0232de",
     "name": "Rungphob (Ronnie) Lertvilaivithaya",
     "role": "Head of Website Development",
@@ -28,6 +72,17 @@
     "displayOrder": 0,
     "createdAt": "2025-09-25T16:01:13.507Z",
     "updatedAt": "2025-09-26T01:10:07.132Z"
+  },
+  {
+    "name": "Supitcha Chairatn",
+    "role": "",
+    "memberClassId": "active-member",
+    "image": "/uploads/members/proud-1760335465543.jpg",
+    "displayOrder": 0,
+    "isActive": true,
+    "id": "1760335464492-k0n1mj84r",
+    "createdAt": "2025-10-13T06:04:24.492Z",
+    "updatedAt": "2025-10-13T06:04:24.492Z"
   },
   {
     "name": "Test Member",
