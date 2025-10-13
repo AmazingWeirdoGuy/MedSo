@@ -2,6 +2,8 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import session from "express-session";
 import { z } from "zod";
+import path from "path";
+import { promises as fs } from "fs";
 
 // Simple authentication middleware
 const isAuthenticated = (req: any, res: any, next: any) => {
@@ -246,6 +248,58 @@ export async function registerRoutes(app: Express): Promise<Server> {
     console.log("[dev-api] Dev-only endpoints enabled (/dev/save-json, /dev/upload, /dev/upload [DELETE])");
     console.log(`[dev-api] Auth token ${TOKEN ? "configured" : "NOT SET - set LOCAL_ADMIN_TOKEN"}`);
   }
+
+  // Sitemap route for SEO
+  app.get('/sitemap.xml', async (req, res) => {
+    try {
+      const baseUrl = `https://${req.get('host')}` || 'https://isbmedicalsociety.org';
+      
+      // Static pages
+      const staticPages = [
+        { url: '/', priority: '1.0', changefreq: 'weekly' },
+        { url: '/about', priority: '0.9', changefreq: 'monthly' },
+        { url: '/news', priority: '0.8', changefreq: 'daily' },
+        { url: '/contact', priority: '0.7', changefreq: 'monthly' },
+        { url: '/terms', priority: '0.3', changefreq: 'yearly' },
+        { url: '/privacy', priority: '0.3', changefreq: 'yearly' }
+      ];
+
+      // Read news data for dynamic pages
+      const newsDataPath = path.join(process.cwd(), 'client', 'public', 'data', 'news.json');
+      let newsPages: { url: string; priority: string; changefreq: string }[] = [];
+      
+      try {
+        const newsData = JSON.parse(await fs.readFile(newsDataPath, 'utf-8'));
+        newsPages = newsData
+          .filter((item: any) => item.isActive)
+          .map((item: any) => ({
+            url: `/news/${item.id}`,
+            priority: '0.6',
+            changefreq: 'monthly'
+          }));
+      } catch (e) {
+        console.error('Error reading news data for sitemap:', e);
+      }
+
+      const allPages = [...staticPages, ...newsPages];
+
+      // Generate XML sitemap
+      const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${allPages.map(page => `  <url>
+    <loc>${baseUrl}${page.url}</loc>
+    <changefreq>${page.changefreq}</changefreq>
+    <priority>${page.priority}</priority>
+  </url>`).join('\n')}
+</urlset>`;
+
+      res.header('Content-Type', 'application/xml');
+      res.send(sitemap);
+    } catch (error) {
+      console.error('Error generating sitemap:', error);
+      res.status(500).send('Error generating sitemap');
+    }
+  });
 
   const httpServer = createServer(app);
   return httpServer;

@@ -10,6 +10,7 @@ import { useQuery } from "@tanstack/react-query";
 import type { Member, MemberClass } from "@shared/schema";
 import { OptimizedImage } from "@/components/OptimizedImage";
 import blankPfpPath from "@assets/blank-pfp.png";
+import { Helmet } from "react-helmet";
 
 export default function About() {
   const [openSections, setOpenSections] = useState<{ [key: string]: boolean }>({
@@ -19,14 +20,6 @@ export default function About() {
     advisors: false
   });
   const [loadingJoin, setLoadingJoin] = useState(false);
-
-  useEffect(() => {
-    document.title = "About Us - ISB Medical Society | Meet Our Team";
-    const metaDescription = document.querySelector('meta[name="description"]');
-    if (metaDescription) {
-      metaDescription.setAttribute("content", "Meet the dedicated team behind ISB Medical Society. Learn about our officers, members, advisors, and the passionate students driving healthcare education and advocacy at ISB.");
-    }
-  }, []);
 
   const toggleSection = (section: string) => {
     setOpenSections(prev => ({
@@ -66,6 +59,27 @@ export default function About() {
   const activeMembers = getClassMembers("Active Member");
   const facultyAdvisors = getClassMembers("Faculty Advisors");
 
+  const baseUrl = window.location.origin;
+  
+  // Get featured member with image for SEO (prioritize website managers)
+  const featuredMember = [...websiteManagers, ...officers, ...activeMembers, ...facultyAdvisors].find(m => m.image || m.thumbnail);
+  const featuredImageUrl = featuredMember?.image || featuredMember?.thumbnail ? `${baseUrl}${featuredMember.image || featuredMember.thumbnail}` : `${baseUrl}/favicon.ico`;
+  
+  // Generate Person structured data for ALL members with images (including faculty advisors)
+  const memberStructuredData = [...websiteManagers, ...officers, ...activeMembers, ...facultyAdvisors]
+    .filter(m => (m.image || m.thumbnail) && m.name)
+    .map(member => ({
+      "@context": "https://schema.org",
+      "@type": "Person",
+      "name": member.name,
+      "jobTitle": member.role || "Member",
+      "image": `${baseUrl}${member.image || member.thumbnail}`,
+      "memberOf": {
+        "@type": "Organization",
+        "name": "ISB Medical Society"
+      },
+      "description": member.bio || `${member.name} is a ${member.role || 'member'} of ISB Medical Society`
+    }));
 
   const ProfileCard = ({ person, showPosition = false, showDepartment = false, showImage = true }: { person: Member, showPosition?: boolean, showDepartment?: boolean, showImage?: boolean }) => (
     <div className="flex items-center space-x-4 p-4 bg-card dark:bg-card border border-border rounded-xl luxury-hover luxury-press" style={{ boxShadow: 'var(--shadow-hairline)' }}>
@@ -124,6 +138,33 @@ export default function About() {
 
   return (
     <div className="min-h-screen bg-background dark:bg-background">
+      <Helmet>
+        <title>About Us - ISB Medical Society | Meet Our Team</title>
+        <meta name="description" content="Meet the dedicated team behind ISB Medical Society. Learn about our officers, members, advisors, and the passionate students driving healthcare education and advocacy at ISB." />
+        
+        {/* Open Graph tags for social sharing and Google preview */}
+        <meta property="og:title" content="About Us - ISB Medical Society | Meet Our Team" />
+        <meta property="og:description" content="Meet the dedicated team behind ISB Medical Society. Learn about our officers, members, advisors, and the passionate students driving healthcare education and advocacy." />
+        <meta property="og:image" content={featuredImageUrl} />
+        <meta property="og:url" content={`${baseUrl}/about`} />
+        <meta property="og:type" content="website" />
+        
+        {/* Twitter Card tags */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="About Us - ISB Medical Society" />
+        <meta name="twitter:description" content="Meet the dedicated team behind ISB Medical Society" />
+        <meta name="twitter:image" content={featuredImageUrl} />
+        
+        {/* Canonical URL */}
+        <link rel="canonical" href={`${baseUrl}/about`} />
+        
+        {/* Structured data for each member */}
+        {memberStructuredData.map((data, index) => (
+          <script key={index} type="application/ld+json">
+            {JSON.stringify(data)}
+          </script>
+        ))}
+      </Helmet>
       <Header />
       <main className="py-24 luxury-fade-in">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

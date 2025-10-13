@@ -7,6 +7,10 @@ Allow: /about
 Allow: /news
 Allow: /contact
 
+# Disallow admin and login pages from indexing
+Disallow: /admin
+Disallow: /login
+
 # Sitemap location
 Sitemap: https://isbmedicalsociety.org/sitemap.xml
 
