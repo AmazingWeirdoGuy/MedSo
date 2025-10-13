@@ -20,6 +20,7 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import { saveToJson, uploadImage, loadJsonData } from "@/lib/devApi";
 import type { Member, MemberClass, News, HeroImage, AdminUser, Program } from "@shared/schema";
 import blankPfpPath from "@assets/blank-pfp.png";
+import { ImageCropper } from "@/components/ImageCropper";
 
 // DnD Kit imports
 import {
@@ -277,6 +278,9 @@ function ImageUploadField({
   const [progress, setProgress] = useState(0);
   const [preview, setPreview] = useState(currentImage || value);
   const [error, setError] = useState<string>();
+  const [cropperOpen, setCropperOpen] = useState(false);
+  const [imageToCrop, setImageToCrop] = useState<string>("");
+  const [originalFileName, setOriginalFileName] = useState<string>("");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
@@ -296,7 +300,26 @@ function ImageUploadField({
     }
 
     setError(undefined);
-    setPreview(URL.createObjectURL(file));
+    setOriginalFileName(file.name);
+    
+    // For member images, show cropper. For other categories, upload directly
+    if (category === 'members') {
+      const imageUrl = URL.createObjectURL(file);
+      setImageToCrop(imageUrl);
+      setCropperOpen(true);
+    } else {
+      setPreview(URL.createObjectURL(file));
+      await uploadImageFile(file);
+    }
+  };
+
+  const handleCropComplete = async (croppedBlob: Blob) => {
+    const croppedFile = new File([croppedBlob], originalFileName, { type: 'image/jpeg' });
+    setPreview(URL.createObjectURL(croppedBlob));
+    await uploadImageFile(croppedFile);
+  };
+
+  const uploadImageFile = async (file: File) => {
     setUploading(true);
     setProgress(10);
 
@@ -377,7 +400,16 @@ function ImageUploadField({
 
       <p className="text-xs text-muted-foreground">
         Max size: 5MB. Formats: JPEG, PNG, WebP, GIF
+        {category === 'members' && ' • Images will be cropped to square'}
       </p>
+
+      <ImageCropper
+        imageUrl={imageToCrop}
+        open={cropperOpen}
+        onClose={() => setCropperOpen(false)}
+        onCropComplete={handleCropComplete}
+        aspectRatio={1}
+      />
     </div>
   );
 }

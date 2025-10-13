@@ -4,6 +4,15 @@
 
 This is a full-stack web application for the ISB Medical Society, built as a modern React frontend with an Express.js backend. The application serves as a comprehensive platform for a medical student organization, featuring sections for their mission, programs, news, and contact information. The site showcases the society's healthcare education initiatives, advocacy for healthcare equity, and global impact goals.
 
+## Recent Changes
+
+### October 13, 2025
+- **Image Cropping Feature**: Added image cropping functionality for member photo uploads in the admin panel
+  - Created ImageCropper component using react-easy-crop library
+  - Integrated cropping dialog into member image upload workflow
+  - Users can now adjust crop area and zoom before uploading member photos
+  - Images are cropped to square aspect ratio (1:1) for consistent member profiles
+
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
@@ -52,6 +61,7 @@ Preferred communication style: Simple, everyday language.
 - **Lucide React**: Modern icon library for consistent iconography
 - **Class Variance Authority**: Utility for creating variant-based component APIs
 - **Tailwind CSS**: Utility-first CSS framework with PostCSS processing
+- **React Easy Crop**: Image cropping library for member photo uploads in admin panel
 
 ### Data Management
 - **TanStack React Query**: Server state management, caching, and synchronization
