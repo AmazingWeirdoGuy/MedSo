@@ -7,11 +7,15 @@ This is a full-stack web application for the ISB Medical Society, built as a mod
 ## Recent Changes
 
 ### October 13, 2025
-- **Image Cropping Feature**: Added image cropping functionality for member photo uploads in the admin panel
+- **Image Cropping Feature**: Added image cropping functionality for ALL image uploads in the admin panel
   - Created ImageCropper component using react-easy-crop library
-  - Integrated cropping dialog into member image upload workflow
-  - Users can now adjust crop area and zoom before uploading member photos
-  - Images are cropped to square aspect ratio (1:1) for consistent member profiles
+  - Integrated cropping dialog into all image upload workflows (members, news, hero, programs)
+  - Users can now adjust crop area and zoom before uploading any image
+  - Smart aspect ratios based on image type:
+    - Member photos: 1:1 (square) for consistent profiles
+    - News images: 16:9 (wide) for article headers
+    - Hero carousel images: 16:9 (wide) for banners
+    - Program images: 1:1 (square) for cards
 
 ## User Preferences
 

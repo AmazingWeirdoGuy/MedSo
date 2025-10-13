@@ -302,15 +302,10 @@ function ImageUploadField({
     setError(undefined);
     setOriginalFileName(file.name);
     
-    // For member images, show cropper. For other categories, upload directly
-    if (category === 'members') {
-      const imageUrl = URL.createObjectURL(file);
-      setImageToCrop(imageUrl);
-      setCropperOpen(true);
-    } else {
-      setPreview(URL.createObjectURL(file));
-      await uploadImageFile(file);
-    }
+    // Show cropper for all image uploads
+    const imageUrl = URL.createObjectURL(file);
+    setImageToCrop(imageUrl);
+    setCropperOpen(true);
   };
 
   const handleCropComplete = async (croppedBlob: Blob) => {
@@ -400,7 +395,10 @@ function ImageUploadField({
 
       <p className="text-xs text-muted-foreground">
         Max size: 5MB. Formats: JPEG, PNG, WebP, GIF
-        {category === 'members' && ' • Images will be cropped to square'}
+        {category === 'members' && ' • Will be cropped to square'}
+        {category === 'news' && ' • Will be cropped to 16:9 ratio'}
+        {category === 'hero' && ' • Will be cropped to 16:9 ratio'}
+        {category === 'programs' && ' • Will be cropped to square'}
       </p>
 
       <ImageCropper
@@ -408,7 +406,7 @@ function ImageUploadField({
         open={cropperOpen}
         onClose={() => setCropperOpen(false)}
         onCropComplete={handleCropComplete}
-        aspectRatio={1}
+        aspectRatio={category === 'news' || category === 'hero' ? 16/9 : 1}
       />
     </div>
   );
