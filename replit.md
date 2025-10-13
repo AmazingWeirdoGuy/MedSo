@@ -16,11 +16,10 @@ This is a full-stack web application for the ISB Medical Society, built as a mod
     - News images: 16:9 (wide) for article headers
     - Hero carousel images: 16:9 (wide) for banners
     - Program images: 1:1 (square) for cards
-- **Members Carousel**: Added horizontal slider/carousel for Active Members section
-  - Shows carousel when there are more than 6 active members
-  - Features navigation arrows and dot indicators
-  - One member per slide for easy viewing
-  - Falls back to vertical list when 6 or fewer members
+- **Members Scrollable List**: Added vertical scroll for Active Members section
+  - Shows max 5-6 members at a time with vertical scroll when there are more than 6 active members
+  - Smooth scrollbar styling with hover effects
+  - Falls back to normal vertical list when 6 or fewer members
 - **Bug Fixes**:
   - Fixed image serving path for uploaded files (client/public/uploads)
   - Fixed OptimizedImage component to handle newly uploaded images without modern formats

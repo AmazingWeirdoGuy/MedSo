@@ -3,14 +3,13 @@ import Header from "@/components/header";
 import Footer from "@/components/footer";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
-import { ChevronDown, ChevronRight, ChevronLeft } from "lucide-react";
+import { ChevronDown, ChevronRight } from "lucide-react";
 import { motion } from "framer-motion";
 import { Loading } from "@/components/ui/loading";
 import { useQuery } from "@tanstack/react-query";
 import type { Member, MemberClass } from "@shared/schema";
 import { OptimizedImage } from "@/components/OptimizedImage";
 import blankPfpPath from "@assets/blank-pfp.png";
-import useEmblaCarousel from 'embla-carousel-react';
 
 export default function About() {
   const [openSections, setOpenSections] = useState<{ [key: string]: boolean }>({
@@ -90,90 +89,6 @@ export default function About() {
     </div>
   );
 
-  const MembersCarousel = ({ members }: { members: Member[] }) => {
-    const [emblaRef, emblaApi] = useEmblaCarousel({ 
-      loop: false,
-      align: 'start',
-      slidesToScroll: 1
-    });
-    const [canScrollPrev, setCanScrollPrev] = useState(false);
-    const [canScrollNext, setCanScrollNext] = useState(false);
-
-    useEffect(() => {
-      if (!emblaApi) return;
-
-      const onSelect = () => {
-        setCanScrollPrev(emblaApi.canScrollPrev());
-        setCanScrollNext(emblaApi.canScrollNext());
-      };
-
-      emblaApi.on('select', onSelect);
-      onSelect();
-
-      return () => {
-        emblaApi.off('select', onSelect);
-      };
-    }, [emblaApi]);
-
-    const scrollPrev = () => emblaApi?.scrollPrev();
-    const scrollNext = () => emblaApi?.scrollNext();
-
-    return (
-      <div className="relative">
-        <div className="overflow-hidden" ref={emblaRef}>
-          <div className="flex gap-3">
-            {members.map((member: Member) => (
-              <div key={member.id} className="flex-[0_0_100%] min-w-0">
-                <ProfileCard 
-                  person={member}
-                  showImage={true}
-                />
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {canScrollPrev && (
-          <button
-            onClick={scrollPrev}
-            className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-3 z-10 bg-primary text-primary-foreground rounded-full p-2 shadow-lg hover:bg-primary/90 transition-all luxury-hover luxury-press"
-            aria-label="Previous member"
-            data-testid="carousel-prev"
-          >
-            <ChevronLeft className="w-5 h-5" />
-          </button>
-        )}
-
-        {canScrollNext && (
-          <button
-            onClick={scrollNext}
-            className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-3 z-10 bg-primary text-primary-foreground rounded-full p-2 shadow-lg hover:bg-primary/90 transition-all luxury-hover luxury-press"
-            aria-label="Next member"
-            data-testid="carousel-next"
-          >
-            <ChevronRight className="w-5 h-5" />
-          </button>
-        )}
-
-        <div className="flex justify-center gap-2 mt-4">
-          {members.map((_, index) => (
-            <button
-              key={index}
-              onClick={() => emblaApi?.scrollTo(index)}
-              className={`h-2 rounded-full transition-all ${
-                emblaApi?.selectedScrollSnap() === index 
-                  ? 'w-8 bg-primary' 
-                  : 'w-2 bg-muted-foreground/30'
-              }`}
-              aria-label={`Go to member ${index + 1}`}
-              aria-current={emblaApi?.selectedScrollSnap() === index ? 'true' : 'false'}
-              data-testid={`carousel-dot-${index}`}
-            />
-          ))}
-        </div>
-      </div>
-    );
-  };
 
   const AccordionSection = ({ 
     title, 
@@ -285,19 +200,15 @@ export default function About() {
                   onToggle={() => toggleSection('members')}
                   testId="section-members"
                 >
-                  {activeMembers.length > 6 ? (
-                    <MembersCarousel members={activeMembers} />
-                  ) : (
-                    <div className="space-y-2">
-                      {activeMembers.map((member: Member, index: number) => (
-                        <ProfileCard 
-                          key={member.id} 
-                          person={member}
-                          showImage={true}
-                        />
-                      ))}
-                    </div>
-                  )}
+                  <div className={`space-y-2 ${activeMembers.length > 6 ? 'max-h-[440px] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-primary/20 scrollbar-track-transparent hover:scrollbar-thumb-primary/40' : ''}`}>
+                    {activeMembers.map((member: Member, index: number) => (
+                      <ProfileCard 
+                        key={member.id} 
+                        person={member}
+                        showImage={true}
+                      />
+                    ))}
+                  </div>
                 </AccordionSection>
 
                 <AccordionSection
