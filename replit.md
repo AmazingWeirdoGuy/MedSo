@@ -7,6 +7,13 @@ This is a full-stack web application for the ISB Medical Society, built as a mod
 ## Recent Changes
 
 ### October 13, 2025
+- **SEO Optimization for Google Search**: Implemented comprehensive SEO to help member photos and About page appear in Google search results
+  - Added Person structured data (Schema.org) for all members with photos (website managers, officers, active members, faculty advisors)
+  - Added Open Graph and Twitter Card meta tags to About page with featured member image
+  - Created dynamic XML sitemap at /sitemap.xml including all static and news pages
+  - Updated robots.txt to reference sitemap and block admin/login pages from indexing
+  - Verified all images have proper SEO-friendly alt text
+  - Created SEO_IMPLEMENTATION_GUIDE.md with step-by-step instructions for Google Search Console
 - **Image Cropping Feature**: Added image cropping functionality for ALL image uploads in the admin panel
   - Created ImageCropper component using react-easy-crop library
   - Integrated cropping dialog into all image upload workflows (members, news, hero, programs)
