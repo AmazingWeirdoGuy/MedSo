@@ -24,8 +24,10 @@ export function OptimizedImage({
   // Use thumbnail for display if available, otherwise use original
   const displaySrc = thumbnail || src;
   
-  // Determine if we should use modern format sources
-  const shouldUseModernFormats = displaySrc?.startsWith('/uploads/members/');
+  // Only use modern formats for images that have been processed with multiple formats
+  // (these have _original or _thumb in the filename)
+  const shouldUseModernFormats = displaySrc?.startsWith('/uploads/members/') && 
+    (displaySrc.includes('_original') || displaySrc.includes('_thumb'));
   
   // Generate modern format URLs if using our processed images
   const getModernFormatUrls = (baseUrl: string) => {
