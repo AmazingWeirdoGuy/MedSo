@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -59,46 +58,8 @@ function validateImageFile(file: File): { valid: boolean; error?: string } {
 
 export default function AdminPage() {
   const { toast } = useToast();
-  const { isAuthenticated, isLoading: authLoading, user } = useAuth();
   const [activeTab, setActiveTab] = useState("members");
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState<Record<string, boolean>>({});
-
-  const { data: adminData, isLoading: adminLoading } = useQuery<{
-    isAdmin: boolean;
-    adminUser: AdminUser | null;
-  }>({
-    queryKey: ["/api/auth/admin"],
-    enabled: isAuthenticated,
-    retry: false,
-  });
-
-  useEffect(() => {
-    if (!authLoading && !isAuthenticated) {
-      toast({
-        title: "Authentication Required",
-        description: "Please log in to access the admin panel.",
-        variant: "destructive",
-      });
-      setTimeout(() => {
-        window.location.href = "/login";
-      }, 1000);
-      return;
-    }
-  }, [isAuthenticated, authLoading, toast]);
-
-  useEffect(() => {
-    if (!adminLoading && isAuthenticated && !adminData?.isAdmin) {
-      toast({
-        title: "Access Denied",
-        description: "You don't have admin access to this panel.",
-        variant: "destructive",
-      });
-      setTimeout(() => {
-        window.location.href = "/";
-      }, 2000);
-      return;
-    }
-  }, [adminData?.isAdmin, adminLoading, isAuthenticated, toast]);
 
   // Unsaved changes guard
   useEffect(() => {
@@ -127,21 +88,6 @@ export default function AdminPage() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [activeTab]);
 
-  if (authLoading || adminLoading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 dark:from-slate-900 dark:to-blue-900 flex items-center justify-center">
-        <div className="text-center space-y-4">
-          <Loading size="lg" variant="spinner" />
-          <p className="text-muted-foreground">Authenticating...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!isAuthenticated || !adminData?.isAdmin) {
-    return null;
-  }
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 dark:from-slate-900 dark:to-blue-900">
       <header className="border-b border-white/20 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md sticky top-0 z-50">
@@ -158,7 +104,7 @@ export default function AdminPage() {
               >
                 Admin Dashboard
               </h1>
-              <p className="text-muted-foreground">Welcome back, {user?.firstName || 'Admin'}</p>
+              <p className="text-muted-foreground">Manage your website content</p>
             </div>
             <div className="flex items-center gap-4">
               {Object.values(hasUnsavedChanges).some(v => v) && (
@@ -169,20 +115,6 @@ export default function AdminPage() {
               <Badge variant="secondary" className="bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300">
                 Admin
               </Badge>
-              <Button 
-                variant="outline" 
-                onClick={async () => {
-                  try {
-                    await fetch("/api/logout", { method: "POST", credentials: "include" });
-                    window.location.href = "/login";
-                  } catch (error) {
-                    window.location.href = "/login";
-                  }
-                }}
-                data-testid="button-logout"
-              >
-                Logout
-              </Button>
             </div>
           </div>
         </div>
