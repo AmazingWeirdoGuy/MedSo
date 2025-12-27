@@ -1751,6 +1751,7 @@ function NewsDialog({
     description: "",
     content: "",
     image: "",
+    publishDate: "",
   });
   const { toast } = useToast();
 
@@ -1762,6 +1763,7 @@ function NewsDialog({
         description: news.description || "",
         content: news.content || "",
         image: news.image || "",
+        publishDate: news.publishDate ? news.publishDate.split('T')[0] : "",
       });
     } else {
       setFormData({
@@ -1770,6 +1772,7 @@ function NewsDialog({
         description: "",
         content: "",
         image: "",
+        publishDate: new Date().toISOString().split('T')[0],
       });
     }
   }, [news, isOpen]);
@@ -1846,6 +1849,17 @@ function NewsDialog({
               onChange={(e) => setFormData({ ...formData, category: e.target.value })}
               placeholder="e.g., Events, Announcements"
               required
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label>Date *</Label>
+            <Input
+              type="date"
+              value={formData.publishDate}
+              onChange={(e) => setFormData({ ...formData, publishDate: e.target.value })}
+              required
+              data-testid="input-news-date"
             />
           </div>
 
