@@ -1,5 +1,16 @@
 [
   {
+    "name": "Chanikarn Jarupongprapa",
+    "role": "President",
+    "memberClassId": "officer",
+    "image": "",
+    "displayOrder": 0,
+    "isActive": true,
+    "id": "1766853241885-xrnmwtr4y",
+    "createdAt": "2025-12-27T16:34:01.885Z",
+    "updatedAt": "2025-12-27T16:34:01.885Z"
+  },
+  {
     "name": "Chelsea Lee",
     "role": "",
     "memberClassId": "active-member",
@@ -22,9 +33,20 @@
     "updatedAt": "2025-10-13T06:05:00.909Z"
   },
   {
+    "name": "Mena Kajornprasart",
+    "role": "Officer",
+    "memberClassId": "officer",
+    "image": "",
+    "displayOrder": 0,
+    "isActive": true,
+    "id": "1766853321513-7i6v8nq08",
+    "createdAt": "2025-12-27T16:35:21.513Z",
+    "updatedAt": "2025-12-27T16:35:21.513Z"
+  },
+  {
     "id": "5b01722a-27a3-44df-bf47-1db8ed28c1b0",
-    "name": "Napat (Ben) Thongjen",
-    "role": null,
+    "name": "Napat Thongjen",
+    "role": "",
     "memberClassId": "active-member",
     "bio": null,
     "image": "/uploads/members/5b01722a-27a3-44df-bf47-1db8ed28c1b0_1759564638574_original.jpg",
@@ -34,7 +56,29 @@
     "isActive": true,
     "displayOrder": 0,
     "createdAt": "2025-09-26T01:13:35.415Z",
-    "updatedAt": "2025-10-04T07:57:19.385Z"
+    "updatedAt": "2025-12-27T16:32:58.979Z"
+  },
+  {
+    "name": "Nathakorn Mahaweerakhun",
+    "role": "Officer",
+    "memberClassId": "officer",
+    "image": "",
+    "displayOrder": 0,
+    "isActive": true,
+    "id": "1766853410854-llvwoxfig",
+    "createdAt": "2025-12-27T16:36:50.854Z",
+    "updatedAt": "2025-12-27T16:36:50.854Z"
+  },
+  {
+    "name": "Nunnapat Romsala",
+    "role": "Officer",
+    "memberClassId": "officer",
+    "image": "",
+    "displayOrder": 0,
+    "isActive": true,
+    "id": "1766853344928-hq3ndneou",
+    "createdAt": "2025-12-27T16:35:44.928Z",
+    "updatedAt": "2025-12-27T16:35:44.928Z"
   },
   {
     "name": "Penpannarai Chantaramporn",
@@ -59,8 +103,19 @@
     "updatedAt": "2025-10-13T06:03:58.084Z"
   },
   {
+    "name": "Phichan Chairatn",
+    "role": "Officer",
+    "memberClassId": "officer",
+    "image": "",
+    "displayOrder": 0,
+    "isActive": true,
+    "id": "1766853370592-cmgjp7qe3",
+    "createdAt": "2025-12-27T16:36:10.592Z",
+    "updatedAt": "2025-12-27T16:36:10.592Z"
+  },
+  {
     "id": "8b3cc7dc-358f-4bfd-988d-fbebfb0232de",
-    "name": "Rungphob (Ronnie) Lertvilaivithaya",
+    "name": "Rungphob Lertvilaivithaya",
     "role": "Head of Website Development",
     "memberClassId": "website-manager",
     "bio": null,
@@ -71,7 +126,7 @@
     "isActive": true,
     "displayOrder": 0,
     "createdAt": "2025-09-25T16:01:13.507Z",
-    "updatedAt": "2025-09-26T01:10:07.132Z"
+    "updatedAt": "2025-12-27T16:32:52.670Z"
   },
   {
     "name": "Supitcha Chairatn",
