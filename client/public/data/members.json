@@ -66,6 +66,17 @@
     "updatedAt": "2025-12-27T16:35:44.928Z"
   },
   {
+    "name": "Patience Soule",
+    "role": "Faculty Advisor",
+    "memberClassId": "faculty-advisors",
+    "image": "",
+    "displayOrder": 0,
+    "isActive": true,
+    "id": "1771261480180-z5juo2tqf",
+    "createdAt": "2026-02-16T17:04:40.180Z",
+    "updatedAt": "2026-02-16T17:04:40.180Z"
+  },
+  {
     "name": "Penpannarai Chantaramporn",
     "role": "",
     "memberClassId": "active-member",
