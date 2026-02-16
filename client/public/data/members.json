@@ -44,6 +44,17 @@
     "updatedAt": "2025-12-27T16:35:21.513Z"
   },
   {
+    "name": "Millie Popovic",
+    "role": "",
+    "memberClassId": "active-member",
+    "image": "",
+    "displayOrder": 0,
+    "isActive": true,
+    "id": "1771262156785-l2kn52ywh",
+    "createdAt": "2026-02-16T17:15:56.785Z",
+    "updatedAt": "2026-02-16T17:15:56.785Z"
+  },
+  {
     "name": "Nathakorn Mahaweerakhun",
     "role": "Officer",
     "memberClassId": "officer",
