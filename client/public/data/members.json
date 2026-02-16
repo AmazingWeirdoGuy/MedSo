@@ -44,21 +44,6 @@
     "updatedAt": "2025-12-27T16:35:21.513Z"
   },
   {
-    "id": "5b01722a-27a3-44df-bf47-1db8ed28c1b0",
-    "name": "Napat Thongjen",
-    "role": "",
-    "memberClassId": "active-member",
-    "bio": null,
-    "image": "/uploads/members/5b01722a-27a3-44df-bf47-1db8ed28c1b0_1759564638574_original.jpg",
-    "thumbnail": "/uploads/members/5b01722a-27a3-44df-bf47-1db8ed28c1b0_1759564638574_thumb.jpg",
-    "linkedIn": null,
-    "year": null,
-    "isActive": true,
-    "displayOrder": 0,
-    "createdAt": "2025-09-26T01:13:35.415Z",
-    "updatedAt": "2025-12-27T16:32:58.979Z"
-  },
-  {
     "name": "Nathakorn Mahaweerakhun",
     "role": "Officer",
     "memberClassId": "officer",
@@ -149,20 +134,5 @@
     "id": "1760335122209-3no3x25zi",
     "createdAt": "2025-10-13T05:58:42.209Z",
     "updatedAt": "2025-10-13T05:58:42.209Z"
-  },
-  {
-    "id": "e8b0af1b-60ef-4509-8829-56f744494642",
-    "name": "Waris Chaopricha",
-    "role": null,
-    "memberClassId": "active-member",
-    "bio": null,
-    "image": "",
-    "thumbnail": null,
-    "linkedIn": null,
-    "year": null,
-    "isActive": true,
-    "displayOrder": 0,
-    "createdAt": "2025-09-26T01:14:27.500Z",
-    "updatedAt": "2025-10-04T07:57:38.110Z"
   }
 ]
