@@ -3,12 +3,12 @@
     "name": "Chanikarn Jarupongprapa",
     "role": "President",
     "memberClassId": "officer",
-    "image": "",
+    "image": "/uploads/members/1753233626285-1771260317725.jpg",
     "displayOrder": 0,
     "isActive": true,
     "id": "1766853241885-xrnmwtr4y",
     "createdAt": "2025-12-27T16:34:01.885Z",
-    "updatedAt": "2025-12-27T16:34:01.885Z"
+    "updatedAt": "2026-02-16T16:45:18.084Z"
   },
   {
     "name": "Chelsea Lee",
@@ -47,12 +47,12 @@
     "name": "Nathakorn Mahaweerakhun",
     "role": "Officer",
     "memberClassId": "officer",
-    "image": "",
+    "image": "/uploads/members/screenshot-2026-02-16-234140-1771260110797.png",
     "displayOrder": 0,
     "isActive": true,
     "id": "1766853410854-llvwoxfig",
     "createdAt": "2025-12-27T16:36:50.854Z",
-    "updatedAt": "2025-12-27T16:36:50.854Z"
+    "updatedAt": "2026-02-16T16:41:51.020Z"
   },
   {
     "name": "Nunnapat Romsala",
@@ -91,12 +91,12 @@
     "name": "Phichan Chairatn",
     "role": "Officer",
     "memberClassId": "officer",
-    "image": "",
+    "image": "/uploads/members/screenshot-2026-02-16-234108-1771260082975.png",
     "displayOrder": 0,
     "isActive": true,
     "id": "1766853370592-cmgjp7qe3",
     "createdAt": "2025-12-27T16:36:10.592Z",
-    "updatedAt": "2025-12-27T16:36:10.592Z"
+    "updatedAt": "2026-02-16T16:41:23.806Z"
   },
   {
     "id": "8b3cc7dc-358f-4bfd-988d-fbebfb0232de",
@@ -104,14 +104,14 @@
     "role": "Head of Website Development",
     "memberClassId": "website-manager",
     "bio": null,
-    "image": "/uploads/members/8d9becb2-56f1-4a0a-9108-7b5ddd6b6b98_1758816068648_original.jpg",
+    "image": "/uploads/members/1757669250770-1771260386108.jpg",
     "thumbnail": "/uploads/members/8d9becb2-56f1-4a0a-9108-7b5ddd6b6b98_1758816068648_thumb.jpg",
     "linkedIn": null,
     "year": null,
     "isActive": true,
     "displayOrder": 0,
     "createdAt": "2025-09-25T16:01:13.507Z",
-    "updatedAt": "2025-12-27T16:32:52.670Z"
+    "updatedAt": "2026-02-16T16:47:10.943Z"
   },
   {
     "name": "Supitcha Chairatn",
