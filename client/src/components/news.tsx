@@ -38,7 +38,7 @@ export default function News() {
           transition={{ duration: 0.6 }}
         >
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-display text-foreground mb-6" data-testid="news-title">
-            Latest <span className="text-primary">News</span>
+            <span className="text-primary">Latest News</span>
           </h2>
           <p className="text-lg lg:text-xl text-slate-600 dark:text-slate-400 max-w-2xl mx-auto font-light leading-relaxed" data-testid="news-description">
             Discover our latest activities and medical initiatives

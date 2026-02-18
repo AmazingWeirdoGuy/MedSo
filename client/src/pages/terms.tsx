@@ -10,7 +10,7 @@ export default function Terms() {
           
           <div className="text-center mb-16">
             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-display text-foreground mb-6" data-testid="terms-title">
-              Terms of <span className="text-primary">Service</span>
+              <span className="text-primary">Terms of Service</span>
             </h1>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
               Please read these terms carefully before using our services

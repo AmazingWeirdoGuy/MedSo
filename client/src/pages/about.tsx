@@ -172,7 +172,7 @@ export default function About() {
           {/* Centered Title */}
           <div className="text-center mb-20">
             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-display text-foreground mb-6" data-testid="about-title">
-              About <span className="text-primary">Us</span>
+              <span className="text-primary">About Us</span>
             </h1>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">Get to know the people driving ISB Medical Society forward</p>
           </div>

@@ -48,7 +48,7 @@ export default function News() {
               className="text-3xl sm:text-4xl lg:text-5xl font-display text-foreground mb-6"
               data-testid="news-title"
             >
-              Latest <span className="text-primary">News</span>
+              <span className="text-primary">Latest News</span>
             </h1>
             
             <motion.p 

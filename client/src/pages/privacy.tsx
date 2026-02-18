@@ -10,7 +10,7 @@ export default function Privacy() {
           
           <div className="text-center mb-16">
             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-display text-foreground mb-6" data-testid="privacy-title">
-              Privacy <span className="text-primary">Policy</span>
+              <span className="text-primary">Privacy Policy</span>
             </h1>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
               Your privacy is important to us. Learn how we collect, use, and protect your information.

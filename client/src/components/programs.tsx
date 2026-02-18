@@ -29,7 +29,7 @@ export default function Programs() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-20">
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-display text-foreground mb-6" data-testid="activities-title">
-              Our <span className="text-primary">Activities</span>
+              <span className="text-primary">Our Activities</span>
             </h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
               Discover the initiatives driving our mission forward
@@ -54,7 +54,7 @@ export default function Programs() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-20 luxury-fade-in">
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-display text-foreground mb-6" data-testid="activities-title">
-            Our <span className="text-primary">Activities</span>
+            <span className="text-primary">Our Activities</span>
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
             Discover the initiatives driving our mission forward
