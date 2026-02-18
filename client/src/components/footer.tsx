@@ -66,7 +66,7 @@ export default function Footer() {
 
         <div className="border-t border-slate-700/70 mt-12 pt-8">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-            <p className="text-sm" data-testid="footer-copyright">© 2025 ISB Medical Society. All rights reserved.</p>
+            <p className="text-sm" data-testid="footer-copyright">© 2026 ISB Medical Society. All rights reserved.</p>
             <div className="flex items-center gap-6 text-sm">
               <Link href="/terms" className="hover:text-white transition-colors" data-testid="footer-link-terms" onClick={handleNavClick}>
                 Terms of Service

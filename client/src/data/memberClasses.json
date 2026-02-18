@@ -5,8 +5,8 @@
     "description": "Manages the website and digital presence",
     "displayOrder": 1,
     "isActive": true,
-    "createdAt": "2025-09-23T17:36:22.231Z",
-    "updatedAt": "2025-09-23T17:36:22.231Z"
+    "createdAt": "2026-09-23T17:36:22.231Z",
+    "updatedAt": "2026-09-23T17:36:22.231Z"
   },
   {
     "id": "officer",
@@ -14,8 +14,8 @@
     "description": "Executive leadership positions",
     "displayOrder": 2,
     "isActive": true,
-    "createdAt": "2025-09-23T17:36:22.231Z",
-    "updatedAt": "2025-09-23T17:36:22.231Z"
+    "createdAt": "2026-09-23T17:36:22.231Z",
+    "updatedAt": "2026-09-23T17:36:22.231Z"
   },
   {
     "id": "active-member",
@@ -23,8 +23,8 @@
     "description": "Regular participating members",
     "displayOrder": 3,
     "isActive": true,
-    "createdAt": "2025-09-23T17:36:22.231Z",
-    "updatedAt": "2025-09-23T17:36:22.231Z"
+    "createdAt": "2026-09-23T17:36:22.231Z",
+    "updatedAt": "2026-09-23T17:36:22.231Z"
   },
   {
     "id": "faculty-advisors",
@@ -32,7 +32,7 @@
     "description": "Faculty members providing guidance",
     "displayOrder": 4,
     "isActive": true,
-    "createdAt": "2025-09-23T17:36:22.231Z",
-    "updatedAt": "2025-09-23T17:36:22.231Z"
+    "createdAt": "2026-09-23T17:36:22.231Z",
+    "updatedAt": "2026-09-23T17:36:22.231Z"
   }
 ]
