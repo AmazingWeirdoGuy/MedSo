@@ -54,7 +54,7 @@ export default function About() {
     return members.filter(member => member.memberClassId === memberClass.id && member.isActive);
   };
 
-  const websiteManagers = getClassMembers("Website Manager");
+  const websiteManagers = getClassMembers("Digital Infrastructure");
   const officers = getClassMembers("Officer");
   const activeMembers = getClassMembers("Active Member");
   const facultyAdvisors = getClassMembers("Faculty Advisors");
@@ -202,7 +202,7 @@ export default function About() {
               <div className="space-y-4">
                 
                 <AccordionSection
-                  title="Website Manager"
+                  title="Digital Infrastructure"
                   isOpen={openSections.websiteManager}
                   onToggle={() => toggleSection('websiteManager')}
                   testId="section-website-manager"

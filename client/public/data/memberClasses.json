@@ -1,7 +1,7 @@
 [
   {
     "id": "website-manager",
-    "name": "Website Manager",
+    "name": "Digital Infrastructure",
     "description": "Manages the website and digital presence",
     "displayOrder": 1,
     "isActive": true,
